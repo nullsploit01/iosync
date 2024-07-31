@@ -12,6 +12,7 @@ import (
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.Heartbeat("/ping"))
 
 	r.Get("/", s.HelloWorldHandler)
 
