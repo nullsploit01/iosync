@@ -16,11 +16,12 @@ func TestHandler(t *testing.T) {
 		t.Fatalf("error making request to server. Err: %v", err)
 	}
 	defer resp.Body.Close()
+
 	// Assertions
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected status OK; got %v", resp.Status)
 	}
-	expected := "{\"message\":\"Hello World\"}"
+	expected := "{\"error\":false,\"message\":\"Sup\"}"
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("error reading response body. Err: %v", err)
