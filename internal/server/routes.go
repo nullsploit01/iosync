@@ -1,8 +1,6 @@
 package server
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -14,19 +12,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Heartbeat("/ping"))
 
-	r.Get("/", s.HelloWorldHandler)
-
 	return r
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
-
-	jsonResp, err := json.Marshal(resp)
-	if err != nil {
-		log.Fatalf("error handling JSON marshal. Err: %v", err)
+	responsePaylaod := Response{
+		Message: "Sup",
 	}
 
-	_, _ = w.Write(jsonResp)
+	s.writeJson(w, http.StatusOK, responsePaylaod)
 }

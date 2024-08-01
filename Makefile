@@ -28,7 +28,7 @@ clean:
 
 # Live Reload
 watch:
-	air; \
+	air \
 	echo "Watching...";\
 
 .PHONY: all build run test clean
