@@ -12,10 +12,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Heartbeat("/ping"))
 
+	r.Get("/sup", s.Sup)
+
 	return r
 }
 
-func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Sup(w http.ResponseWriter, r *http.Request) {
 	responsePaylaod := Response{
 		Message: "Sup",
 	}
