@@ -14,6 +14,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/sup", s.Sup)
 
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/login", s.Login)
+		r.Post("/register", s.Register)
+	})
+
 	return r
 }
 
