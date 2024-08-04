@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -28,7 +27,6 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validateInput(&request); err != nil {
-		log.Println("err", err)
 		s.errorJson(w, err, http.StatusBadRequest)
 		return
 	}
