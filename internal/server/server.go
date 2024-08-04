@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"iosync/ent"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,13 +12,16 @@ import (
 )
 
 type Server struct {
-	port int
+	port     int
+	dbClient *ent.Client
 }
 
-func NewServer() *http.Server {
+func InitServer(client *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
+
 	NewServer := &Server{
-		port: port,
+		port:     port,
+		dbClient: client,
 	}
 
 	server := &http.Server{

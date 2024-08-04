@@ -10,13 +10,13 @@ import (
 func main() {
 	c := context.Background()
 
-	_, err := data.Init(c)
+	client, err := data.Init(c)
 
 	if err != nil {
 		log.Fatal("error occured connecting database, ", err)
 	}
 
-	server := server.NewServer()
+	server := server.InitServer(client)
 
 	log.Println("Started Server on address", server.Addr)
 
