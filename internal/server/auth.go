@@ -1,22 +1,12 @@
 package server
 
 import (
+	"iosync/internal/services"
 	"net/http"
 )
 
-type RegisterRequest struct {
-	Name     string `json:"name" validate:"required"`
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
-
-type LoginRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
-
 func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
-	var request LoginRequest
+	var request services.LoginRequest
 
 	if err := s.readJson(w, r, &request); err != nil {
 		s.errorJson(w, err)
@@ -24,6 +14,11 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validateInput(&request); err != nil {
+		s.errorJson(w, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := s.authService.AuthenticateUser(request); err != nil {
 		s.errorJson(w, err, http.StatusBadRequest)
 		return
 	}
@@ -36,7 +31,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
-	var request RegisterRequest
+	var request services.RegisterRequest
 
 	if err := s.readJson(w, r, &request); err != nil {
 		s.errorJson(w, err)
@@ -44,6 +39,11 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validateInput(&request); err != nil {
+		s.errorJson(w, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := s.authService.AddUser(request); err != nil {
 		s.errorJson(w, err, http.StatusBadRequest)
 		return
 	}
