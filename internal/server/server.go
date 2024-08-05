@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"iosync/ent"
+	"iosync/internal/services"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,16 +13,20 @@ import (
 )
 
 type Server struct {
-	port     int
-	dbClient *ent.Client
+	port        int
+	dbClient    *ent.Client
+	authService *services.AuthService
 }
 
 func InitServer(client *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
+	authService := services.NewAuthService(client)
+
 	NewServer := &Server{
-		port:     port,
-		dbClient: client,
+		port:        port,
+		dbClient:    client,
+		authService: authService,
 	}
 
 	server := &http.Server{
