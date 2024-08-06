@@ -1,9 +1,5 @@
 package services
 
-import (
-	"iosync/ent"
-)
-
 type RegisterRequest struct {
 	Name     string `json:"name" validate:"required"`
 	Username string `json:"username" validate:"required"`
@@ -16,11 +12,10 @@ type LoginRequest struct {
 }
 
 type AuthService struct {
-	dbClient *ent.Client
 }
 
-func NewAuthService(dbClient *ent.Client) *AuthService {
-	return &AuthService{dbClient: dbClient}
+func NewAuthService() *AuthService {
+	return &AuthService{}
 }
 
 func (a *AuthService) AuthenticateUser(request LoginRequest) error {

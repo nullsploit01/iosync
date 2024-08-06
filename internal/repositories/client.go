@@ -1,4 +1,4 @@
-package data
+package repositories
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func Init(c context.Context) (*ent.Client, error) {
+func GetDbClient(c context.Context) (*ent.Client, error) {
 	client, err := ent.Open("postgres", "host=localhost port=5432 user=postgres dbname=iosync password=password sslmode=disable")
 	if err != nil {
 		return nil, err

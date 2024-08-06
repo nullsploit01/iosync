@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"iosync/ent"
+	"iosync/internal/repositories"
 	"iosync/internal/services"
 	"net/http"
 	"os"
@@ -13,29 +14,31 @@ import (
 )
 
 type Server struct {
-	port        int
-	dbClient    *ent.Client
-	authService *services.AuthService
+	port           int
+	authService    *services.AuthService
+	userRepository *repositories.UserRepository
 }
 
 func InitServer(client *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
-	authService := services.NewAuthService(client)
+	authService := services.NewAuthService()
 
-	NewServer := &Server{
-		port:        port,
-		dbClient:    client,
-		authService: authService,
+	userRepository := repositories.NewUserRepository(client)
+
+	server := &Server{
+		port:           port,
+		authService:    authService,
+		userRepository: userRepository,
 	}
 
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", NewServer.port),
-		Handler:      NewServer.RegisterRoutes(),
+	httpServer := &http.Server{
+		Addr:         fmt.Sprintf(":%d", server.port),
+		Handler:      server.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	return server
+	return httpServer
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"iosync/internal/data"
+	"iosync/internal/repositories"
 	"iosync/internal/server"
 	"log"
 )
@@ -10,13 +10,13 @@ import (
 func main() {
 	c := context.Background()
 
-	client, err := data.Init(c)
+	dbClient, err := repositories.GetDbClient(c)
 
 	if err != nil {
 		log.Fatal("error occured connecting database, ", err)
 	}
 
-	server := server.InitServer(client)
+	server := server.InitServer(dbClient)
 
 	log.Println("Started Server on address", server.Addr)
 
