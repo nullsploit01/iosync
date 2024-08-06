@@ -56,5 +56,5 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		Data:    user,
 	}
 
-	s.writeJson(w, http.StatusOK, response)
+	s.writeJson(w, http.StatusCreated, response)
 }
