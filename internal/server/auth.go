@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"iosync/internal/services"
 	"net/http"
 )
@@ -31,6 +32,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
 	var request services.RegisterRequest
 
 	if err := s.readJson(w, r, &request); err != nil {
@@ -43,13 +45,15 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.authService.AddUser(request); err != nil {
+	user, err := s.authService.AddUser(context, request)
+	if err != nil {
 		s.errorJson(w, err, http.StatusBadRequest)
 		return
 	}
 
 	response := Response{
-		Message: "Register",
+		Message: "Success",
+		Data:    user,
 	}
 
 	s.writeJson(w, http.StatusOK, response)

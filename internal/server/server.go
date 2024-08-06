@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"iosync/ent"
-	"iosync/internal/repositories"
 	"iosync/internal/services"
 	"net/http"
 	"os"
@@ -14,22 +13,18 @@ import (
 )
 
 type Server struct {
-	port           int
-	authService    *services.AuthService
-	userRepository *repositories.UserRepository
+	port        int
+	authService *services.AuthService
 }
 
-func InitServer(client *ent.Client) *http.Server {
+func InitServer(dbClient *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
-	authService := services.NewAuthService()
-
-	userRepository := repositories.NewUserRepository(client)
+	authService := services.NewAuthService(dbClient)
 
 	server := &Server{
-		port:           port,
-		authService:    authService,
-		userRepository: userRepository,
+		port:        port,
+		authService: authService,
 	}
 
 	httpServer := &http.Server{
