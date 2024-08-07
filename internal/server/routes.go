@@ -27,5 +27,5 @@ func (s *Server) Sup(w http.ResponseWriter, r *http.Request) {
 		Message: "Sup",
 	}
 
-	s.writeJson(w, http.StatusOK, responsePaylaod)
+	s.WriteJson(w, http.StatusOK, responsePaylaod)
 }

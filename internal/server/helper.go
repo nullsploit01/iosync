@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -24,7 +25,7 @@ type Response struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-func (app *Server) readJson(w http.ResponseWriter, r *http.Request, data any) error {
+func (app *Server) ReadJson(w http.ResponseWriter, r *http.Request, data any) error {
 	maxSize := 1048576 // 1MB
 
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxSize))
@@ -41,7 +42,7 @@ func (app *Server) readJson(w http.ResponseWriter, r *http.Request, data any) er
 	return nil
 }
 
-func (app *Server) writeJson(w http.ResponseWriter, status int, data any, headers ...http.Header) error {
+func (app *Server) WriteJson(w http.ResponseWriter, status int, data any, headers ...http.Header) error {
 	out, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -64,7 +65,7 @@ func (app *Server) writeJson(w http.ResponseWriter, status int, data any, header
 	return nil
 }
 
-func (app *Server) errorJson(w http.ResponseWriter, err error, status ...int) error {
+func (app *Server) ErrorJson(w http.ResponseWriter, err error, status ...int) error {
 	statusCode := http.StatusBadRequest
 
 	if len(status) > 0 {
@@ -77,10 +78,24 @@ func (app *Server) errorJson(w http.ResponseWriter, err error, status ...int) er
 
 	fmt.Println("Error: ", payload.Message)
 
-	return app.writeJson(w, statusCode, payload)
+	return app.WriteJson(w, statusCode, payload)
 }
 
-func validateInput(data interface{}) error {
+func (app *Server) SetCookie(w http.ResponseWriter, cookieName, cookieValue string, expiry time.Time) {
+	cookie := &http.Cookie{
+		Name:     cookieName,
+		Value:    cookieValue,
+		Expires:  expiry,
+		HttpOnly: true, // Prevents access to the cookie via JavaScript
+		Secure:   true, // Ensures the cookie is sent only over HTTPS
+		Path:     "/",
+		SameSite: http.SameSiteStrictMode, // Prevents CSRF attacks
+	}
+
+	http.SetCookie(w, cookie)
+}
+
+func ValidateInput(data interface{}) error {
 	validate := validator.New()
 	err := validate.Struct(data)
 	if err == nil {
