@@ -46,3 +46,8 @@ func (u *UserRepository) FindUserByUsername(ctx context.Context, username string
 		Where(user.Username(username)).
 		First(ctx)
 }
+
+func (u *UserRepository) UpdateLastLoginDate(ctx context.Context, username string) error {
+	_, err := u.dbClient.User.Update().Where(user.Username(username)).SetLastLogin(time.Now()).Save(ctx)
+	return err
+}

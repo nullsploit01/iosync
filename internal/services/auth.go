@@ -42,6 +42,8 @@ func (a *AuthService) AuthenticateUser(ctx context.Context, request LoginRequest
 		return nil, errors.New("incorrect username or password")
 	}
 
+	a.userRepository.UpdateLastLoginDate(ctx, request.Username)
+
 	return user, nil
 }
 
