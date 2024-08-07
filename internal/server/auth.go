@@ -35,7 +35,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 	s.SetCookie(w, "session_id", sessionId, time.Now().Add(30*time.Minute))
 
 	response := Response{
-		Message: "Success",
+		Message: "User Logged In!",
 		Data:    user,
 	}
 
@@ -69,7 +69,7 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	s.SetCookie(w, "session_id", sessionId, time.Now().Add(30*time.Minute))
 
 	response := Response{
-		Message: "Success",
+		Message: "User Registered Successfully!",
 		Data:    user,
 	}
 
