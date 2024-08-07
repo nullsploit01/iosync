@@ -59,7 +59,18 @@ func (a *AuthService) AddUser(ctx context.Context, request RegisterRequest) (*en
 		Name:     request.Name,
 	}
 
-	return a.userRepository.AddUser(ctx, &addUserPayload)
+	user, err := a.userRepository.AddUser(ctx, &addUserPayload)
+
+	if err != nil {
+		var constraintError *ent.ConstraintError
+		if errors.As(err, &constraintError) {
+			return nil, errors.New("username already exists")
+		}
+
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func hashPassword(password string) (string, error) {
