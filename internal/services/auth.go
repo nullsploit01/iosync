@@ -4,6 +4,8 @@ import (
 	"context"
 	"iosync/ent"
 	"iosync/internal/repositories"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterRequest struct {
@@ -34,11 +36,29 @@ func (a *AuthService) AuthenticateUser(request LoginRequest) error {
 }
 
 func (a *AuthService) AddUser(ctx context.Context, request RegisterRequest) (*ent.User, error) {
+	hashedPassword, err := hashPassword(request.Password)
+	if err != nil {
+		return nil, err
+	}
+
 	addUserPayload := repositories.AddUserPayload{
 		Username: request.Username,
-		Password: request.Password,
+		Password: hashedPassword,
 		Name:     request.Name,
 	}
 
 	return a.userRepository.AddUser(ctx, &addUserPayload)
+}
+
+func hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+// CheckPassword compares a plaintext password with a hashed password and returns an error if they don't match.
+func checkPassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
