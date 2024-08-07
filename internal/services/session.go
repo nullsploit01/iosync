@@ -22,7 +22,8 @@ func NewSessionService(dbClient *ent.Client) *SessionService {
 func (s *SessionService) CreateSession(ctx context.Context, username string) (string, error) {
 	activeSession, err := s.sessionRepository.GetUserActiveSession(ctx, username)
 	if err != nil {
-		if !errors.Is(err, &ent.NotFoundError{}) {
+		var notFoundError *ent.NotFoundError
+		if !errors.As(err, &notFoundError) {
 			return "", err
 		}
 	} else if activeSession != nil {

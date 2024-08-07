@@ -30,6 +30,6 @@ func (s *SessionRepository) CreateSession(ctx context.Context, username string) 
 
 func (s *SessionRepository) GetUserActiveSession(ctx context.Context, username string) (*ent.Session, error) {
 	return s.dbClient.Session.Query().
-		Where(session.ExpiresAtGTE(time.Now())).
+		Where(session.ExpiresAtGTE(time.Now()), session.Username(username)).
 		First(ctx)
 }
