@@ -4,6 +4,7 @@ package ent
 
 import (
 	"iosync/ent/schema"
+	"iosync/ent/session"
 	"iosync/ent/user"
 	"time"
 )
@@ -12,6 +13,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	sessionFields := schema.Session{}.Fields()
+	_ = sessionFields
+	// sessionDescUsername is the schema descriptor for username field.
+	sessionDescUsername := sessionFields[1].Descriptor()
+	// session.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	session.UsernameValidator = sessionDescUsername.Validators[0].(func(string) error)
+	// sessionDescCreatedAt is the schema descriptor for created_at field.
+	sessionDescCreatedAt := sessionFields[2].Descriptor()
+	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
+	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(time.Time)
+	// sessionDescUpdatedAt is the schema descriptor for updated_at field.
+	sessionDescUpdatedAt := sessionFields[3].Descriptor()
+	// session.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	session.DefaultUpdatedAt = sessionDescUpdatedAt.Default.(time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescIsActive is the schema descriptor for is_active field.

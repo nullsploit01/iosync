@@ -8,6 +8,21 @@ import (
 )
 
 var (
+	// SessionsColumns holds the columns for the "sessions" table.
+	SessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "session_id", Type: field.TypeString, Unique: true},
+		{Name: "username", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "expires_at", Type: field.TypeTime},
+	}
+	// SessionsTable holds the schema information for the "sessions" table.
+	SessionsTable = &schema.Table{
+		Name:       "sessions",
+		Columns:    SessionsColumns,
+		PrimaryKey: []*schema.Column{SessionsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -32,11 +47,40 @@ var (
 			},
 		},
 	}
+	// UserSessionsColumns holds the columns for the "user_sessions" table.
+	UserSessionsColumns = []*schema.Column{
+		{Name: "user_id", Type: field.TypeInt},
+		{Name: "session_id", Type: field.TypeInt},
+	}
+	// UserSessionsTable holds the schema information for the "user_sessions" table.
+	UserSessionsTable = &schema.Table{
+		Name:       "user_sessions",
+		Columns:    UserSessionsColumns,
+		PrimaryKey: []*schema.Column{UserSessionsColumns[0], UserSessionsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_sessions_user_id",
+				Columns:    []*schema.Column{UserSessionsColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_sessions_session_id",
+				Columns:    []*schema.Column{UserSessionsColumns[1]},
+				RefColumns: []*schema.Column{SessionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		SessionsTable,
 		UsersTable,
+		UserSessionsTable,
 	}
 )
 
 func init() {
+	UserSessionsTable.ForeignKeys[0].RefTable = UsersTable
+	UserSessionsTable.ForeignKeys[1].RefTable = SessionsTable
 }
