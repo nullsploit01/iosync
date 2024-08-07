@@ -13,18 +13,21 @@ import (
 )
 
 type Server struct {
-	port        int
-	authService *services.AuthService
+	port           int
+	authService    *services.AuthService
+	sessionService *services.SessionService
 }
 
 func InitServer(dbClient *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
 	authService := services.NewAuthService(dbClient)
+	sessionService := services.NewSessionService(dbClient)
 
 	server := &Server{
-		port:        port,
-		authService: authService,
+		port:           port,
+		authService:    authService,
+		sessionService: sessionService,
 	}
 
 	httpServer := &http.Server{
