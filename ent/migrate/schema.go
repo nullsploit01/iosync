@@ -15,6 +15,7 @@ var (
 		{Name: "password", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "last_login", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

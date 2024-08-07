@@ -20,6 +20,7 @@ func (User) Fields() []ent.Field {
 		field.String("password"),
 		field.String("name"),
 		field.Bool("is_active").Default(true),
+		field.Time("last_login").Default(time.Now()),
 		field.Time("created_at").Default(time.Now()),
 		field.Time("updated_at").Default(time.Now()),
 	}
