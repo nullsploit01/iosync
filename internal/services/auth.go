@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
 
@@ -31,8 +32,17 @@ func NewAuthService(dbClient *ent.Client) *AuthService {
 	}
 }
 
-func (a *AuthService) AuthenticateUser(request LoginRequest) error {
-	return nil
+func (a *AuthService) AuthenticateUser(ctx context.Context, request LoginRequest) (*ent.User, error) {
+	user, err := a.userRepository.FindUserByUsername(ctx, request.Username)
+	if err != nil {
+		return nil, errors.New("incorrect username or password")
+	}
+
+	if err := checkPassword(user.Password, request.Password); err != nil {
+		return nil, errors.New("incorrect username or password")
+	}
+
+	return user, nil
 }
 
 func (a *AuthService) AddUser(ctx context.Context, request RegisterRequest) (*ent.User, error) {
@@ -58,7 +68,6 @@ func hashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-// CheckPassword compares a plaintext password with a hashed password and returns an error if they don't match.
 func checkPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

@@ -2,7 +2,9 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"iosync/ent"
+	"iosync/ent/user"
 	"time"
 )
 
@@ -16,11 +18,18 @@ type AddUserPayload struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type GetUserPayload struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
 func NewUserRepository(dbClient *ent.Client) *UserRepository {
 	return &UserRepository{dbClient: dbClient}
 }
 
 func (u *UserRepository) AddUser(ctx context.Context, payload *AddUserPayload) (*ent.User, error) {
+	fmt.Println("register", payload)
+
 	user, err := u.dbClient.User.Create().
 		SetName(payload.Name).
 		SetUsername(payload.Username).
@@ -30,4 +39,10 @@ func (u *UserRepository) AddUser(ctx context.Context, payload *AddUserPayload) (
 		Save(ctx)
 
 	return user, err
+}
+
+func (u *UserRepository) FindUserByUsername(ctx context.Context, username string) (*ent.User, error) {
+	return u.dbClient.User.Query().
+		Where(user.Username(username)).
+		First(ctx)
 }
