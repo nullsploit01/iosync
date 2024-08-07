@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"iosync/ent"
+	"iosync/ent/session"
 	"iosync/pkg/utils"
 	"time"
 )
@@ -25,4 +26,10 @@ func (s *SessionRepository) CreateSession(ctx context.Context, username string) 
 		SetUpdatedAt(time.Now()).
 		SetExpiresAt(time.Now().Add(time.Minute * 30)).
 		Save(ctx)
+}
+
+func (s *SessionRepository) GetUserActiveSession(ctx context.Context, username string) (*ent.Session, error) {
+	return s.dbClient.Session.Query().
+		Where(session.ExpiresAtGTE(time.Now())).
+		First(ctx)
 }

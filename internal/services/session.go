@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
 )
@@ -19,9 +20,18 @@ func NewSessionService(dbClient *ent.Client) *SessionService {
 }
 
 func (s *SessionService) CreateSession(ctx context.Context, username string) (string, error) {
+	activeSession, err := s.sessionRepository.GetUserActiveSession(ctx, username)
+	if err != nil {
+		if !errors.Is(err, &ent.NotFoundError{}) {
+			return "", err
+		}
+	} else if activeSession != nil {
+		return "", errors.New("user is already logged in")
+	}
+
 	session, err := s.sessionRepository.CreateSession(ctx, username)
 	if err != nil {
-		return "", err
+		return "", errors.New("error creating session")
 	}
 
 	return session.SessionID, nil

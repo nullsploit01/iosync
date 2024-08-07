@@ -30,7 +30,8 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 
 	sessionId, err := s.sessionService.CreateSession(context, request.Username)
 	if err != nil {
-		s.ErrorJson(w, errors.New("error creating session, please try again"), http.StatusInternalServerError)
+		s.ErrorJson(w, err, http.StatusBadRequest)
+		return
 	}
 	s.SetCookie(w, "session_id", sessionId, time.Now().Add(30*time.Minute))
 
