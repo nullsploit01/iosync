@@ -31,6 +31,11 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 				return
 			}
 
+			if err = sessionService.RefreshSessionExpiry(r.Context(), session.SessionID); err != nil {
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
+			}
+
 			ctx := context.WithValue(r.Context(), constants.SessionIDCookieKey, session.SessionID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

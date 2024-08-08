@@ -5,6 +5,7 @@ import (
 	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
+	"time"
 )
 
 type SessionService struct {
@@ -51,4 +52,17 @@ func (s *SessionService) VerifySession(ctx context.Context, sessionId string) (*
 	}
 
 	return session, nil
+}
+
+func (s *SessionService) RefreshSessionExpiry(ctx context.Context, sessionId string) error {
+	err := s.sessionRepository.UpdateSessionExpiryDate(ctx, sessionId, 30*time.Minute)
+
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return errors.New("invalid session id")
+		}
+	}
+
+	return err
 }

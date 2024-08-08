@@ -39,3 +39,14 @@ func (s *SessionRepository) GetSessionBySessionId(ctx context.Context, sessionId
 		Where(session.SessionID(sessionId), session.ExpiresAtGTE(time.Now())).
 		First(ctx)
 }
+
+func (s *SessionRepository) UpdateSessionExpiryDate(ctx context.Context, sessionId string, duration time.Duration) error {
+	newExpiryDate := time.Now().Add(duration)
+
+	_, err := s.dbClient.Session.Update().
+		Where(session.SessionID(sessionId), session.ExpiresAtGTE(time.Now())).
+		SetExpiresAt(newExpiryDate).
+		Save(ctx)
+
+	return err
+}
