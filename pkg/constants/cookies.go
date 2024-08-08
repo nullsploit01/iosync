@@ -1,3 +1,5 @@
 package constants
 
-const SessionIDCookieKey = "session_id"
+type ContextKey string
+
+const SessionIDCookieKey ContextKey = "session_id"
