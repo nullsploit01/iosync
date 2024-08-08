@@ -37,3 +37,18 @@ func (s *SessionService) CreateSession(ctx context.Context, username string) (st
 
 	return session.SessionID, nil
 }
+
+func (s *SessionService) VerifySession(ctx context.Context, sessionId string) (*ent.Session, error) {
+	session, err := s.sessionRepository.GetSessionBySessionId(ctx, sessionId)
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return nil, errors.New("invalid session id")
+		}
+		return nil, err
+	} else if session == nil {
+		return nil, errors.New("invalid session id")
+	}
+
+	return session, nil
+}
