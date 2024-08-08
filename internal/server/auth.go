@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"iosync/internal/services"
+	"iosync/pkg/constants"
 	"net/http"
 	"time"
 )
@@ -32,7 +33,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
 	}
-	s.SetCookie(w, "session_id", sessionId, time.Now().Add(30*time.Minute))
+	s.SetCookie(w, constants.SessionIDCookieKey, sessionId, time.Now().Add(30*time.Minute))
 
 	response := Response{
 		Message: "User Logged In!",
@@ -67,7 +68,7 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
 	}
-	s.SetCookie(w, "session_id", sessionId, time.Now().Add(30*time.Minute))
+	s.SetCookie(w, constants.SessionIDCookieKey, sessionId, time.Now().Add(30*time.Minute))
 
 	response := Response{
 		Message: "User Registered Successfully!",

@@ -2,6 +2,7 @@ package server
 
 import (
 	"iosync/internal/middlewares"
+	"iosync/pkg/constants"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -24,7 +25,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Use(middlewares.SessionMiddleware)
 
 		r.Get("/protected", func(w http.ResponseWriter, r *http.Request) {
-			username := r.Context().Value("session_id")
+			username := r.Context().Value(constants.SessionIDCookieKey)
 			s.WriteJson(w, 200, username)
 		})
 	})
