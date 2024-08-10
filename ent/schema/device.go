@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 )
@@ -16,6 +18,8 @@ func (Device) Fields() []ent.Field {
 		field.String("username").NotEmpty(),
 		field.String("name").NotEmpty(),
 		field.Bool("is_active").Default(true),
+		field.Time("created_at").Default(time.Now()),
+		field.Time("updated_at").Default(time.Now()),
 	}
 }
 
