@@ -25,6 +25,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		r.Route("/devices", func(r chi.Router) {
 			r.Post("/", s.AddDevice)
+			r.Get("/", s.GetDevices)
 		})
 	})
 

@@ -44,3 +44,24 @@ func (s *Server) AddDevice(w http.ResponseWriter, r *http.Request) {
 
 	s.WriteJson(w, http.StatusCreated, responsePayload)
 }
+
+func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
+	username, err := GetHttpRequestContextValue(r, constants.UsernameKey)
+
+	if err != nil {
+		s.ErrorJson(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
+	devices, err := s.deviceService.GetDevices(context, username)
+	if err != nil {
+		s.ErrorJson(w, err)
+	}
+
+	responsePayload := Response{
+		Data: devices,
+	}
+
+	s.WriteJson(w, http.StatusOK, responsePayload)
+}

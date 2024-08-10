@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
 )
@@ -30,4 +31,18 @@ func (d *DeviceService) AddDevice(ctx context.Context, request AddDeviceRequest)
 	}
 
 	return d.deviceRepository.AddDevice(ctx, &addDevicePaylaod)
+}
+
+func (d *DeviceService) GetDevices(ctx context.Context, username string) ([]*ent.Device, error) {
+	devices, err := d.deviceRepository.GetDevices(ctx, username)
+
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return nil, errors.New("invalid username")
+		}
+		return nil, err
+	}
+
+	return devices, nil
 }
