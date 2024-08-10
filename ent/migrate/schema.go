@@ -14,6 +14,8 @@ var (
 		{Name: "username", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// DevicesTable holds the schema information for the "devices" table.
 	DevicesTable = &schema.Table{

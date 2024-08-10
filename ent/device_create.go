@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"iosync/ent/device"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -41,6 +42,34 @@ func (dc *DeviceCreate) SetIsActive(b bool) *DeviceCreate {
 func (dc *DeviceCreate) SetNillableIsActive(b *bool) *DeviceCreate {
 	if b != nil {
 		dc.SetIsActive(*b)
+	}
+	return dc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (dc *DeviceCreate) SetCreatedAt(t time.Time) *DeviceCreate {
+	dc.mutation.SetCreatedAt(t)
+	return dc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (dc *DeviceCreate) SetNillableCreatedAt(t *time.Time) *DeviceCreate {
+	if t != nil {
+		dc.SetCreatedAt(*t)
+	}
+	return dc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (dc *DeviceCreate) SetUpdatedAt(t time.Time) *DeviceCreate {
+	dc.mutation.SetUpdatedAt(t)
+	return dc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (dc *DeviceCreate) SetNillableUpdatedAt(t *time.Time) *DeviceCreate {
+	if t != nil {
+		dc.SetUpdatedAt(*t)
 	}
 	return dc
 }
@@ -84,6 +113,14 @@ func (dc *DeviceCreate) defaults() {
 		v := device.DefaultIsActive
 		dc.mutation.SetIsActive(v)
 	}
+	if _, ok := dc.mutation.CreatedAt(); !ok {
+		v := device.DefaultCreatedAt
+		dc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := dc.mutation.UpdatedAt(); !ok {
+		v := device.DefaultUpdatedAt
+		dc.mutation.SetUpdatedAt(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -106,6 +143,12 @@ func (dc *DeviceCreate) check() error {
 	}
 	if _, ok := dc.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Device.is_active"`)}
+	}
+	if _, ok := dc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Device.created_at"`)}
+	}
+	if _, ok := dc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Device.updated_at"`)}
 	}
 	return nil
 }
@@ -144,6 +187,14 @@ func (dc *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.IsActive(); ok {
 		_spec.SetField(device.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
+	}
+	if value, ok := dc.mutation.CreatedAt(); ok {
+		_spec.SetField(device.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := dc.mutation.UpdatedAt(); ok {
+		_spec.SetField(device.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }

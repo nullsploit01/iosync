@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -65,6 +66,34 @@ func (du *DeviceUpdate) SetIsActive(b bool) *DeviceUpdate {
 func (du *DeviceUpdate) SetNillableIsActive(b *bool) *DeviceUpdate {
 	if b != nil {
 		du.SetIsActive(*b)
+	}
+	return du
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (du *DeviceUpdate) SetCreatedAt(t time.Time) *DeviceUpdate {
+	du.mutation.SetCreatedAt(t)
+	return du
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (du *DeviceUpdate) SetNillableCreatedAt(t *time.Time) *DeviceUpdate {
+	if t != nil {
+		du.SetCreatedAt(*t)
+	}
+	return du
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (du *DeviceUpdate) SetUpdatedAt(t time.Time) *DeviceUpdate {
+	du.mutation.SetUpdatedAt(t)
+	return du
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (du *DeviceUpdate) SetNillableUpdatedAt(t *time.Time) *DeviceUpdate {
+	if t != nil {
+		du.SetUpdatedAt(*t)
 	}
 	return du
 }
@@ -137,6 +166,12 @@ func (du *DeviceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := du.mutation.IsActive(); ok {
 		_spec.SetField(device.FieldIsActive, field.TypeBool, value)
 	}
+	if value, ok := du.mutation.CreatedAt(); ok {
+		_spec.SetField(device.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := du.mutation.UpdatedAt(); ok {
+		_spec.SetField(device.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{device.Label}
@@ -195,6 +230,34 @@ func (duo *DeviceUpdateOne) SetIsActive(b bool) *DeviceUpdateOne {
 func (duo *DeviceUpdateOne) SetNillableIsActive(b *bool) *DeviceUpdateOne {
 	if b != nil {
 		duo.SetIsActive(*b)
+	}
+	return duo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (duo *DeviceUpdateOne) SetCreatedAt(t time.Time) *DeviceUpdateOne {
+	duo.mutation.SetCreatedAt(t)
+	return duo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (duo *DeviceUpdateOne) SetNillableCreatedAt(t *time.Time) *DeviceUpdateOne {
+	if t != nil {
+		duo.SetCreatedAt(*t)
+	}
+	return duo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (duo *DeviceUpdateOne) SetUpdatedAt(t time.Time) *DeviceUpdateOne {
+	duo.mutation.SetUpdatedAt(t)
+	return duo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (duo *DeviceUpdateOne) SetNillableUpdatedAt(t *time.Time) *DeviceUpdateOne {
+	if t != nil {
+		duo.SetUpdatedAt(*t)
 	}
 	return duo
 }
@@ -296,6 +359,12 @@ func (duo *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err err
 	}
 	if value, ok := duo.mutation.IsActive(); ok {
 		_spec.SetField(device.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := duo.mutation.CreatedAt(); ok {
+		_spec.SetField(device.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := duo.mutation.UpdatedAt(); ok {
+		_spec.SetField(device.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_node = &Device{config: duo.config}
 	_spec.Assign = _node.assignValues
