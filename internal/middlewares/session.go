@@ -36,7 +36,7 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), constants.SessionIDCookieKey, session.SessionID)
+			ctx := context.WithValue(r.Context(), constants.UsernameKey, session.Username)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

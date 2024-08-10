@@ -25,7 +25,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Use(middlewares.SessionMiddleware(s.sessionService))
 
 		r.Get("/protected", func(w http.ResponseWriter, r *http.Request) {
-			username := r.Context().Value(constants.SessionIDCookieKey)
+			username := r.Context().Value(constants.UsernameKey)
 			s.WriteJson(w, 200, username)
 		})
 	})
