@@ -11,7 +11,8 @@ type DeviceService struct {
 }
 
 type AddDeviceRequest struct {
-	Name string
+	Name     string `json:"name" validate:"required"`
+	Username string
 }
 
 func NewDeviceService(dbClient *ent.Client) *DeviceService {
@@ -24,7 +25,8 @@ func NewDeviceService(dbClient *ent.Client) *DeviceService {
 
 func (d *DeviceService) AddDevice(ctx context.Context, request AddDeviceRequest) (*ent.Device, error) {
 	addDevicePaylaod := repositories.AddDevicePayload{
-		Name: request.Name,
+		Name:     request.Name,
+		Username: request.Username,
 	}
 
 	return d.deviceRepository.AddDevice(ctx, &addDevicePaylaod)

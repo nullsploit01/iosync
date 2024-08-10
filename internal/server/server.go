@@ -13,6 +13,7 @@ import (
 type Server struct {
 	port           int
 	authService    *services.AuthService
+	deviceService  *services.DeviceService
 	sessionService *services.SessionService
 }
 
@@ -20,11 +21,13 @@ func InitServer(dbClient *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
 	authService := services.NewAuthService(dbClient)
+	deviceService := services.NewDeviceService(dbClient)
 	sessionService := services.NewSessionService(dbClient)
 
 	server := &Server{
 		port:           port,
 		authService:    authService,
+		deviceService:  deviceService,
 		sessionService: sessionService,
 	}
 
