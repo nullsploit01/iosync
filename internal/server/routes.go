@@ -23,9 +23,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.SessionMiddleware(s.sessionService))
 
-		r.Route("/devices", func(r chi.Router) {
-			r.Post("/", s.AddDevice)
-			r.Get("/", s.GetDevices)
+		r.Route("/devices", func(x chi.Router) {
+			x.Post("/", s.AddDevice)
+			x.Get("/", s.GetDevices)
 		})
 	})
 
@@ -33,9 +33,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (s *Server) Sup(w http.ResponseWriter, r *http.Request) {
-	responsePaylaod := Response{
+	responsePayload := Response{
 		Message: "Sup",
 	}
 
-	s.WriteJson(w, http.StatusOK, responsePaylaod)
+	s.WriteJson(w, http.StatusOK, responsePayload)
 }
