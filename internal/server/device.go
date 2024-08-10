@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"iosync/internal/services"
 	"iosync/pkg/constants"
 	"net/http"
@@ -21,14 +22,14 @@ func (s *Server) AddDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.Context().Value(constants.UsernameKey)
+	username, err := GetHttpRequestContextValue(r, constants.UsernameKey)
 
-	if usernameStr, ok := username.(string); !ok {
-		s.WriteJson(w, http.StatusUnauthorized, "Unauthorized")
+	if err != nil {
+		s.ErrorJson(w, errors.New("unauthorized"), http.StatusUnauthorized)
 		return
-	} else {
-		requestBody.Username = usernameStr
 	}
+
+	requestBody.Username = username
 
 	device, err := s.deviceService.AddDevice(context, requestBody)
 	if err != nil {

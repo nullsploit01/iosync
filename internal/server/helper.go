@@ -113,6 +113,20 @@ func ValidateInput(data interface{}) error {
 	return err
 }
 
+func GetHttpRequestContextValue(r *http.Request, key any) (string, error) {
+	value := r.Context().Value(key)
+	if value == nil {
+		return "", errors.New("value for key not found in context")
+	}
+
+	stringValue, ok := value.(string)
+	if !ok {
+		return "", errors.New("value is not a string")
+	}
+
+	return stringValue, nil
+}
+
 func getErrorMessage(fieldError validator.FieldError) string {
 	switch fieldError.Tag() {
 	case "required":
