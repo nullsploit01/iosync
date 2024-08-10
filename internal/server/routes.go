@@ -2,7 +2,6 @@ package server
 
 import (
 	"iosync/internal/middlewares"
-	"iosync/pkg/constants"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -24,9 +23,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.SessionMiddleware(s.sessionService))
 
-		r.Get("/protected", func(w http.ResponseWriter, r *http.Request) {
-			username := r.Context().Value(constants.UsernameKey)
-			s.WriteJson(w, 200, username)
+		r.Route("/devices", func(r chi.Router) {
+			r.Post("/", s.AddDevice)
 		})
 	})
 
