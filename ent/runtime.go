@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"iosync/ent/device"
 	"iosync/ent/schema"
 	"iosync/ent/session"
 	"iosync/ent/user"
@@ -13,6 +14,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	deviceFields := schema.Device{}.Fields()
+	_ = deviceFields
+	// deviceDescUsername is the schema descriptor for username field.
+	deviceDescUsername := deviceFields[0].Descriptor()
+	// device.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	device.UsernameValidator = deviceDescUsername.Validators[0].(func(string) error)
+	// deviceDescName is the schema descriptor for name field.
+	deviceDescName := deviceFields[1].Descriptor()
+	// device.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	device.NameValidator = deviceDescName.Validators[0].(func(string) error)
+	// deviceDescIsActive is the schema descriptor for is_active field.
+	deviceDescIsActive := deviceFields[2].Descriptor()
+	// device.DefaultIsActive holds the default value on creation for the is_active field.
+	device.DefaultIsActive = deviceDescIsActive.Default.(bool)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescUsername is the schema descriptor for username field.

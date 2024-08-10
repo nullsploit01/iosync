@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iosync/ent/device"
 	"iosync/ent/session"
 	"iosync/ent/user"
 	"reflect"
@@ -74,6 +75,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			device.Table:  device.ValidColumn,
 			session.Table: session.ValidColumn,
 			user.Table:    user.ValidColumn,
 		})
