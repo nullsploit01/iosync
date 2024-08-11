@@ -2,4 +2,6 @@
   import '../app.css'
 </script>
 
-<slot></slot>
+<div class="p-2 h-full">
+  <slot></slot>
+</div>
