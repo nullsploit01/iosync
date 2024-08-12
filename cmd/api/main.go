@@ -20,7 +20,7 @@ func main() {
 
 	log.Println("Started Server on address", server.Addr)
 
-	err = server.ListenAndServe()
+	err = server.ListenAndServeTLS("./certs/localhost.pem", "./certs/localhost-key.pem")
 	if err != nil {
 		log.Fatalf("cannot start server: %s", err)
 	}

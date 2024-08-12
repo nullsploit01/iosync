@@ -89,7 +89,7 @@ func (app *Server) SetCookie(w http.ResponseWriter, cookieName, cookieValue stri
 		HttpOnly: true, // Prevents access to the cookie via JavaScript
 		Secure:   true, // Ensures the cookie is sent only over HTTPS
 		Path:     "/",
-		SameSite: http.SameSiteStrictMode, // Prevents CSRF attacks
+		SameSite: http.SameSiteNoneMode, // Allows cross-site cookies
 	}
 
 	http.SetCookie(w, cookie)

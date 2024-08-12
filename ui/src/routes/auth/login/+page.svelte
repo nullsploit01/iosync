@@ -10,7 +10,6 @@
   async function handleSubmit() {
     let usernameValue, passwordValue
 
-    // Subscribe to the writable stores to get the values
     username.subscribe((value) => (usernameValue = value))()
     password.subscribe((value) => (passwordValue = value))()
 
@@ -18,11 +17,13 @@
       username: usernameValue,
       password: passwordValue
     }
-    const response = await fetch(`${API_BASE_URL}/api/login`, {
+
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify(loginData)
     })
 
