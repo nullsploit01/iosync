@@ -2,6 +2,7 @@
   import { Button } from '@/components/ui/button'
   import { Input } from '@/components/ui/input'
   import { API_BASE_URL } from '@/config'
+  import { redirect } from '@sveltejs/kit'
   import { writable } from 'svelte/store'
 
   let username = writable('')
@@ -32,7 +33,7 @@
     }
 
     const data = await response.json()
-    console.log('Login successful:', data)
+    redirect(303, "/")
   }
 </script>
 
