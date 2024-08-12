@@ -20,23 +20,23 @@ func NewSessionService(dbClient *ent.Client) *SessionService {
 	}
 }
 
-func (s *SessionService) CreateSession(ctx context.Context, username string) (string, error) {
+func (s *SessionService) CreateSession(ctx context.Context, username string) (*ent.Session, error) {
 	activeSession, err := s.sessionRepository.GetUserActiveSession(ctx, username)
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if !errors.As(err, &notFoundError) {
-			return "", err
+			return nil, err
 		}
 	} else if activeSession != nil {
-		return "", errors.New("user is already logged in")
+		return nil, errors.New("user is already logged in")
 	}
 
 	session, err := s.sessionRepository.CreateSession(ctx, username)
 	if err != nil {
-		return "", errors.New("error creating session")
+		return nil, errors.New("error creating session")
 	}
 
-	return session.SessionID, nil
+	return session, nil
 }
 
 func (s *SessionService) VerifySession(ctx context.Context, sessionId string) (*ent.Session, error) {
