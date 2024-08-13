@@ -18,7 +18,7 @@
 
 <div class="flex h-full place-items-center justify-center">
   <div
-    class="o-5 m-5 flex w-4/12 flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
+    class="max-w-2/12 m-5 flex flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
   >
     <p class="mb-3 text-2xl">Login</p>
     <Input bind:value={username} placeholder="Username" class="m-3 border-gray-400" />

@@ -1,9 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { Button } from '@/components/ui/button'
-  import { Checkbox } from '@/components/ui/checkbox'
   import { Input } from '@/components/ui/input'
-  import { Label } from '@/components/ui/label'
   import { authService } from '@/services/api/auth'
 
   let username = ''
@@ -18,7 +16,7 @@
 
 <div class="flex h-full place-items-center justify-center">
   <div
-    class="o-5 m-5 flex w-4/12 flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
+    class="max-w-2/12 m-5 flex flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
   >
     <p class="mb-3 text-2xl">Sign Up</p>
     <Input bind:value={name} placeholder="Name" class="m-3 border-gray-400" />
