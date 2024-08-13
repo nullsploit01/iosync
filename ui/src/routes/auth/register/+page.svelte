@@ -8,10 +8,10 @@
 
   let username = ''
   let password = ''
-  let checked: boolean
+  let name = ''
 
   const handleSubmit = async () => {
-    await authService.login(username, password, checked)
+    await authService.register(name, username, password)
     goto('/')
   }
 </script>
@@ -20,7 +20,8 @@
   <div
     class="o-5 m-5 flex w-4/12 flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
   >
-    <p class="mb-3 text-2xl">Login</p>
+    <p class="mb-3 text-2xl">Sign Up</p>
+    <Input bind:value={name} placeholder="Name" class="m-3 border-gray-400" />
     <Input bind:value={username} placeholder="Username" class="m-3 border-gray-400" />
     <Input
       bind:value={password}
@@ -28,20 +29,11 @@
       placeholder="Password"
       class="m-3 border-gray-400"
     />
-    <div class="flex items-center space-x-2">
-      <Checkbox id="terms" bind:checked aria-labelledby="terms-label" />
-      <Label
-        id="terms-label"
-        for="terms"
-        class="m-1 w-full font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        Remember Me
-      </Label>
-    </div>
-    <Button size="lg" class="m-3 w-full" on:click={handleSubmit}>Login</Button>
+
+    <Button size="lg" class="m-3 w-full" on:click={handleSubmit}>Sign Up</Button>
     <p class="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-      Dont have an account? <a class="text-blue-500" href="/auth/register" on:click={() => {}}
-        >Sign Up</a
+      Already have an account? <a class="text-blue-500" href="/auth/login" on:click={() => {}}
+        >Login</a
       >
     </p>
   </div>

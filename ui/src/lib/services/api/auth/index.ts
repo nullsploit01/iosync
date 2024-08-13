@@ -7,5 +7,9 @@ export const authService = {
 
   login: async (username: string, password: string, rememberMe: boolean) => {
     return await httpClient.post('/auth/login', { username, password, rememberMe })
+  },
+
+  register: async (name: string, username: string, password: string) => {
+    return await httpClient.post('/auth/register', { name, username, password })
   }
 }
