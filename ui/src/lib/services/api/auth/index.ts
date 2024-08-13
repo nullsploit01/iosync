@@ -1,7 +1,11 @@
-import { httpClient } from "@/clients/http"
+import { httpClient } from '@/clients/http'
 
 export const authService = {
-    login: async (username: string, password: string) => {
-        return await httpClient.post('/auth/login', {username, password})
-    }
+  me: async () => {
+    return await httpClient.get('/auth/me')
+  },
+
+  login: async (username: string, password: string) => {
+    return await httpClient.post('/auth/login', { username, password })
+  }
 }
