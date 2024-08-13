@@ -16,7 +16,7 @@ func NewSessionRepository(dbClient *ent.Client) *SessionRepository {
 	return &SessionRepository{dbClient: dbClient}
 }
 
-func (s *SessionRepository) CreateSession(ctx context.Context, username string) (*ent.Session, error) {
+func (s *SessionRepository) CreateSession(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
 	sessionId := utils.GenerateUuid()
 
 	return s.dbClient.Session.Create().
@@ -24,7 +24,7 @@ func (s *SessionRepository) CreateSession(ctx context.Context, username string) 
 		SetUsername(username).
 		SetCreatedAt(time.Now()).
 		SetUpdatedAt(time.Now()).
-		SetExpiresAt(time.Now().Add(time.Minute * 30)).
+		SetExpiresAt(timeout).
 		Save(ctx)
 }
 

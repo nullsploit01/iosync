@@ -1,11 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
   import '../app.css'
-  import { authService } from '@/services/api/auth'
-
-  onMount(async () => {
-    await authService.me()
-  })
 </script>
 
 <div class="h-full bg-gray-200 p-2">

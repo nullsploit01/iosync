@@ -35,13 +35,18 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := s.sessionService.CreateSession(context, request.Username)
+	sessionTimeOut := time.Now().Add(30 * time.Minute)
+	if request.RememberMe {
+		sessionTimeOut = time.Now().Add((720 * time.Hour)) // 30 Days
+	}
+
+	session, err := s.sessionService.CreateSession(context, request.Username, sessionTimeOut)
 	if err != nil {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
 	}
 
-	s.SetCookie(w, string(constants.SessionIDCookieKey), session.SessionID, time.Now().Add(30*time.Minute))
+	s.SetCookie(w, string(constants.SessionIDCookieKey), session.SessionID, sessionTimeOut)
 
 	response := Response{
 		Message: "User Logged In!",
@@ -75,7 +80,8 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := s.sessionService.CreateSession(context, request.Username)
+	sessionTimeOut := time.Now().Add(30 * time.Minute)
+	session, err := s.sessionService.CreateSession(context, request.Username, sessionTimeOut)
 	if err != nil {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
