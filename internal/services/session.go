@@ -54,6 +54,20 @@ func (s *SessionService) VerifySession(ctx context.Context, sessionId string) (*
 	return session, nil
 }
 
+func (s *SessionService) GetUserActiveSession(ctx context.Context, username string) (*ent.Session, error) {
+	session, err := s.sessionRepository.GetUserActiveSession(ctx, username)
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return nil, errors.New("user has no active session")
+		}
+
+		return nil, err
+	}
+
+	return session, nil
+}
+
 func (s *SessionService) RefreshSessionExpiry(ctx context.Context, sessionId string) error {
 	err := s.sessionRepository.UpdateSessionExpiryDate(ctx, sessionId, 30*time.Minute)
 

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"iosync/internal/services"
 	"iosync/pkg/constants"
 	"net/http"
@@ -91,4 +92,29 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.WriteJson(w, http.StatusCreated, response)
+}
+
+func (s *Server) GetSession(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
+	username, err := GetHttpRequestContextValue(r, constants.UsernameKey)
+	if err != nil {
+		s.ErrorJson(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
+	session, err := s.sessionService.GetUserActiveSession(context, username)
+	if err != nil {
+		s.ErrorJson(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
+	response := Response{
+		Data: AuthResponsePayload{
+			SessionId: session.SessionID,
+			Username:  session.Username,
+			ExpiresAt: session.ExpiresAt,
+		},
+	}
+
+	s.WriteJson(w, http.StatusOK, response)
 }
