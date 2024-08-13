@@ -5,19 +5,13 @@
   import { Input } from '@/components/ui/input'
   import { Label } from '@/components/ui/label'
   import { authService } from '@/services/api/auth'
-  import { writable } from 'svelte/store'
 
-  let username = writable('')
-  let password = writable('')
+  let username = ''
+  let password = ''
   let checked: boolean
 
   const handleSubmit = async () => {
-    let usernameValue, passwordValue
-
-    username.subscribe((value) => (usernameValue = value))()
-    password.subscribe((value) => (passwordValue = value))()
-
-    await authService.login(usernameValue!, passwordValue!, checked)
+    await authService.login(username, password, checked)
     goto('/')
   }
 </script>
@@ -27,9 +21,9 @@
     class="o-5 m-5 flex w-4/12 flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
   >
     <p class="mb-3 text-2xl">Login</p>
-    <Input bind:value={$username} placeholder="Username" class="m-3 border-gray-400" />
+    <Input bind:value={username} placeholder="Username" class="m-3 border-gray-400" />
     <Input
-      bind:value={$password}
+      bind:value={password}
       type="password"
       placeholder="Password"
       class="m-3 border-gray-400"
