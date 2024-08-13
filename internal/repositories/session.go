@@ -18,7 +18,6 @@ func NewSessionRepository(dbClient *ent.Client) *SessionRepository {
 
 func (s *SessionRepository) CreateSession(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
 	sessionId := utils.GenerateUuid()
-
 	return s.dbClient.Session.Create().
 		SetSessionID(sessionId).
 		SetUsername(username).
