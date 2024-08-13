@@ -8,7 +8,7 @@
   let username = writable('')
   let password = writable('')
 
-  async function handleSubmit() {
+  const handleSubmit = async () => {
     let usernameValue, passwordValue
 
     username.subscribe((value) => (usernameValue = value))()
