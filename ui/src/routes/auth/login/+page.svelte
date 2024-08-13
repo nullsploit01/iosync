@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { goto } from '$app/navigation'
   import { Button } from '@/components/ui/button'
   import { Input } from '@/components/ui/input'
-  import { API_BASE_URL } from '@/config'
-  import { redirect } from '@sveltejs/kit'
+  import { authService } from '@/services/api/auth'
   import { writable } from 'svelte/store'
 
   let username = writable('')
@@ -14,26 +14,8 @@
     username.subscribe((value) => (usernameValue = value))()
     password.subscribe((value) => (passwordValue = value))()
 
-    const loginData = {
-      username: usernameValue,
-      password: passwordValue
-    }
-
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify(loginData)
-    })
-
-    if (!response.ok) {
-      throw new Error('Login failed')
-    }
-
-    const data = await response.json()
-    redirect(303, "/")
+    await authService.login(usernameValue!, passwordValue!)
+    goto('/')
   }
 </script>
 
