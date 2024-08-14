@@ -68,9 +68,14 @@ func (s *SessionService) GetUserActiveSession(ctx context.Context, username stri
 	return session, nil
 }
 
-func (s *SessionService) RefreshSessionExpiry(ctx context.Context, sessionId string) error {
-	err := s.sessionRepository.UpdateSessionExpiryDate(ctx, sessionId, 30*time.Minute)
+func (s *SessionService) RefreshSessionExpiry(ctx context.Context, session *ent.Session) error {
+	remainingTime := time.Until(session.ExpiresAt)
 
+	if remainingTime > 30*time.Minute {
+		return nil
+	}
+
+	err := s.sessionRepository.UpdateSessionExpiryDate(ctx, session.SessionID, session.ExpiresAt.Add(30*time.Minute))
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {

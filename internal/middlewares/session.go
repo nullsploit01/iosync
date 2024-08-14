@@ -31,8 +31,8 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 				return
 			}
 
-			if err = sessionService.RefreshSessionExpiry(r.Context(), session.SessionID); err != nil {
-				http.Error(w, err.Error(), http.StatusUnauthorized)
+			if err = sessionService.RefreshSessionExpiry(r.Context(), session); err != nil {
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
 				return
 			}
 
