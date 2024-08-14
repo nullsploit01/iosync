@@ -123,13 +123,13 @@ func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) GetSession(w http.ResponseWriter, r *http.Request) {
 	context := context.Background()
-	username, err := GetHttpRequestContextValue(r, constants.UsernameKey)
+	sessionId, err := GetHttpRequestContextValue(r, constants.SessionIDKey)
 	if err != nil {
 		s.ErrorJson(w, errors.New("unauthorized"), http.StatusUnauthorized)
 		return
 	}
 
-	session, err := s.sessionService.GetUserActiveSession(context, username)
+	session, err := s.sessionService.GetSessionDetails(context, sessionId)
 	if err != nil {
 		s.ErrorJson(w, errors.New("unauthorized"), http.StatusUnauthorized)
 		return

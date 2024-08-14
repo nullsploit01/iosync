@@ -27,12 +27,6 @@ func (s *SessionRepository) CreateSession(ctx context.Context, username string, 
 		Save(ctx)
 }
 
-func (s *SessionRepository) GetUserActiveSession(ctx context.Context, username string) (*ent.Session, error) {
-	return s.dbClient.Session.Query().
-		Where(session.ExpiresAtGTE(time.Now()), session.Username(username)).
-		First(ctx)
-}
-
 func (s *SessionRepository) GetSessionBySessionId(ctx context.Context, sessionId string) (*ent.Session, error) {
 	return s.dbClient.Session.Query().
 		Where(session.SessionID(sessionId), session.ExpiresAtGTE(time.Now())).
