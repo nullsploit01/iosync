@@ -47,3 +47,11 @@ func (s *SessionRepository) UpdateSessionExpiryDate(ctx context.Context, session
 
 	return err
 }
+
+func (s *SessionRepository) RemoveSession(ctx context.Context, sessionId string) error {
+	_, err := s.dbClient.Session.Delete().
+		Where(session.SessionID(sessionId)).
+		Exec(ctx)
+
+	return err
+}

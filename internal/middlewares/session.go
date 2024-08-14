@@ -12,7 +12,7 @@ import (
 func SessionMiddleware(sessionService *services.SessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sessionId, err := utils.GetCookieValueFromRequest(r, string(constants.SessionIDCookieKey))
+			sessionId, err := utils.GetCookieValueFromRequest(r, string(constants.SessionIDKey))
 
 			if err != nil {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -22,7 +22,7 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 			session, err := sessionService.VerifySession(context.Background(), sessionId)
 
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusUnauthorized)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -32,11 +32,12 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 			}
 
 			if err = sessionService.RefreshSessionExpiry(r.Context(), session); err != nil {
-				http.Error(w, "unauthorized", http.StatusUnauthorized)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
 			ctx := context.WithValue(r.Context(), constants.UsernameKey, session.Username)
+			ctx = context.WithValue(ctx, constants.SessionIDKey, session.SessionID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

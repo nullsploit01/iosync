@@ -85,3 +85,15 @@ func (s *SessionService) RefreshSessionExpiry(ctx context.Context, session *ent.
 
 	return err
 }
+
+func (s *SessionService) RemoveSession(ctx context.Context, sessionId string) error {
+	err := s.sessionRepository.RemoveSession(ctx, sessionId)
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return nil
+		}
+	}
+
+	return err
+}

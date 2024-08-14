@@ -34,9 +34,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Use(middlewares.SessionMiddleware(s.sessionService))
 
 		r.Get("/auth/me", s.GetSession)
+		r.Post("/auth/logout", s.Logout)
 
-		r.Route("/devices", func(x chi.Router) {
-			x.Get("/", s.GetDevices)
+		r.Route("/devices", func(r chi.Router) {
+			r.Get("/", s.GetDevices)
 		})
 	})
 

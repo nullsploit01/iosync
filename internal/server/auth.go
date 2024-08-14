@@ -46,7 +46,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.SetCookie(w, string(constants.SessionIDCookieKey), session.SessionID, sessionTimeOut)
+	s.SetCookie(w, string(constants.SessionIDKey), session.SessionID, sessionTimeOut)
 
 	response := Response{
 		Message: "User Logged In!",
@@ -86,7 +86,7 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
 	}
-	s.SetCookie(w, string(constants.SessionIDCookieKey), session.SessionID, time.Now().Add(30*time.Minute))
+	s.SetCookie(w, string(constants.SessionIDKey), session.SessionID, time.Now().Add(30*time.Minute))
 
 	response := Response{
 		Message: "User Registered Successfully!",
@@ -98,6 +98,27 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.WriteJson(w, http.StatusCreated, response)
+}
+
+func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
+	response := Response{
+		Message: "success",
+	}
+
+	sessionId, err := GetHttpRequestContextValue(r, constants.SessionIDKey)
+	if err != nil {
+		s.WriteJson(w, http.StatusOK, response)
+		return
+	}
+
+	err = s.sessionService.RemoveSession(context, sessionId)
+	if err != nil {
+		s.ErrorJson(w, errors.New("something went wrong"), http.StatusInternalServerError)
+		return
+	}
+
+	s.WriteJson(w, http.StatusOK, response)
 }
 
 func (s *Server) GetSession(w http.ResponseWriter, r *http.Request) {
