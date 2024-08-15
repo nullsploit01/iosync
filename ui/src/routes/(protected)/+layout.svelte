@@ -1,12 +1,12 @@
 <script>
-  import { onMount } from 'svelte'
-  import { authService } from '@/services/api/auth'
+  import { getContext } from 'svelte'
+  import { ContextKeys } from '@/config/context'
+  import { goto } from '$app/navigation'
 
-  onMount(async () => {
-    await authService.me()
-  })
+  const session = getContext(ContextKeys.user.session).session
+  if (!session) goto('/auth/login')
 </script>
 
-<div class="h-full bg-gray-200 p-2">
+<div class="bg-gray-200 p-2">
   <slot></slot>
 </div>

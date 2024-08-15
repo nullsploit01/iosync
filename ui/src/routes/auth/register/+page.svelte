@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="flex h-full place-items-center justify-center">
+<div class="mt-12 flex place-items-center justify-center">
   <div
     class="max-w-2/12 m-5 flex flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
   >

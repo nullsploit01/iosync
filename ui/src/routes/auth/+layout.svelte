@@ -1,8 +1,9 @@
 <script>
-  import { onMount } from 'svelte'
+  import { getContext, onMount } from 'svelte'
   import { authService } from '@/services/api/auth'
   import { AxiosError } from 'axios'
   import { goto } from '$app/navigation'
+  import { ContextKeys } from '@/config/context'
 
   onMount(async () => {
     try {
@@ -12,6 +13,6 @@
   })
 </script>
 
-<div class="h-full bg-gray-200 p-2">
+<div>
   <slot></slot>
 </div>

@@ -4,7 +4,9 @@
   import { Checkbox } from '@/components/ui/checkbox'
   import { Input } from '@/components/ui/input'
   import { Label } from '@/components/ui/label'
+  import { ContextKeys } from '@/config/context'
   import { authService } from '@/services/api/auth'
+  import { onMount, getContext } from 'svelte'
 
   let username = ''
   let password = ''
@@ -16,7 +18,7 @@
   }
 </script>
 
-<div class="flex h-full place-items-center justify-center">
+<div class="mt-12 flex h-full place-items-center justify-center">
   <div
     class="max-w-2/12 m-5 flex flex-col place-items-center justify-center rounded-lg border-2 border-double border-gray-800 p-10"
   >
