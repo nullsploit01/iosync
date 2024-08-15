@@ -10,9 +10,9 @@ import (
 )
 
 type AuthResponsePayload struct {
-	SessionId string    `json:"sessionId"`
+	SessionId string    `json:"session_id"`
 	Username  string    `json:"username"`
-	ExpiresAt time.Time `json:"expiresAt"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 func (s *Server) Login(w http.ResponseWriter, r *http.Request) {

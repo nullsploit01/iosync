@@ -4,16 +4,20 @@
   import { ContextKeys } from '@/config/context'
   import { authService } from '@/services/api/auth'
   import Navbar from '@/components/ui/navbar/navbar.svelte'
+  import type { ISession } from '@/types/models'
+  import { readable } from 'svelte/store'
 
-  let session: any
-
-  onMount(async () => {
-    const { data } = await authService.me()
-    session = data
+  const session = readable<ISession | undefined>({} as ISession, (set) => {
+    authService
+      .me()
+      .then(({ data }) => {
+        set(data.data)
+      })
+      .catch((e) => set(undefined))
   })
 
   setContext(ContextKeys.user.session, {
-    session
+    ...session
   })
 </script>
 

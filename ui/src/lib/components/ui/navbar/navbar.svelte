@@ -2,16 +2,24 @@
   import { goto } from '$app/navigation'
   import { ContextKeys } from '@/config/context'
   import { authService } from '@/services/api/auth'
-  import { getContext, onMount, setContext } from 'svelte'
+  import type { ISession } from '@/types/models'
+  import { getContext, onDestroy, onMount, setContext } from 'svelte'
+  import type { Readable } from 'svelte/motion'
 
   let showMenu = false
-
+  let session: ISession | undefined = undefined
   function toggleNavbar() {
     showMenu = !showMenu
   }
 
-  const session = getContext(ContextKeys.user.session)
-  if (!session) goto('/auth/login')
+  const unsubscribe = getContext<Readable<ISession | undefined>>(
+    ContextKeys.user.session
+  ).subscribe((value) => {
+    session = value
+    if (!session) goto('/auth/login')
+  })
+
+  onDestroy(unsubscribe)
 </script>
 
 <nav class="bg-gray-800">

@@ -1,10 +1,17 @@
-<script>
-  import { getContext } from 'svelte'
+<script lang="ts">
+  import { getContext, onDestroy, onMount } from 'svelte'
   import { ContextKeys } from '@/config/context'
   import { goto } from '$app/navigation'
+  import type { ISession } from '@/types/models'
+  import type { Readable } from 'svelte/store'
 
-  const session = getContext(ContextKeys.user.session).session
-  if (!session) goto('/auth/login')
+  const unsubscribe = getContext<Readable<ISession | undefined>>(
+    ContextKeys.user.session
+  ).subscribe((value) => {
+    if (!value) goto('/auth/login')
+  })
+
+  onDestroy(unsubscribe)
 </script>
 
 <div class="bg-gray-200 p-2">
