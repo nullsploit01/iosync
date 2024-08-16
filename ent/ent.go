@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iosync/ent/apikeys"
 	"iosync/ent/device"
 	"iosync/ent/session"
 	"iosync/ent/user"
@@ -75,6 +76,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			apikeys.Table: apikeys.ValidColumn,
 			device.Table:  device.ValidColumn,
 			session.Table: session.ValidColumn,
 			user.Table:    user.ValidColumn,

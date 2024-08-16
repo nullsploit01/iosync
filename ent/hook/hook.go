@@ -8,6 +8,18 @@ import (
 	"iosync/ent"
 )
 
+// The ApiKeysFunc type is an adapter to allow the use of ordinary
+// function as ApiKeys mutator.
+type ApiKeysFunc func(context.Context, *ent.ApiKeysMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ApiKeysFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ApiKeysMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ApiKeysMutation", m)
+}
+
 // The DeviceFunc type is an adapter to allow the use of ordinary
 // function as Device mutator.
 type DeviceFunc func(context.Context, *ent.DeviceMutation) (ent.Value, error)

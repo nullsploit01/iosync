@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"iosync/ent/apikeys"
 	"iosync/ent/device"
 	"iosync/ent/schema"
 	"iosync/ent/session"
@@ -14,6 +15,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	apikeysFields := schema.ApiKeys{}.Fields()
+	_ = apikeysFields
+	// apikeysDescIsActive is the schema descriptor for is_active field.
+	apikeysDescIsActive := apikeysFields[3].Descriptor()
+	// apikeys.DefaultIsActive holds the default value on creation for the is_active field.
+	apikeys.DefaultIsActive = apikeysDescIsActive.Default.(bool)
+	// apikeysDescCreatedAt is the schema descriptor for created_at field.
+	apikeysDescCreatedAt := apikeysFields[4].Descriptor()
+	// apikeys.DefaultCreatedAt holds the default value on creation for the created_at field.
+	apikeys.DefaultCreatedAt = apikeysDescCreatedAt.Default.(time.Time)
+	// apikeysDescUpdatedAt is the schema descriptor for updated_at field.
+	apikeysDescUpdatedAt := apikeysFields[5].Descriptor()
+	// apikeys.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	apikeys.DefaultUpdatedAt = apikeysDescUpdatedAt.Default.(time.Time)
 	deviceFields := schema.Device{}.Fields()
 	_ = deviceFields
 	// deviceDescUsername is the schema descriptor for username field.
