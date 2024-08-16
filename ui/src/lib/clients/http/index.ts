@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation'
+import axios, { AxiosError, type AxiosResponse, HttpStatusCode } from 'axios'
+
 import { API_BASE_URL } from '@/config/environment'
-import axios, { AxiosError, HttpStatusCode, type AxiosResponse } from 'axios'
 
 const httpClient = axios.create({
   baseURL: API_BASE_URL,
