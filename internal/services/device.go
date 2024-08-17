@@ -46,3 +46,16 @@ func (d *DeviceService) GetDevices(ctx context.Context, username string) ([]*ent
 
 	return devices, nil
 }
+
+func (d *DeviceService) GetDevice(ctx context.Context, deviceId int) (*ent.Device, error) {
+	device, err := d.deviceRepository.GetDevice(ctx, deviceId)
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return nil, errors.New("device not found")
+		}
+		return nil, err
+	}
+
+	return device, nil
+}

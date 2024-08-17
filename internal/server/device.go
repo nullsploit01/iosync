@@ -6,6 +6,9 @@ import (
 	"iosync/internal/services"
 	"iosync/pkg/constants"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (s *Server) AddDevice(w http.ResponseWriter, r *http.Request) {
@@ -64,4 +67,26 @@ func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.WriteJson(w, http.StatusOK, responsePayload)
+}
+
+func (s *Server) GetDevice(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
+	idParam := chi.URLParam(r, "id")
+	deviceId, err := strconv.Atoi(idParam)
+	if err != nil {
+		s.ErrorJson(w, errors.New("invalid device id"), http.StatusBadRequest)
+	}
+
+	device, err := s.deviceService.GetDevice(context, deviceId)
+	if err != nil {
+		s.ErrorJson(w, errors.New("device not found"), http.StatusBadRequest)
+		return
+	}
+
+	responsePayload := Response{
+		Data: device,
+	}
+
+	s.WriteJson(w, http.StatusOK, responsePayload)
+
 }
