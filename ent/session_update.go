@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"iosync/ent/predicate"
 	"iosync/ent/session"
+	"iosync/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -38,20 +39,6 @@ func (su *SessionUpdate) SetSessionID(s string) *SessionUpdate {
 func (su *SessionUpdate) SetNillableSessionID(s *string) *SessionUpdate {
 	if s != nil {
 		su.SetSessionID(*s)
-	}
-	return su
-}
-
-// SetUsername sets the "username" field.
-func (su *SessionUpdate) SetUsername(s string) *SessionUpdate {
-	su.mutation.SetUsername(s)
-	return su
-}
-
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (su *SessionUpdate) SetNillableUsername(s *string) *SessionUpdate {
-	if s != nil {
-		su.SetUsername(*s)
 	}
 	return su
 }
@@ -98,9 +85,34 @@ func (su *SessionUpdate) SetNillableExpiresAt(t *time.Time) *SessionUpdate {
 	return su
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (su *SessionUpdate) SetUserID(id int) *SessionUpdate {
+	su.mutation.SetUserID(id)
+	return su
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (su *SessionUpdate) SetNillableUserID(id *int) *SessionUpdate {
+	if id != nil {
+		su = su.SetUserID(*id)
+	}
+	return su
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (su *SessionUpdate) SetUser(u *User) *SessionUpdate {
+	return su.SetUserID(u.ID)
+}
+
 // Mutation returns the SessionMutation object of the builder.
 func (su *SessionUpdate) Mutation() *SessionMutation {
 	return su.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (su *SessionUpdate) ClearUser() *SessionUpdate {
+	su.mutation.ClearUser()
+	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -130,20 +142,7 @@ func (su *SessionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (su *SessionUpdate) check() error {
-	if v, ok := su.mutation.Username(); ok {
-		if err := session.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Session.username": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := su.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(session.Table, session.Columns, sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt))
 	if ps := su.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -155,9 +154,6 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.SessionID(); ok {
 		_spec.SetField(session.FieldSessionID, field.TypeString, value)
 	}
-	if value, ok := su.mutation.Username(); ok {
-		_spec.SetField(session.FieldUsername, field.TypeString, value)
-	}
 	if value, ok := su.mutation.CreatedAt(); ok {
 		_spec.SetField(session.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -166,6 +162,35 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.ExpiresAt(); ok {
 		_spec.SetField(session.FieldExpiresAt, field.TypeTime, value)
+	}
+	if su.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.UserTable,
+			Columns: []string{session.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.UserTable,
+			Columns: []string{session.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -197,20 +222,6 @@ func (suo *SessionUpdateOne) SetSessionID(s string) *SessionUpdateOne {
 func (suo *SessionUpdateOne) SetNillableSessionID(s *string) *SessionUpdateOne {
 	if s != nil {
 		suo.SetSessionID(*s)
-	}
-	return suo
-}
-
-// SetUsername sets the "username" field.
-func (suo *SessionUpdateOne) SetUsername(s string) *SessionUpdateOne {
-	suo.mutation.SetUsername(s)
-	return suo
-}
-
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (suo *SessionUpdateOne) SetNillableUsername(s *string) *SessionUpdateOne {
-	if s != nil {
-		suo.SetUsername(*s)
 	}
 	return suo
 }
@@ -257,9 +268,34 @@ func (suo *SessionUpdateOne) SetNillableExpiresAt(t *time.Time) *SessionUpdateOn
 	return suo
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (suo *SessionUpdateOne) SetUserID(id int) *SessionUpdateOne {
+	suo.mutation.SetUserID(id)
+	return suo
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableUserID(id *int) *SessionUpdateOne {
+	if id != nil {
+		suo = suo.SetUserID(*id)
+	}
+	return suo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (suo *SessionUpdateOne) SetUser(u *User) *SessionUpdateOne {
+	return suo.SetUserID(u.ID)
+}
+
 // Mutation returns the SessionMutation object of the builder.
 func (suo *SessionUpdateOne) Mutation() *SessionMutation {
 	return suo.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (suo *SessionUpdateOne) ClearUser() *SessionUpdateOne {
+	suo.mutation.ClearUser()
+	return suo
 }
 
 // Where appends a list predicates to the SessionUpdate builder.
@@ -302,20 +338,7 @@ func (suo *SessionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (suo *SessionUpdateOne) check() error {
-	if v, ok := suo.mutation.Username(); ok {
-		if err := session.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Session.username": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err error) {
-	if err := suo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(session.Table, session.Columns, sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt))
 	id, ok := suo.mutation.ID()
 	if !ok {
@@ -344,9 +367,6 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 	if value, ok := suo.mutation.SessionID(); ok {
 		_spec.SetField(session.FieldSessionID, field.TypeString, value)
 	}
-	if value, ok := suo.mutation.Username(); ok {
-		_spec.SetField(session.FieldUsername, field.TypeString, value)
-	}
 	if value, ok := suo.mutation.CreatedAt(); ok {
 		_spec.SetField(session.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -355,6 +375,35 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 	}
 	if value, ok := suo.mutation.ExpiresAt(); ok {
 		_spec.SetField(session.FieldExpiresAt, field.TypeTime, value)
+	}
+	if suo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.UserTable,
+			Columns: []string{session.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.UserTable,
+			Columns: []string{session.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Session{config: suo.config}
 	_spec.Assign = _node.assignValues

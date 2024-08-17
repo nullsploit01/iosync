@@ -54,11 +54,11 @@ var (
 	// DefaultIsActive holds the default value on creation for the "is_active" field.
 	DefaultIsActive bool
 	// DefaultLastUsed holds the default value on creation for the "last_used" field.
-	DefaultLastUsed time.Time
+	DefaultLastUsed func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt time.Time
+	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt time.Time
+	DefaultUpdatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the ApiKey queries.

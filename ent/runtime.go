@@ -24,15 +24,15 @@ func init() {
 	// apikeyDescLastUsed is the schema descriptor for last_used field.
 	apikeyDescLastUsed := apikeyFields[3].Descriptor()
 	// apikey.DefaultLastUsed holds the default value on creation for the last_used field.
-	apikey.DefaultLastUsed = apikeyDescLastUsed.Default.(time.Time)
+	apikey.DefaultLastUsed = apikeyDescLastUsed.Default.(func() time.Time)
 	// apikeyDescCreatedAt is the schema descriptor for created_at field.
 	apikeyDescCreatedAt := apikeyFields[4].Descriptor()
 	// apikey.DefaultCreatedAt holds the default value on creation for the created_at field.
-	apikey.DefaultCreatedAt = apikeyDescCreatedAt.Default.(time.Time)
+	apikey.DefaultCreatedAt = apikeyDescCreatedAt.Default.(func() time.Time)
 	// apikeyDescUpdatedAt is the schema descriptor for updated_at field.
 	apikeyDescUpdatedAt := apikeyFields[5].Descriptor()
 	// apikey.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	apikey.DefaultUpdatedAt = apikeyDescUpdatedAt.Default.(time.Time)
+	apikey.DefaultUpdatedAt = apikeyDescUpdatedAt.Default.(func() time.Time)
 	deviceFields := schema.Device{}.Fields()
 	_ = deviceFields
 	// deviceDescName is the schema descriptor for name field.
@@ -46,25 +46,21 @@ func init() {
 	// deviceDescCreatedAt is the schema descriptor for created_at field.
 	deviceDescCreatedAt := deviceFields[2].Descriptor()
 	// device.DefaultCreatedAt holds the default value on creation for the created_at field.
-	device.DefaultCreatedAt = deviceDescCreatedAt.Default.(time.Time)
+	device.DefaultCreatedAt = deviceDescCreatedAt.Default.(func() time.Time)
 	// deviceDescUpdatedAt is the schema descriptor for updated_at field.
 	deviceDescUpdatedAt := deviceFields[3].Descriptor()
 	// device.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	device.DefaultUpdatedAt = deviceDescUpdatedAt.Default.(time.Time)
+	device.DefaultUpdatedAt = deviceDescUpdatedAt.Default.(func() time.Time)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
-	// sessionDescUsername is the schema descriptor for username field.
-	sessionDescUsername := sessionFields[1].Descriptor()
-	// session.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
-	session.UsernameValidator = sessionDescUsername.Validators[0].(func(string) error)
 	// sessionDescCreatedAt is the schema descriptor for created_at field.
-	sessionDescCreatedAt := sessionFields[2].Descriptor()
+	sessionDescCreatedAt := sessionFields[1].Descriptor()
 	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
-	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(time.Time)
+	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
 	// sessionDescUpdatedAt is the schema descriptor for updated_at field.
-	sessionDescUpdatedAt := sessionFields[3].Descriptor()
+	sessionDescUpdatedAt := sessionFields[2].Descriptor()
 	// session.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	session.DefaultUpdatedAt = sessionDescUpdatedAt.Default.(time.Time)
+	session.DefaultUpdatedAt = sessionDescUpdatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescIsActive is the schema descriptor for is_active field.
@@ -74,13 +70,13 @@ func init() {
 	// userDescLastLogin is the schema descriptor for last_login field.
 	userDescLastLogin := userFields[4].Descriptor()
 	// user.DefaultLastLogin holds the default value on creation for the last_login field.
-	user.DefaultLastLogin = userDescLastLogin.Default.(time.Time)
+	user.DefaultLastLogin = userDescLastLogin.Default.(func() time.Time)
 	// userDescCreatedAt is the schema descriptor for created_at field.
 	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
-	user.DefaultCreatedAt = userDescCreatedAt.Default.(time.Time)
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
 	userDescUpdatedAt := userFields[6].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(time.Time)
+	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 }

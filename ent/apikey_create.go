@@ -128,15 +128,15 @@ func (akc *ApiKeyCreate) defaults() {
 		akc.mutation.SetIsActive(v)
 	}
 	if _, ok := akc.mutation.LastUsed(); !ok {
-		v := apikey.DefaultLastUsed
+		v := apikey.DefaultLastUsed()
 		akc.mutation.SetLastUsed(v)
 	}
 	if _, ok := akc.mutation.CreatedAt(); !ok {
-		v := apikey.DefaultCreatedAt
+		v := apikey.DefaultCreatedAt()
 		akc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := akc.mutation.UpdatedAt(); !ok {
-		v := apikey.DefaultUpdatedAt
+		v := apikey.DefaultUpdatedAt()
 		akc.mutation.SetUpdatedAt(v)
 	}
 }

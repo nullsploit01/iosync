@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"iosync/ent/session"
+	"iosync/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,12 +24,6 @@ type SessionCreate struct {
 // SetSessionID sets the "session_id" field.
 func (sc *SessionCreate) SetSessionID(s string) *SessionCreate {
 	sc.mutation.SetSessionID(s)
-	return sc
-}
-
-// SetUsername sets the "username" field.
-func (sc *SessionCreate) SetUsername(s string) *SessionCreate {
-	sc.mutation.SetUsername(s)
 	return sc
 }
 
@@ -64,6 +59,25 @@ func (sc *SessionCreate) SetNillableUpdatedAt(t *time.Time) *SessionCreate {
 func (sc *SessionCreate) SetExpiresAt(t time.Time) *SessionCreate {
 	sc.mutation.SetExpiresAt(t)
 	return sc
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (sc *SessionCreate) SetUserID(id int) *SessionCreate {
+	sc.mutation.SetUserID(id)
+	return sc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (sc *SessionCreate) SetNillableUserID(id *int) *SessionCreate {
+	if id != nil {
+		sc = sc.SetUserID(*id)
+	}
+	return sc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (sc *SessionCreate) SetUser(u *User) *SessionCreate {
+	return sc.SetUserID(u.ID)
 }
 
 // Mutation returns the SessionMutation object of the builder.
@@ -102,11 +116,11 @@ func (sc *SessionCreate) ExecX(ctx context.Context) {
 // defaults sets the default values of the builder before save.
 func (sc *SessionCreate) defaults() {
 	if _, ok := sc.mutation.CreatedAt(); !ok {
-		v := session.DefaultCreatedAt
+		v := session.DefaultCreatedAt()
 		sc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sc.mutation.UpdatedAt(); !ok {
-		v := session.DefaultUpdatedAt
+		v := session.DefaultUpdatedAt()
 		sc.mutation.SetUpdatedAt(v)
 	}
 }
@@ -115,14 +129,6 @@ func (sc *SessionCreate) defaults() {
 func (sc *SessionCreate) check() error {
 	if _, ok := sc.mutation.SessionID(); !ok {
 		return &ValidationError{Name: "session_id", err: errors.New(`ent: missing required field "Session.session_id"`)}
-	}
-	if _, ok := sc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "Session.username"`)}
-	}
-	if v, ok := sc.mutation.Username(); ok {
-		if err := session.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Session.username": %w`, err)}
-		}
 	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Session.created_at"`)}
@@ -163,10 +169,6 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 		_spec.SetField(session.FieldSessionID, field.TypeString, value)
 		_node.SessionID = value
 	}
-	if value, ok := sc.mutation.Username(); ok {
-		_spec.SetField(session.FieldUsername, field.TypeString, value)
-		_node.Username = value
-	}
 	if value, ok := sc.mutation.CreatedAt(); ok {
 		_spec.SetField(session.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -178,6 +180,23 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.ExpiresAt(); ok {
 		_spec.SetField(session.FieldExpiresAt, field.TypeTime, value)
 		_node.ExpiresAt = value
+	}
+	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   session.UserTable,
+			Columns: []string{session.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_sessions = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

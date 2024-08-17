@@ -16,20 +16,19 @@ func NewSessionRepository(dbClient *ent.Client) *SessionRepository {
 	return &SessionRepository{dbClient: dbClient}
 }
 
-func (s *SessionRepository) Create(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
+func (s *SessionRepository) Create(ctx context.Context, user *ent.User, timeout time.Time) (*ent.Session, error) {
 	sessionId := utils.GenerateUuid()
 	return s.dbClient.Session.Create().
 		SetSessionID(sessionId).
-		SetUsername(username).
-		SetCreatedAt(time.Now()).
-		SetUpdatedAt(time.Now()).
 		SetExpiresAt(timeout).
+		SetUser(user).
 		Save(ctx)
 }
 
 func (s *SessionRepository) GetBySessionId(ctx context.Context, sessionId string) (*ent.Session, error) {
 	return s.dbClient.Session.Query().
 		Where(session.SessionID(sessionId), session.ExpiresAtGTE(time.Now())).
+		WithUser().
 		First(ctx)
 }
 

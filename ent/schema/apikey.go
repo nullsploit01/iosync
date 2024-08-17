@@ -18,9 +18,9 @@ func (ApiKey) Fields() []ent.Field {
 		field.String("key"),
 		field.Int("device_id"),
 		field.Bool("is_active").Default(true),
-		field.Time("last_used").Default(time.Now()),
-		field.Time("created_at").Default(time.Now()),
-		field.Time("updated_at").Default(time.Now()),
+		field.Time("last_used").Default(time.Now),
+		field.Time("created_at").Default(time.Now),
+		field.Time("updated_at").Default(time.Now),
 	}
 }
 

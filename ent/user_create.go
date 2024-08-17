@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"iosync/ent/device"
+	"iosync/ent/session"
 	"iosync/ent/user"
 	"time"
 
@@ -110,6 +111,21 @@ func (uc *UserCreate) AddDevices(d ...*Device) *UserCreate {
 	return uc.AddDeviceIDs(ids...)
 }
 
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uc *UserCreate) AddSessionIDs(ids ...int) *UserCreate {
+	uc.mutation.AddSessionIDs(ids...)
+	return uc
+}
+
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddSessionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -150,15 +166,15 @@ func (uc *UserCreate) defaults() {
 		uc.mutation.SetIsActive(v)
 	}
 	if _, ok := uc.mutation.LastLogin(); !ok {
-		v := user.DefaultLastLogin
+		v := user.DefaultLastLogin()
 		uc.mutation.SetLastLogin(v)
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
-		v := user.DefaultCreatedAt
+		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
-		v := user.DefaultUpdatedAt
+		v := user.DefaultUpdatedAt()
 		uc.mutation.SetUpdatedAt(v)
 	}
 }
@@ -249,6 +265,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

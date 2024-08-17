@@ -128,11 +128,11 @@ func (dc *DeviceCreate) defaults() {
 		dc.mutation.SetIsActive(v)
 	}
 	if _, ok := dc.mutation.CreatedAt(); !ok {
-		v := device.DefaultCreatedAt
+		v := device.DefaultCreatedAt()
 		dc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := dc.mutation.UpdatedAt(); !ok {
-		v := device.DefaultUpdatedAt
+		v := device.DefaultUpdatedAt()
 		dc.mutation.SetUpdatedAt(v)
 	}
 }

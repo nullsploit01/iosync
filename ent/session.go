@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"iosync/ent/session"
+	"iosync/ent/user"
 	"strings"
 	"time"
 
@@ -19,15 +20,37 @@ type Session struct {
 	ID int `json:"id,omitempty"`
 	// SessionID holds the value of the "session_id" field.
 	SessionID string `json:"session_id,omitempty"`
-	// Username holds the value of the "username" field.
-	Username string `json:"username,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
-	ExpiresAt    time.Time `json:"expires_at,omitempty"`
-	selectValues sql.SelectValues
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the SessionQuery when eager-loading is set.
+	Edges         SessionEdges `json:"edges"`
+	user_sessions *int
+	selectValues  sql.SelectValues
+}
+
+// SessionEdges holds the relations/edges for other nodes in the graph.
+type SessionEdges struct {
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SessionEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,10 +60,12 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case session.FieldID:
 			values[i] = new(sql.NullInt64)
-		case session.FieldSessionID, session.FieldUsername:
+		case session.FieldSessionID:
 			values[i] = new(sql.NullString)
 		case session.FieldCreatedAt, session.FieldUpdatedAt, session.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
+		case session.ForeignKeys[0]: // user_sessions
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -68,12 +93,6 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.SessionID = value.String
 			}
-		case session.FieldUsername:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field username", values[i])
-			} else if value.Valid {
-				s.Username = value.String
-			}
 		case session.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -92,6 +111,13 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.ExpiresAt = value.Time
 			}
+		case session.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_sessions", value)
+			} else if value.Valid {
+				s.user_sessions = new(int)
+				*s.user_sessions = int(value.Int64)
+			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
 		}
@@ -103,6 +129,11 @@ func (s *Session) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (s *Session) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
+}
+
+// QueryUser queries the "user" edge of the Session entity.
+func (s *Session) QueryUser() *UserQuery {
+	return NewSessionClient(s.config).QueryUser(s)
 }
 
 // Update returns a builder for updating this Session.
@@ -130,9 +161,6 @@ func (s *Session) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
 	builder.WriteString("session_id=")
 	builder.WriteString(s.SessionID)
-	builder.WriteString(", ")
-	builder.WriteString("username=")
-	builder.WriteString(s.Username)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(s.CreatedAt.Format(time.ANSIC))

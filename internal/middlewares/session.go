@@ -20,7 +20,6 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 			}
 
 			session, err := sessionService.VerifySession(context.Background(), sessionId)
-
 			if err != nil {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
@@ -36,7 +35,7 @@ func SessionMiddleware(sessionService *services.SessionService) func(http.Handle
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), constants.UsernameKey, session.Username)
+			ctx := context.WithValue(r.Context(), constants.UsernameKey, session.Edges.User.Username)
 			ctx = context.WithValue(ctx, constants.SessionIDKey, session.SessionID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

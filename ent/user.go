@@ -41,9 +41,11 @@ type User struct {
 type UserEdges struct {
 	// Devices holds the value of the devices edge.
 	Devices []*Device `json:"devices,omitempty"`
+	// Sessions holds the value of the sessions edge.
+	Sessions []*Session `json:"sessions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // DevicesOrErr returns the Devices value or an error if the edge
@@ -53,6 +55,15 @@ func (e UserEdges) DevicesOrErr() ([]*Device, error) {
 		return e.Devices, nil
 	}
 	return nil, &NotLoadedError{edge: "devices"}
+}
+
+// SessionsOrErr returns the Sessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SessionsOrErr() ([]*Session, error) {
+	if e.loadedTypes[1] {
+		return e.Sessions, nil
+	}
+	return nil, &NotLoadedError{edge: "sessions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -147,6 +158,11 @@ func (u *User) Value(name string) (ent.Value, error) {
 // QueryDevices queries the "devices" edge of the User entity.
 func (u *User) QueryDevices() *DeviceQuery {
 	return NewUserClient(u.config).QueryDevices(u)
+}
+
+// QuerySessions queries the "sessions" edge of the User entity.
+func (u *User) QuerySessions() *SessionQuery {
+	return NewUserClient(u.config).QuerySessions(u)
 }
 
 // Update returns a builder for updating this User.

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
+	"log"
 	"time"
 )
 
@@ -20,9 +21,10 @@ func NewSessionService(dbClient *ent.Client) *SessionService {
 	}
 }
 
-func (s *SessionService) CreateSession(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
-	session, err := s.sessionRepository.Create(ctx, username, timeout)
+func (s *SessionService) CreateSession(ctx context.Context, user *ent.User, timeout time.Time) (*ent.Session, error) {
+	session, err := s.sessionRepository.Create(ctx, user, timeout)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.New("error creating session")
 	}
 

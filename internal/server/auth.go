@@ -11,7 +11,7 @@ import (
 
 type AuthResponsePayload struct {
 	SessionId string    `json:"session_id"`
-	Username  string    `json:"username"`
+	Username  string    `json:"username,omitempty"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
@@ -29,7 +29,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := s.authService.AuthenticateUser(context, request)
+	user, err := s.authService.AuthenticateUser(context, request)
 	if err != nil {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
@@ -40,7 +40,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		sessionTimeOut = time.Now().Add((720 * time.Hour)) // 30 Days
 	}
 
-	session, err := s.sessionService.CreateSession(context, request.Username, sessionTimeOut)
+	session, err := s.sessionService.CreateSession(context, user, sessionTimeOut)
 	if err != nil {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
@@ -52,7 +52,6 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		Message: "User Logged In!",
 		Data: AuthResponsePayload{
 			SessionId: session.SessionID,
-			Username:  session.Username,
 			ExpiresAt: session.ExpiresAt,
 		},
 	}
@@ -74,14 +73,14 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := s.authService.AddUser(context, request)
+	user, err := s.authService.AddUser(context, request)
 	if err != nil {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
 	}
 
 	sessionTimeOut := time.Now().Add(30 * time.Minute)
-	session, err := s.sessionService.CreateSession(context, request.Username, sessionTimeOut)
+	session, err := s.sessionService.CreateSession(context, user, sessionTimeOut)
 	if err != nil {
 		s.ErrorJson(w, err, http.StatusBadRequest)
 		return
@@ -92,7 +91,6 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		Message: "User Registered Successfully!",
 		Data: AuthResponsePayload{
 			SessionId: session.SessionID,
-			Username:  session.Username,
 			ExpiresAt: session.ExpiresAt,
 		},
 	}
@@ -138,8 +136,8 @@ func (s *Server) GetSession(w http.ResponseWriter, r *http.Request) {
 	response := Response{
 		Data: AuthResponsePayload{
 			SessionId: session.SessionID,
-			Username:  session.Username,
 			ExpiresAt: session.ExpiresAt,
+			Username:  session.Edges.User.Username,
 		},
 	}
 

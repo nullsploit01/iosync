@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -16,14 +17,17 @@ type Session struct {
 func (Session) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("session_id").Unique(),
-		field.String("username").NotEmpty(),
-		field.Time("created_at").Default(time.Now()),
-		field.Time("updated_at").Default(time.Now()),
+		field.Time("created_at").Default(time.Now),
+		field.Time("updated_at").Default(time.Now),
 		field.Time("expires_at"),
 	}
 }
 
 // Edges of the Session.
 func (Session) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("user", User.Type).
+			Ref("sessions").
+			Unique(),
+	}
 }
