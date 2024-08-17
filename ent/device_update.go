@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
 	"iosync/ent/user"
@@ -104,6 +105,21 @@ func (du *DeviceUpdate) SetUser(u *User) *DeviceUpdate {
 	return du.SetUserID(u.ID)
 }
 
+// AddAPIKeyIDs adds the "api_keys" edge to the ApiKey entity by IDs.
+func (du *DeviceUpdate) AddAPIKeyIDs(ids ...int) *DeviceUpdate {
+	du.mutation.AddAPIKeyIDs(ids...)
+	return du
+}
+
+// AddAPIKeys adds the "api_keys" edges to the ApiKey entity.
+func (du *DeviceUpdate) AddAPIKeys(a ...*ApiKey) *DeviceUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return du.AddAPIKeyIDs(ids...)
+}
+
 // Mutation returns the DeviceMutation object of the builder.
 func (du *DeviceUpdate) Mutation() *DeviceMutation {
 	return du.mutation
@@ -113,6 +129,27 @@ func (du *DeviceUpdate) Mutation() *DeviceMutation {
 func (du *DeviceUpdate) ClearUser() *DeviceUpdate {
 	du.mutation.ClearUser()
 	return du
+}
+
+// ClearAPIKeys clears all "api_keys" edges to the ApiKey entity.
+func (du *DeviceUpdate) ClearAPIKeys() *DeviceUpdate {
+	du.mutation.ClearAPIKeys()
+	return du
+}
+
+// RemoveAPIKeyIDs removes the "api_keys" edge to ApiKey entities by IDs.
+func (du *DeviceUpdate) RemoveAPIKeyIDs(ids ...int) *DeviceUpdate {
+	du.mutation.RemoveAPIKeyIDs(ids...)
+	return du
+}
+
+// RemoveAPIKeys removes "api_keys" edges to ApiKey entities.
+func (du *DeviceUpdate) RemoveAPIKeys(a ...*ApiKey) *DeviceUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return du.RemoveAPIKeyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -198,6 +235,51 @@ func (du *DeviceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.APIKeysTable,
+			Columns: []string{device.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedAPIKeysIDs(); len(nodes) > 0 && !du.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.APIKeysTable,
+			Columns: []string{device.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.APIKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.APIKeysTable,
+			Columns: []string{device.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -300,6 +382,21 @@ func (duo *DeviceUpdateOne) SetUser(u *User) *DeviceUpdateOne {
 	return duo.SetUserID(u.ID)
 }
 
+// AddAPIKeyIDs adds the "api_keys" edge to the ApiKey entity by IDs.
+func (duo *DeviceUpdateOne) AddAPIKeyIDs(ids ...int) *DeviceUpdateOne {
+	duo.mutation.AddAPIKeyIDs(ids...)
+	return duo
+}
+
+// AddAPIKeys adds the "api_keys" edges to the ApiKey entity.
+func (duo *DeviceUpdateOne) AddAPIKeys(a ...*ApiKey) *DeviceUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return duo.AddAPIKeyIDs(ids...)
+}
+
 // Mutation returns the DeviceMutation object of the builder.
 func (duo *DeviceUpdateOne) Mutation() *DeviceMutation {
 	return duo.mutation
@@ -309,6 +406,27 @@ func (duo *DeviceUpdateOne) Mutation() *DeviceMutation {
 func (duo *DeviceUpdateOne) ClearUser() *DeviceUpdateOne {
 	duo.mutation.ClearUser()
 	return duo
+}
+
+// ClearAPIKeys clears all "api_keys" edges to the ApiKey entity.
+func (duo *DeviceUpdateOne) ClearAPIKeys() *DeviceUpdateOne {
+	duo.mutation.ClearAPIKeys()
+	return duo
+}
+
+// RemoveAPIKeyIDs removes the "api_keys" edge to ApiKey entities by IDs.
+func (duo *DeviceUpdateOne) RemoveAPIKeyIDs(ids ...int) *DeviceUpdateOne {
+	duo.mutation.RemoveAPIKeyIDs(ids...)
+	return duo
+}
+
+// RemoveAPIKeys removes "api_keys" edges to ApiKey entities.
+func (duo *DeviceUpdateOne) RemoveAPIKeys(a ...*ApiKey) *DeviceUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return duo.RemoveAPIKeyIDs(ids...)
 }
 
 // Where appends a list predicates to the DeviceUpdate builder.
@@ -424,6 +542,51 @@ func (duo *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.APIKeysTable,
+			Columns: []string{device.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedAPIKeysIDs(); len(nodes) > 0 && !duo.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.APIKeysTable,
+			Columns: []string{device.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.APIKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.APIKeysTable,
+			Columns: []string{device.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

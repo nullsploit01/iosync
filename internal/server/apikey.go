@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"iosync/ent"
 	"net/http"
 	"strconv"
 
@@ -19,7 +20,14 @@ func (s *Server) CreateApiKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiKey, err := s.apiKeyService.CreateApiKey(context, deviceId)
+
 	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			s.ErrorJson(w, errors.New("device not found"), http.StatusBadRequest)
+			return
+		}
+
 		s.ErrorJson(w, err, http.StatusInternalServerError)
 		return
 	}

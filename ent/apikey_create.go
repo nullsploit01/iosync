@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"iosync/ent/apikey"
+	"iosync/ent/device"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,12 +24,6 @@ type ApiKeyCreate struct {
 // SetKey sets the "key" field.
 func (akc *ApiKeyCreate) SetKey(s string) *ApiKeyCreate {
 	akc.mutation.SetKey(s)
-	return akc
-}
-
-// SetDeviceID sets the "device_id" field.
-func (akc *ApiKeyCreate) SetDeviceID(i int) *ApiKeyCreate {
-	akc.mutation.SetDeviceID(i)
 	return akc
 }
 
@@ -86,6 +81,25 @@ func (akc *ApiKeyCreate) SetNillableUpdatedAt(t *time.Time) *ApiKeyCreate {
 		akc.SetUpdatedAt(*t)
 	}
 	return akc
+}
+
+// SetDeviceID sets the "device" edge to the Device entity by ID.
+func (akc *ApiKeyCreate) SetDeviceID(id int) *ApiKeyCreate {
+	akc.mutation.SetDeviceID(id)
+	return akc
+}
+
+// SetNillableDeviceID sets the "device" edge to the Device entity by ID if the given value is not nil.
+func (akc *ApiKeyCreate) SetNillableDeviceID(id *int) *ApiKeyCreate {
+	if id != nil {
+		akc = akc.SetDeviceID(*id)
+	}
+	return akc
+}
+
+// SetDevice sets the "device" edge to the Device entity.
+func (akc *ApiKeyCreate) SetDevice(d *Device) *ApiKeyCreate {
+	return akc.SetDeviceID(d.ID)
 }
 
 // Mutation returns the ApiKeyMutation object of the builder.
@@ -146,9 +160,6 @@ func (akc *ApiKeyCreate) check() error {
 	if _, ok := akc.mutation.Key(); !ok {
 		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "ApiKey.key"`)}
 	}
-	if _, ok := akc.mutation.DeviceID(); !ok {
-		return &ValidationError{Name: "device_id", err: errors.New(`ent: missing required field "ApiKey.device_id"`)}
-	}
 	if _, ok := akc.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "ApiKey.is_active"`)}
 	}
@@ -191,10 +202,6 @@ func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 		_spec.SetField(apikey.FieldKey, field.TypeString, value)
 		_node.Key = value
 	}
-	if value, ok := akc.mutation.DeviceID(); ok {
-		_spec.SetField(apikey.FieldDeviceID, field.TypeInt, value)
-		_node.DeviceID = value
-	}
 	if value, ok := akc.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
@@ -210,6 +217,23 @@ func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 	if value, ok := akc.mutation.UpdatedAt(); ok {
 		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := akc.mutation.DeviceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.DeviceTable,
+			Columns: []string{apikey.DeviceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.device_api_keys = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

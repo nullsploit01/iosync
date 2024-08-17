@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -57,11 +58,6 @@ func IDLTE(id int) predicate.ApiKey {
 // Key applies equality check predicate on the "key" field. It's identical to KeyEQ.
 func Key(v string) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldEQ(FieldKey, v))
-}
-
-// DeviceID applies equality check predicate on the "device_id" field. It's identical to DeviceIDEQ.
-func DeviceID(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldEQ(FieldDeviceID, v))
 }
 
 // IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
@@ -147,46 +143,6 @@ func KeyEqualFold(v string) predicate.ApiKey {
 // KeyContainsFold applies the ContainsFold predicate on the "key" field.
 func KeyContainsFold(v string) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldContainsFold(FieldKey, v))
-}
-
-// DeviceIDEQ applies the EQ predicate on the "device_id" field.
-func DeviceIDEQ(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldEQ(FieldDeviceID, v))
-}
-
-// DeviceIDNEQ applies the NEQ predicate on the "device_id" field.
-func DeviceIDNEQ(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldNEQ(FieldDeviceID, v))
-}
-
-// DeviceIDIn applies the In predicate on the "device_id" field.
-func DeviceIDIn(vs ...int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldIn(FieldDeviceID, vs...))
-}
-
-// DeviceIDNotIn applies the NotIn predicate on the "device_id" field.
-func DeviceIDNotIn(vs ...int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldNotIn(FieldDeviceID, vs...))
-}
-
-// DeviceIDGT applies the GT predicate on the "device_id" field.
-func DeviceIDGT(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldGT(FieldDeviceID, v))
-}
-
-// DeviceIDGTE applies the GTE predicate on the "device_id" field.
-func DeviceIDGTE(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldGTE(FieldDeviceID, v))
-}
-
-// DeviceIDLT applies the LT predicate on the "device_id" field.
-func DeviceIDLT(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldLT(FieldDeviceID, v))
-}
-
-// DeviceIDLTE applies the LTE predicate on the "device_id" field.
-func DeviceIDLTE(v int) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldLTE(FieldDeviceID, v))
 }
 
 // IsActiveEQ applies the EQ predicate on the "is_active" field.
@@ -317,6 +273,29 @@ func UpdatedAtLT(v time.Time) predicate.ApiKey {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasDevice applies the HasEdge predicate on the "device" edge.
+func HasDevice() predicate.ApiKey {
+	return predicate.ApiKey(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DeviceTable, DeviceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDeviceWith applies the HasEdge predicate on the "device" edge with a given conditions (other predicates).
+func HasDeviceWith(preds ...predicate.Device) predicate.ApiKey {
+	return predicate.ApiKey(func(s *sql.Selector) {
+		step := newDeviceStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

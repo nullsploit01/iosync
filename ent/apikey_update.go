@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"iosync/ent/apikey"
+	"iosync/ent/device"
 	"iosync/ent/predicate"
 	"time"
 
@@ -39,27 +40,6 @@ func (aku *ApiKeyUpdate) SetNillableKey(s *string) *ApiKeyUpdate {
 	if s != nil {
 		aku.SetKey(*s)
 	}
-	return aku
-}
-
-// SetDeviceID sets the "device_id" field.
-func (aku *ApiKeyUpdate) SetDeviceID(i int) *ApiKeyUpdate {
-	aku.mutation.ResetDeviceID()
-	aku.mutation.SetDeviceID(i)
-	return aku
-}
-
-// SetNillableDeviceID sets the "device_id" field if the given value is not nil.
-func (aku *ApiKeyUpdate) SetNillableDeviceID(i *int) *ApiKeyUpdate {
-	if i != nil {
-		aku.SetDeviceID(*i)
-	}
-	return aku
-}
-
-// AddDeviceID adds i to the "device_id" field.
-func (aku *ApiKeyUpdate) AddDeviceID(i int) *ApiKeyUpdate {
-	aku.mutation.AddDeviceID(i)
 	return aku
 }
 
@@ -119,9 +99,34 @@ func (aku *ApiKeyUpdate) SetNillableUpdatedAt(t *time.Time) *ApiKeyUpdate {
 	return aku
 }
 
+// SetDeviceID sets the "device" edge to the Device entity by ID.
+func (aku *ApiKeyUpdate) SetDeviceID(id int) *ApiKeyUpdate {
+	aku.mutation.SetDeviceID(id)
+	return aku
+}
+
+// SetNillableDeviceID sets the "device" edge to the Device entity by ID if the given value is not nil.
+func (aku *ApiKeyUpdate) SetNillableDeviceID(id *int) *ApiKeyUpdate {
+	if id != nil {
+		aku = aku.SetDeviceID(*id)
+	}
+	return aku
+}
+
+// SetDevice sets the "device" edge to the Device entity.
+func (aku *ApiKeyUpdate) SetDevice(d *Device) *ApiKeyUpdate {
+	return aku.SetDeviceID(d.ID)
+}
+
 // Mutation returns the ApiKeyMutation object of the builder.
 func (aku *ApiKeyUpdate) Mutation() *ApiKeyMutation {
 	return aku.mutation
+}
+
+// ClearDevice clears the "device" edge to the Device entity.
+func (aku *ApiKeyUpdate) ClearDevice() *ApiKeyUpdate {
+	aku.mutation.ClearDevice()
+	return aku
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -163,12 +168,6 @@ func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := aku.mutation.Key(); ok {
 		_spec.SetField(apikey.FieldKey, field.TypeString, value)
 	}
-	if value, ok := aku.mutation.DeviceID(); ok {
-		_spec.SetField(apikey.FieldDeviceID, field.TypeInt, value)
-	}
-	if value, ok := aku.mutation.AddedDeviceID(); ok {
-		_spec.AddField(apikey.FieldDeviceID, field.TypeInt, value)
-	}
 	if value, ok := aku.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 	}
@@ -180,6 +179,35 @@ func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := aku.mutation.UpdatedAt(); ok {
 		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if aku.mutation.DeviceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.DeviceTable,
+			Columns: []string{apikey.DeviceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := aku.mutation.DeviceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.DeviceTable,
+			Columns: []string{apikey.DeviceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, aku.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -212,27 +240,6 @@ func (akuo *ApiKeyUpdateOne) SetNillableKey(s *string) *ApiKeyUpdateOne {
 	if s != nil {
 		akuo.SetKey(*s)
 	}
-	return akuo
-}
-
-// SetDeviceID sets the "device_id" field.
-func (akuo *ApiKeyUpdateOne) SetDeviceID(i int) *ApiKeyUpdateOne {
-	akuo.mutation.ResetDeviceID()
-	akuo.mutation.SetDeviceID(i)
-	return akuo
-}
-
-// SetNillableDeviceID sets the "device_id" field if the given value is not nil.
-func (akuo *ApiKeyUpdateOne) SetNillableDeviceID(i *int) *ApiKeyUpdateOne {
-	if i != nil {
-		akuo.SetDeviceID(*i)
-	}
-	return akuo
-}
-
-// AddDeviceID adds i to the "device_id" field.
-func (akuo *ApiKeyUpdateOne) AddDeviceID(i int) *ApiKeyUpdateOne {
-	akuo.mutation.AddDeviceID(i)
 	return akuo
 }
 
@@ -292,9 +299,34 @@ func (akuo *ApiKeyUpdateOne) SetNillableUpdatedAt(t *time.Time) *ApiKeyUpdateOne
 	return akuo
 }
 
+// SetDeviceID sets the "device" edge to the Device entity by ID.
+func (akuo *ApiKeyUpdateOne) SetDeviceID(id int) *ApiKeyUpdateOne {
+	akuo.mutation.SetDeviceID(id)
+	return akuo
+}
+
+// SetNillableDeviceID sets the "device" edge to the Device entity by ID if the given value is not nil.
+func (akuo *ApiKeyUpdateOne) SetNillableDeviceID(id *int) *ApiKeyUpdateOne {
+	if id != nil {
+		akuo = akuo.SetDeviceID(*id)
+	}
+	return akuo
+}
+
+// SetDevice sets the "device" edge to the Device entity.
+func (akuo *ApiKeyUpdateOne) SetDevice(d *Device) *ApiKeyUpdateOne {
+	return akuo.SetDeviceID(d.ID)
+}
+
 // Mutation returns the ApiKeyMutation object of the builder.
 func (akuo *ApiKeyUpdateOne) Mutation() *ApiKeyMutation {
 	return akuo.mutation
+}
+
+// ClearDevice clears the "device" edge to the Device entity.
+func (akuo *ApiKeyUpdateOne) ClearDevice() *ApiKeyUpdateOne {
+	akuo.mutation.ClearDevice()
+	return akuo
 }
 
 // Where appends a list predicates to the ApiKeyUpdate builder.
@@ -366,12 +398,6 @@ func (akuo *ApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ApiKey, err er
 	if value, ok := akuo.mutation.Key(); ok {
 		_spec.SetField(apikey.FieldKey, field.TypeString, value)
 	}
-	if value, ok := akuo.mutation.DeviceID(); ok {
-		_spec.SetField(apikey.FieldDeviceID, field.TypeInt, value)
-	}
-	if value, ok := akuo.mutation.AddedDeviceID(); ok {
-		_spec.AddField(apikey.FieldDeviceID, field.TypeInt, value)
-	}
 	if value, ok := akuo.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 	}
@@ -383,6 +409,35 @@ func (akuo *ApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ApiKey, err er
 	}
 	if value, ok := akuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if akuo.mutation.DeviceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.DeviceTable,
+			Columns: []string{apikey.DeviceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := akuo.mutation.DeviceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   apikey.DeviceTable,
+			Columns: []string{apikey.DeviceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &ApiKey{config: akuo.config}
 	_spec.Assign = _node.assignValues

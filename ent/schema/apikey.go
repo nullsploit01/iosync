@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -16,7 +17,6 @@ type ApiKey struct {
 func (ApiKey) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("key"),
-		field.Int("device_id"),
 		field.Bool("is_active").Default(true),
 		field.Time("last_used").Default(time.Now),
 		field.Time("created_at").Default(time.Now),
@@ -26,5 +26,9 @@ func (ApiKey) Fields() []ent.Field {
 
 // Edges of the ApiKeys.
 func (ApiKey) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("device", Device.Type).
+			Ref("api_keys").
+			Unique(),
+	}
 }

@@ -9,20 +9,15 @@ type ApiKeyRepository struct {
 	dbClient *ent.Client
 }
 
-type CreateApiKeyPayload struct {
-	DeviceId int
-	ApiKey   string
-}
-
 func NewApiKeyRepository(dbClient *ent.Client) *ApiKeyRepository {
 	return &ApiKeyRepository{
 		dbClient: dbClient,
 	}
 }
 
-func (a *ApiKeyRepository) Create(ctx context.Context, payload *CreateApiKeyPayload) (*ent.ApiKey, error) {
+func (a *ApiKeyRepository) Create(ctx context.Context, apiKey string, device *ent.Device) (*ent.ApiKey, error) {
 	return a.dbClient.ApiKey.Create().
-		SetDeviceID(payload.DeviceId).
-		SetKey(payload.ApiKey).
+		SetKey(apiKey).
+		SetDevice(device).
 		Save(ctx)
 }

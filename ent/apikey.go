@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"iosync/ent/apikey"
+	"iosync/ent/device"
 	"strings"
 	"time"
 
@@ -19,8 +20,6 @@ type ApiKey struct {
 	ID int `json:"id,omitempty"`
 	// Key holds the value of the "key" field.
 	Key string `json:"key,omitempty"`
-	// DeviceID holds the value of the "device_id" field.
-	DeviceID int `json:"device_id,omitempty"`
 	// IsActive holds the value of the "is_active" field.
 	IsActive bool `json:"is_active,omitempty"`
 	// LastUsed holds the value of the "last_used" field.
@@ -28,8 +27,32 @@ type ApiKey struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	selectValues sql.SelectValues
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ApiKeyQuery when eager-loading is set.
+	Edges           ApiKeyEdges `json:"edges"`
+	device_api_keys *int
+	selectValues    sql.SelectValues
+}
+
+// ApiKeyEdges holds the relations/edges for other nodes in the graph.
+type ApiKeyEdges struct {
+	// Device holds the value of the device edge.
+	Device *Device `json:"device,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// DeviceOrErr returns the Device value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ApiKeyEdges) DeviceOrErr() (*Device, error) {
+	if e.Device != nil {
+		return e.Device, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: device.Label}
+	}
+	return nil, &NotLoadedError{edge: "device"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -39,12 +62,14 @@ func (*ApiKey) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case apikey.FieldIsActive:
 			values[i] = new(sql.NullBool)
-		case apikey.FieldID, apikey.FieldDeviceID:
+		case apikey.FieldID:
 			values[i] = new(sql.NullInt64)
 		case apikey.FieldKey:
 			values[i] = new(sql.NullString)
 		case apikey.FieldLastUsed, apikey.FieldCreatedAt, apikey.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case apikey.ForeignKeys[0]: // device_api_keys
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -72,12 +97,6 @@ func (ak *ApiKey) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ak.Key = value.String
 			}
-		case apikey.FieldDeviceID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field device_id", values[i])
-			} else if value.Valid {
-				ak.DeviceID = int(value.Int64)
-			}
 		case apikey.FieldIsActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_active", values[i])
@@ -102,6 +121,13 @@ func (ak *ApiKey) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ak.UpdatedAt = value.Time
 			}
+		case apikey.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field device_api_keys", value)
+			} else if value.Valid {
+				ak.device_api_keys = new(int)
+				*ak.device_api_keys = int(value.Int64)
+			}
 		default:
 			ak.selectValues.Set(columns[i], values[i])
 		}
@@ -113,6 +139,11 @@ func (ak *ApiKey) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (ak *ApiKey) Value(name string) (ent.Value, error) {
 	return ak.selectValues.Get(name)
+}
+
+// QueryDevice queries the "device" edge of the ApiKey entity.
+func (ak *ApiKey) QueryDevice() *DeviceQuery {
+	return NewApiKeyClient(ak.config).QueryDevice(ak)
 }
 
 // Update returns a builder for updating this ApiKey.
@@ -140,9 +171,6 @@ func (ak *ApiKey) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", ak.ID))
 	builder.WriteString("key=")
 	builder.WriteString(ak.Key)
-	builder.WriteString(", ")
-	builder.WriteString("device_id=")
-	builder.WriteString(fmt.Sprintf("%v", ak.DeviceID))
 	builder.WriteString(", ")
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", ak.IsActive))

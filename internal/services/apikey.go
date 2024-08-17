@@ -10,13 +10,16 @@ import (
 
 type ApiKeyService struct {
 	apiKeyRepository *repositories.ApiKeyRepository
+	deviceRepository *repositories.DeviceRepository
 }
 
 func NewApiKeyService(dbClient *ent.Client) *ApiKeyService {
 	apiKeyRepository := repositories.NewApiKeyRepository(dbClient)
+	deviceRepository := repositories.NewDeviceRepository(dbClient)
 
 	return &ApiKeyService{
 		apiKeyRepository: apiKeyRepository,
+		deviceRepository: deviceRepository,
 	}
 }
 
@@ -26,10 +29,10 @@ func (a *ApiKeyService) CreateApiKey(ctx context.Context, deviceId int) (*ent.Ap
 		return nil, errors.New("something went wrong")
 	}
 
-	payload := repositories.CreateApiKeyPayload{
-		ApiKey:   apiKey,
-		DeviceId: deviceId,
+	device, err := a.deviceRepository.Get(ctx, deviceId)
+	if err != nil {
+		return nil, err
 	}
 
-	return a.apiKeyRepository.Create(ctx, &payload)
+	return a.apiKeyRepository.Create(ctx, apiKey, device)
 }

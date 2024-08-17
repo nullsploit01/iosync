@@ -4,7 +4,9 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
+	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
 	"iosync/ent/user"
@@ -19,12 +21,13 @@ import (
 // DeviceQuery is the builder for querying Device entities.
 type DeviceQuery struct {
 	config
-	ctx        *QueryContext
-	order      []device.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Device
-	withUser   *UserQuery
-	withFKs    bool
+	ctx         *QueryContext
+	order       []device.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Device
+	withUser    *UserQuery
+	withAPIKeys *ApiKeyQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +79,28 @@ func (dq *DeviceQuery) QueryUser() *UserQuery {
 			sqlgraph.From(device.Table, device.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, device.UserTable, device.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAPIKeys chains the current query on the "api_keys" edge.
+func (dq *DeviceQuery) QueryAPIKeys() *ApiKeyQuery {
+	query := (&ApiKeyClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(device.Table, device.FieldID, selector),
+			sqlgraph.To(apikey.Table, apikey.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, device.APIKeysTable, device.APIKeysColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +295,13 @@ func (dq *DeviceQuery) Clone() *DeviceQuery {
 		return nil
 	}
 	return &DeviceQuery{
-		config:     dq.config,
-		ctx:        dq.ctx.Clone(),
-		order:      append([]device.OrderOption{}, dq.order...),
-		inters:     append([]Interceptor{}, dq.inters...),
-		predicates: append([]predicate.Device{}, dq.predicates...),
-		withUser:   dq.withUser.Clone(),
+		config:      dq.config,
+		ctx:         dq.ctx.Clone(),
+		order:       append([]device.OrderOption{}, dq.order...),
+		inters:      append([]Interceptor{}, dq.inters...),
+		predicates:  append([]predicate.Device{}, dq.predicates...),
+		withUser:    dq.withUser.Clone(),
+		withAPIKeys: dq.withAPIKeys.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -290,6 +316,17 @@ func (dq *DeviceQuery) WithUser(opts ...func(*UserQuery)) *DeviceQuery {
 		opt(query)
 	}
 	dq.withUser = query
+	return dq
+}
+
+// WithAPIKeys tells the query-builder to eager-load the nodes that are connected to
+// the "api_keys" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DeviceQuery) WithAPIKeys(opts ...func(*ApiKeyQuery)) *DeviceQuery {
+	query := (&ApiKeyClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withAPIKeys = query
 	return dq
 }
 
@@ -372,8 +409,9 @@ func (dq *DeviceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Devic
 		nodes       = []*Device{}
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			dq.withUser != nil,
+			dq.withAPIKeys != nil,
 		}
 	)
 	if dq.withUser != nil {
@@ -403,6 +441,13 @@ func (dq *DeviceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Devic
 	if query := dq.withUser; query != nil {
 		if err := dq.loadUser(ctx, query, nodes, nil,
 			func(n *Device, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withAPIKeys; query != nil {
+		if err := dq.loadAPIKeys(ctx, query, nodes,
+			func(n *Device) { n.Edges.APIKeys = []*ApiKey{} },
+			func(n *Device, e *ApiKey) { n.Edges.APIKeys = append(n.Edges.APIKeys, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -438,6 +483,37 @@ func (dq *DeviceQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (dq *DeviceQuery) loadAPIKeys(ctx context.Context, query *ApiKeyQuery, nodes []*Device, init func(*Device), assign func(*Device, *ApiKey)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Device)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ApiKey(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(device.APIKeysColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.device_api_keys
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "device_api_keys" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "device_api_keys" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
