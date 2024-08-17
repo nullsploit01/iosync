@@ -11,7 +11,7 @@ import (
 
 	"iosync/ent/migrate"
 
-	"iosync/ent/apikeys"
+	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/session"
 	"iosync/ent/user"
@@ -19,7 +19,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -27,8 +26,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// ApiKeys is the client for interacting with the ApiKeys builders.
-	ApiKeys *ApiKeysClient
+	// ApiKey is the client for interacting with the ApiKey builders.
+	ApiKey *ApiKeyClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
 	// Session is the client for interacting with the Session builders.
@@ -46,7 +45,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.ApiKeys = NewApiKeysClient(c.config)
+	c.ApiKey = NewApiKeyClient(c.config)
 	c.Device = NewDeviceClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -142,7 +141,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
-		ApiKeys: NewApiKeysClient(cfg),
+		ApiKey:  NewApiKeyClient(cfg),
 		Device:  NewDeviceClient(cfg),
 		Session: NewSessionClient(cfg),
 		User:    NewUserClient(cfg),
@@ -165,7 +164,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
-		ApiKeys: NewApiKeysClient(cfg),
+		ApiKey:  NewApiKeyClient(cfg),
 		Device:  NewDeviceClient(cfg),
 		Session: NewSessionClient(cfg),
 		User:    NewUserClient(cfg),
@@ -175,7 +174,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		ApiKeys.
+//		ApiKey.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -197,7 +196,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.ApiKeys.Use(hooks...)
+	c.ApiKey.Use(hooks...)
 	c.Device.Use(hooks...)
 	c.Session.Use(hooks...)
 	c.User.Use(hooks...)
@@ -206,7 +205,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.ApiKeys.Intercept(interceptors...)
+	c.ApiKey.Intercept(interceptors...)
 	c.Device.Intercept(interceptors...)
 	c.Session.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
@@ -215,8 +214,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *ApiKeysMutation:
-		return c.ApiKeys.mutate(ctx, m)
+	case *ApiKeyMutation:
+		return c.ApiKey.mutate(ctx, m)
 	case *DeviceMutation:
 		return c.Device.mutate(ctx, m)
 	case *SessionMutation:
@@ -228,107 +227,107 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	}
 }
 
-// ApiKeysClient is a client for the ApiKeys schema.
-type ApiKeysClient struct {
+// ApiKeyClient is a client for the ApiKey schema.
+type ApiKeyClient struct {
 	config
 }
 
-// NewApiKeysClient returns a client for the ApiKeys from the given config.
-func NewApiKeysClient(c config) *ApiKeysClient {
-	return &ApiKeysClient{config: c}
+// NewApiKeyClient returns a client for the ApiKey from the given config.
+func NewApiKeyClient(c config) *ApiKeyClient {
+	return &ApiKeyClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `apikeys.Hooks(f(g(h())))`.
-func (c *ApiKeysClient) Use(hooks ...Hook) {
-	c.hooks.ApiKeys = append(c.hooks.ApiKeys, hooks...)
+// A call to `Use(f, g, h)` equals to `apikey.Hooks(f(g(h())))`.
+func (c *ApiKeyClient) Use(hooks ...Hook) {
+	c.hooks.ApiKey = append(c.hooks.ApiKey, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `apikeys.Intercept(f(g(h())))`.
-func (c *ApiKeysClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ApiKeys = append(c.inters.ApiKeys, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `apikey.Intercept(f(g(h())))`.
+func (c *ApiKeyClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ApiKey = append(c.inters.ApiKey, interceptors...)
 }
 
-// Create returns a builder for creating a ApiKeys entity.
-func (c *ApiKeysClient) Create() *ApiKeysCreate {
-	mutation := newApiKeysMutation(c.config, OpCreate)
-	return &ApiKeysCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a ApiKey entity.
+func (c *ApiKeyClient) Create() *ApiKeyCreate {
+	mutation := newApiKeyMutation(c.config, OpCreate)
+	return &ApiKeyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of ApiKeys entities.
-func (c *ApiKeysClient) CreateBulk(builders ...*ApiKeysCreate) *ApiKeysCreateBulk {
-	return &ApiKeysCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of ApiKey entities.
+func (c *ApiKeyClient) CreateBulk(builders ...*ApiKeyCreate) *ApiKeyCreateBulk {
+	return &ApiKeyCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *ApiKeysClient) MapCreateBulk(slice any, setFunc func(*ApiKeysCreate, int)) *ApiKeysCreateBulk {
+func (c *ApiKeyClient) MapCreateBulk(slice any, setFunc func(*ApiKeyCreate, int)) *ApiKeyCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &ApiKeysCreateBulk{err: fmt.Errorf("calling to ApiKeysClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &ApiKeyCreateBulk{err: fmt.Errorf("calling to ApiKeyClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*ApiKeysCreate, rv.Len())
+	builders := make([]*ApiKeyCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &ApiKeysCreateBulk{config: c.config, builders: builders}
+	return &ApiKeyCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for ApiKeys.
-func (c *ApiKeysClient) Update() *ApiKeysUpdate {
-	mutation := newApiKeysMutation(c.config, OpUpdate)
-	return &ApiKeysUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for ApiKey.
+func (c *ApiKeyClient) Update() *ApiKeyUpdate {
+	mutation := newApiKeyMutation(c.config, OpUpdate)
+	return &ApiKeyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ApiKeysClient) UpdateOne(ak *ApiKeys) *ApiKeysUpdateOne {
-	mutation := newApiKeysMutation(c.config, OpUpdateOne, withApiKeys(ak))
-	return &ApiKeysUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ApiKeyClient) UpdateOne(ak *ApiKey) *ApiKeyUpdateOne {
+	mutation := newApiKeyMutation(c.config, OpUpdateOne, withApiKey(ak))
+	return &ApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ApiKeysClient) UpdateOneID(id int) *ApiKeysUpdateOne {
-	mutation := newApiKeysMutation(c.config, OpUpdateOne, withApiKeysID(id))
-	return &ApiKeysUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ApiKeyClient) UpdateOneID(id int) *ApiKeyUpdateOne {
+	mutation := newApiKeyMutation(c.config, OpUpdateOne, withApiKeyID(id))
+	return &ApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for ApiKeys.
-func (c *ApiKeysClient) Delete() *ApiKeysDelete {
-	mutation := newApiKeysMutation(c.config, OpDelete)
-	return &ApiKeysDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for ApiKey.
+func (c *ApiKeyClient) Delete() *ApiKeyDelete {
+	mutation := newApiKeyMutation(c.config, OpDelete)
+	return &ApiKeyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ApiKeysClient) DeleteOne(ak *ApiKeys) *ApiKeysDeleteOne {
+func (c *ApiKeyClient) DeleteOne(ak *ApiKey) *ApiKeyDeleteOne {
 	return c.DeleteOneID(ak.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ApiKeysClient) DeleteOneID(id int) *ApiKeysDeleteOne {
-	builder := c.Delete().Where(apikeys.ID(id))
+func (c *ApiKeyClient) DeleteOneID(id int) *ApiKeyDeleteOne {
+	builder := c.Delete().Where(apikey.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ApiKeysDeleteOne{builder}
+	return &ApiKeyDeleteOne{builder}
 }
 
-// Query returns a query builder for ApiKeys.
-func (c *ApiKeysClient) Query() *ApiKeysQuery {
-	return &ApiKeysQuery{
+// Query returns a query builder for ApiKey.
+func (c *ApiKeyClient) Query() *ApiKeyQuery {
+	return &ApiKeyQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeApiKeys},
+		ctx:    &QueryContext{Type: TypeApiKey},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a ApiKeys entity by its id.
-func (c *ApiKeysClient) Get(ctx context.Context, id int) (*ApiKeys, error) {
-	return c.Query().Where(apikeys.ID(id)).Only(ctx)
+// Get returns a ApiKey entity by its id.
+func (c *ApiKeyClient) Get(ctx context.Context, id int) (*ApiKey, error) {
+	return c.Query().Where(apikey.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ApiKeysClient) GetX(ctx context.Context, id int) *ApiKeys {
+func (c *ApiKeyClient) GetX(ctx context.Context, id int) *ApiKey {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -337,27 +336,27 @@ func (c *ApiKeysClient) GetX(ctx context.Context, id int) *ApiKeys {
 }
 
 // Hooks returns the client hooks.
-func (c *ApiKeysClient) Hooks() []Hook {
-	return c.hooks.ApiKeys
+func (c *ApiKeyClient) Hooks() []Hook {
+	return c.hooks.ApiKey
 }
 
 // Interceptors returns the client interceptors.
-func (c *ApiKeysClient) Interceptors() []Interceptor {
-	return c.inters.ApiKeys
+func (c *ApiKeyClient) Interceptors() []Interceptor {
+	return c.inters.ApiKey
 }
 
-func (c *ApiKeysClient) mutate(ctx context.Context, m *ApiKeysMutation) (Value, error) {
+func (c *ApiKeyClient) mutate(ctx context.Context, m *ApiKeyMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&ApiKeysCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ApiKeyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&ApiKeysUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ApiKeyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&ApiKeysUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&ApiKeysDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&ApiKeyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown ApiKeys mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown ApiKey mutation op: %q", m.Op())
 	}
 }
 
@@ -602,22 +601,6 @@ func (c *SessionClient) GetX(ctx context.Context, id int) *Session {
 	return obj
 }
 
-// QueryUser queries the user edge of a Session.
-func (c *SessionClient) QueryUser(s *Session) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(session.Table, session.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, session.UserTable, session.UserPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *SessionClient) Hooks() []Hook {
 	return c.hooks.Session
@@ -751,22 +734,6 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 	return obj
 }
 
-// QuerySessions queries the sessions edge of a User.
-func (c *UserClient) QuerySessions(u *User) *SessionQuery {
-	query := (&SessionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(session.Table, session.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.SessionsTable, user.SessionsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -795,9 +762,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ApiKeys, Device, Session, User []ent.Hook
+		ApiKey, Device, Session, User []ent.Hook
 	}
 	inters struct {
-		ApiKeys, Device, Session, User []ent.Interceptor
+		ApiKey, Device, Session, User []ent.Interceptor
 	}
 )

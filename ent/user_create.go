@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"iosync/ent/session"
 	"iosync/ent/user"
 	"time"
 
@@ -93,21 +92,6 @@ func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
 		uc.SetUpdatedAt(*t)
 	}
 	return uc
-}
-
-// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
-func (uc *UserCreate) AddSessionIDs(ids ...int) *UserCreate {
-	uc.mutation.AddSessionIDs(ids...)
-	return uc
-}
-
-// AddSessions adds the "sessions" edges to the Session entity.
-func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uc.AddSessionIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -239,22 +223,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   user.SessionsTable,
-			Columns: user.SessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

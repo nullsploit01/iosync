@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"iosync/ent/apikeys"
+	"iosync/ent/apikey"
 	"strings"
 	"time"
 
@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// ApiKeys is the model entity for the ApiKeys schema.
-type ApiKeys struct {
+// ApiKey is the model entity for the ApiKey schema.
+type ApiKey struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -33,17 +33,17 @@ type ApiKeys struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ApiKeys) scanValues(columns []string) ([]any, error) {
+func (*ApiKey) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case apikeys.FieldIsActive:
+		case apikey.FieldIsActive:
 			values[i] = new(sql.NullBool)
-		case apikeys.FieldID, apikeys.FieldDeviceID:
+		case apikey.FieldID, apikey.FieldDeviceID:
 			values[i] = new(sql.NullInt64)
-		case apikeys.FieldKey:
+		case apikey.FieldKey:
 			values[i] = new(sql.NullString)
-		case apikeys.FieldLastUsed, apikeys.FieldCreatedAt, apikeys.FieldUpdatedAt:
+		case apikey.FieldLastUsed, apikey.FieldCreatedAt, apikey.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -53,50 +53,50 @@ func (*ApiKeys) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the ApiKeys fields.
-func (ak *ApiKeys) assignValues(columns []string, values []any) error {
+// to the ApiKey fields.
+func (ak *ApiKey) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case apikeys.FieldID:
+		case apikey.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			ak.ID = int(value.Int64)
-		case apikeys.FieldKey:
+		case apikey.FieldKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field key", values[i])
 			} else if value.Valid {
 				ak.Key = value.String
 			}
-		case apikeys.FieldDeviceID:
+		case apikey.FieldDeviceID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field device_id", values[i])
 			} else if value.Valid {
 				ak.DeviceID = int(value.Int64)
 			}
-		case apikeys.FieldLastUsed:
+		case apikey.FieldLastUsed:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_used", values[i])
 			} else if value.Valid {
 				ak.LastUsed = value.Time
 			}
-		case apikeys.FieldIsActive:
+		case apikey.FieldIsActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_active", values[i])
 			} else if value.Valid {
 				ak.IsActive = value.Bool
 			}
-		case apikeys.FieldCreatedAt:
+		case apikey.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				ak.CreatedAt = value.Time
 			}
-		case apikeys.FieldUpdatedAt:
+		case apikey.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
@@ -109,34 +109,34 @@ func (ak *ApiKeys) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the ApiKeys.
+// Value returns the ent.Value that was dynamically selected and assigned to the ApiKey.
 // This includes values selected through modifiers, order, etc.
-func (ak *ApiKeys) Value(name string) (ent.Value, error) {
+func (ak *ApiKey) Value(name string) (ent.Value, error) {
 	return ak.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this ApiKeys.
-// Note that you need to call ApiKeys.Unwrap() before calling this method if this ApiKeys
+// Update returns a builder for updating this ApiKey.
+// Note that you need to call ApiKey.Unwrap() before calling this method if this ApiKey
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ak *ApiKeys) Update() *ApiKeysUpdateOne {
-	return NewApiKeysClient(ak.config).UpdateOne(ak)
+func (ak *ApiKey) Update() *ApiKeyUpdateOne {
+	return NewApiKeyClient(ak.config).UpdateOne(ak)
 }
 
-// Unwrap unwraps the ApiKeys entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the ApiKey entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ak *ApiKeys) Unwrap() *ApiKeys {
+func (ak *ApiKey) Unwrap() *ApiKey {
 	_tx, ok := ak.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: ApiKeys is not a transactional entity")
+		panic("ent: ApiKey is not a transactional entity")
 	}
 	ak.config.driver = _tx.drv
 	return ak
 }
 
 // String implements the fmt.Stringer.
-func (ak *ApiKeys) String() string {
+func (ak *ApiKey) String() string {
 	var builder strings.Builder
-	builder.WriteString("ApiKeys(")
+	builder.WriteString("ApiKey(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ak.ID))
 	builder.WriteString("key=")
 	builder.WriteString(ak.Key)
@@ -159,5 +159,5 @@ func (ak *ApiKeys) String() string {
 	return builder.String()
 }
 
-// ApiKeysSlice is a parsable slice of ApiKeys.
-type ApiKeysSlice []*ApiKeys
+// ApiKeys is a parsable slice of ApiKey.
+type ApiKeys []*ApiKey

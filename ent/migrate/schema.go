@@ -78,42 +78,14 @@ var (
 			},
 		},
 	}
-	// UserSessionsColumns holds the columns for the "user_sessions" table.
-	UserSessionsColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeInt},
-		{Name: "session_id", Type: field.TypeInt},
-	}
-	// UserSessionsTable holds the schema information for the "user_sessions" table.
-	UserSessionsTable = &schema.Table{
-		Name:       "user_sessions",
-		Columns:    UserSessionsColumns,
-		PrimaryKey: []*schema.Column{UserSessionsColumns[0], UserSessionsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_sessions_user_id",
-				Columns:    []*schema.Column{UserSessionsColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_sessions_session_id",
-				Columns:    []*schema.Column{UserSessionsColumns[1]},
-				RefColumns: []*schema.Column{SessionsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		APIKeysTable,
 		DevicesTable,
 		SessionsTable,
 		UsersTable,
-		UserSessionsTable,
 	}
 )
 
 func init() {
-	UserSessionsTable.ForeignKeys[0].RefTable = UsersTable
-	UserSessionsTable.ForeignKeys[1].RefTable = SessionsTable
 }

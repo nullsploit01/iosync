@@ -7,13 +7,13 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// ApiKeys holds the schema definition for the ApiKeys entity.
-type ApiKeys struct {
+// ApiKey holds the schema definition for the ApiKey entity.
+type ApiKey struct {
 	ent.Schema
 }
 
 // Fields of the ApiKeys.
-func (ApiKeys) Fields() []ent.Field {
+func (ApiKey) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("key"),
 		field.Int("device_id"),
@@ -25,6 +25,6 @@ func (ApiKeys) Fields() []ent.Field {
 }
 
 // Edges of the ApiKeys.
-func (ApiKeys) Edges() []ent.Edge {
+func (ApiKey) Edges() []ent.Edge {
 	return nil
 }

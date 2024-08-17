@@ -6,46 +6,46 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"iosync/ent/apikeys"
+	"iosync/ent/apikey"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// ApiKeysCreate is the builder for creating a ApiKeys entity.
-type ApiKeysCreate struct {
+// ApiKeyCreate is the builder for creating a ApiKey entity.
+type ApiKeyCreate struct {
 	config
-	mutation *ApiKeysMutation
+	mutation *ApiKeyMutation
 	hooks    []Hook
 }
 
 // SetKey sets the "key" field.
-func (akc *ApiKeysCreate) SetKey(s string) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetKey(s string) *ApiKeyCreate {
 	akc.mutation.SetKey(s)
 	return akc
 }
 
 // SetDeviceID sets the "device_id" field.
-func (akc *ApiKeysCreate) SetDeviceID(i int) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetDeviceID(i int) *ApiKeyCreate {
 	akc.mutation.SetDeviceID(i)
 	return akc
 }
 
 // SetLastUsed sets the "last_used" field.
-func (akc *ApiKeysCreate) SetLastUsed(t time.Time) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetLastUsed(t time.Time) *ApiKeyCreate {
 	akc.mutation.SetLastUsed(t)
 	return akc
 }
 
 // SetIsActive sets the "is_active" field.
-func (akc *ApiKeysCreate) SetIsActive(b bool) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetIsActive(b bool) *ApiKeyCreate {
 	akc.mutation.SetIsActive(b)
 	return akc
 }
 
 // SetNillableIsActive sets the "is_active" field if the given value is not nil.
-func (akc *ApiKeysCreate) SetNillableIsActive(b *bool) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetNillableIsActive(b *bool) *ApiKeyCreate {
 	if b != nil {
 		akc.SetIsActive(*b)
 	}
@@ -53,13 +53,13 @@ func (akc *ApiKeysCreate) SetNillableIsActive(b *bool) *ApiKeysCreate {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (akc *ApiKeysCreate) SetCreatedAt(t time.Time) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetCreatedAt(t time.Time) *ApiKeyCreate {
 	akc.mutation.SetCreatedAt(t)
 	return akc
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (akc *ApiKeysCreate) SetNillableCreatedAt(t *time.Time) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetNillableCreatedAt(t *time.Time) *ApiKeyCreate {
 	if t != nil {
 		akc.SetCreatedAt(*t)
 	}
@@ -67,32 +67,32 @@ func (akc *ApiKeysCreate) SetNillableCreatedAt(t *time.Time) *ApiKeysCreate {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (akc *ApiKeysCreate) SetUpdatedAt(t time.Time) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetUpdatedAt(t time.Time) *ApiKeyCreate {
 	akc.mutation.SetUpdatedAt(t)
 	return akc
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (akc *ApiKeysCreate) SetNillableUpdatedAt(t *time.Time) *ApiKeysCreate {
+func (akc *ApiKeyCreate) SetNillableUpdatedAt(t *time.Time) *ApiKeyCreate {
 	if t != nil {
 		akc.SetUpdatedAt(*t)
 	}
 	return akc
 }
 
-// Mutation returns the ApiKeysMutation object of the builder.
-func (akc *ApiKeysCreate) Mutation() *ApiKeysMutation {
+// Mutation returns the ApiKeyMutation object of the builder.
+func (akc *ApiKeyCreate) Mutation() *ApiKeyMutation {
 	return akc.mutation
 }
 
-// Save creates the ApiKeys in the database.
-func (akc *ApiKeysCreate) Save(ctx context.Context) (*ApiKeys, error) {
+// Save creates the ApiKey in the database.
+func (akc *ApiKeyCreate) Save(ctx context.Context) (*ApiKey, error) {
 	akc.defaults()
 	return withHooks(ctx, akc.sqlSave, akc.mutation, akc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (akc *ApiKeysCreate) SaveX(ctx context.Context) *ApiKeys {
+func (akc *ApiKeyCreate) SaveX(ctx context.Context) *ApiKey {
 	v, err := akc.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -101,58 +101,58 @@ func (akc *ApiKeysCreate) SaveX(ctx context.Context) *ApiKeys {
 }
 
 // Exec executes the query.
-func (akc *ApiKeysCreate) Exec(ctx context.Context) error {
+func (akc *ApiKeyCreate) Exec(ctx context.Context) error {
 	_, err := akc.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (akc *ApiKeysCreate) ExecX(ctx context.Context) {
+func (akc *ApiKeyCreate) ExecX(ctx context.Context) {
 	if err := akc.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (akc *ApiKeysCreate) defaults() {
+func (akc *ApiKeyCreate) defaults() {
 	if _, ok := akc.mutation.IsActive(); !ok {
-		v := apikeys.DefaultIsActive
+		v := apikey.DefaultIsActive
 		akc.mutation.SetIsActive(v)
 	}
 	if _, ok := akc.mutation.CreatedAt(); !ok {
-		v := apikeys.DefaultCreatedAt
+		v := apikey.DefaultCreatedAt
 		akc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := akc.mutation.UpdatedAt(); !ok {
-		v := apikeys.DefaultUpdatedAt
+		v := apikey.DefaultUpdatedAt
 		akc.mutation.SetUpdatedAt(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (akc *ApiKeysCreate) check() error {
+func (akc *ApiKeyCreate) check() error {
 	if _, ok := akc.mutation.Key(); !ok {
-		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "ApiKeys.key"`)}
+		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "ApiKey.key"`)}
 	}
 	if _, ok := akc.mutation.DeviceID(); !ok {
-		return &ValidationError{Name: "device_id", err: errors.New(`ent: missing required field "ApiKeys.device_id"`)}
+		return &ValidationError{Name: "device_id", err: errors.New(`ent: missing required field "ApiKey.device_id"`)}
 	}
 	if _, ok := akc.mutation.LastUsed(); !ok {
-		return &ValidationError{Name: "last_used", err: errors.New(`ent: missing required field "ApiKeys.last_used"`)}
+		return &ValidationError{Name: "last_used", err: errors.New(`ent: missing required field "ApiKey.last_used"`)}
 	}
 	if _, ok := akc.mutation.IsActive(); !ok {
-		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "ApiKeys.is_active"`)}
+		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "ApiKey.is_active"`)}
 	}
 	if _, ok := akc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ApiKeys.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ApiKey.created_at"`)}
 	}
 	if _, ok := akc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ApiKeys.updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ApiKey.updated_at"`)}
 	}
 	return nil
 }
 
-func (akc *ApiKeysCreate) sqlSave(ctx context.Context) (*ApiKeys, error) {
+func (akc *ApiKeyCreate) sqlSave(ctx context.Context) (*ApiKey, error) {
 	if err := akc.check(); err != nil {
 		return nil, err
 	}
@@ -170,59 +170,59 @@ func (akc *ApiKeysCreate) sqlSave(ctx context.Context) (*ApiKeys, error) {
 	return _node, nil
 }
 
-func (akc *ApiKeysCreate) createSpec() (*ApiKeys, *sqlgraph.CreateSpec) {
+func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 	var (
-		_node = &ApiKeys{config: akc.config}
-		_spec = sqlgraph.NewCreateSpec(apikeys.Table, sqlgraph.NewFieldSpec(apikeys.FieldID, field.TypeInt))
+		_node = &ApiKey{config: akc.config}
+		_spec = sqlgraph.NewCreateSpec(apikey.Table, sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt))
 	)
 	if value, ok := akc.mutation.Key(); ok {
-		_spec.SetField(apikeys.FieldKey, field.TypeString, value)
+		_spec.SetField(apikey.FieldKey, field.TypeString, value)
 		_node.Key = value
 	}
 	if value, ok := akc.mutation.DeviceID(); ok {
-		_spec.SetField(apikeys.FieldDeviceID, field.TypeInt, value)
+		_spec.SetField(apikey.FieldDeviceID, field.TypeInt, value)
 		_node.DeviceID = value
 	}
 	if value, ok := akc.mutation.LastUsed(); ok {
-		_spec.SetField(apikeys.FieldLastUsed, field.TypeTime, value)
+		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
 		_node.LastUsed = value
 	}
 	if value, ok := akc.mutation.IsActive(); ok {
-		_spec.SetField(apikeys.FieldIsActive, field.TypeBool, value)
+		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
 	}
 	if value, ok := akc.mutation.CreatedAt(); ok {
-		_spec.SetField(apikeys.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(apikey.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := akc.mutation.UpdatedAt(); ok {
-		_spec.SetField(apikeys.FieldUpdatedAt, field.TypeTime, value)
+		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }
 
-// ApiKeysCreateBulk is the builder for creating many ApiKeys entities in bulk.
-type ApiKeysCreateBulk struct {
+// ApiKeyCreateBulk is the builder for creating many ApiKey entities in bulk.
+type ApiKeyCreateBulk struct {
 	config
 	err      error
-	builders []*ApiKeysCreate
+	builders []*ApiKeyCreate
 }
 
-// Save creates the ApiKeys entities in the database.
-func (akcb *ApiKeysCreateBulk) Save(ctx context.Context) ([]*ApiKeys, error) {
+// Save creates the ApiKey entities in the database.
+func (akcb *ApiKeyCreateBulk) Save(ctx context.Context) ([]*ApiKey, error) {
 	if akcb.err != nil {
 		return nil, akcb.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(akcb.builders))
-	nodes := make([]*ApiKeys, len(akcb.builders))
+	nodes := make([]*ApiKey, len(akcb.builders))
 	mutators := make([]Mutator, len(akcb.builders))
 	for i := range akcb.builders {
 		func(i int, root context.Context) {
 			builder := akcb.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*ApiKeysMutation)
+				mutation, ok := m.(*ApiKeyMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -269,7 +269,7 @@ func (akcb *ApiKeysCreateBulk) Save(ctx context.Context) ([]*ApiKeys, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (akcb *ApiKeysCreateBulk) SaveX(ctx context.Context) []*ApiKeys {
+func (akcb *ApiKeyCreateBulk) SaveX(ctx context.Context) []*ApiKey {
 	v, err := akcb.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -278,13 +278,13 @@ func (akcb *ApiKeysCreateBulk) SaveX(ctx context.Context) []*ApiKeys {
 }
 
 // Exec executes the query.
-func (akcb *ApiKeysCreateBulk) Exec(ctx context.Context) error {
+func (akcb *ApiKeyCreateBulk) Exec(ctx context.Context) error {
 	_, err := akcb.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (akcb *ApiKeysCreateBulk) ExecX(ctx context.Context) {
+func (akcb *ApiKeyCreateBulk) ExecX(ctx context.Context) {
 	if err := akcb.Exec(ctx); err != nil {
 		panic(err)
 	}

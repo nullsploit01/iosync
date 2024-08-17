@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"iosync/ent/predicate"
 	"iosync/ent/session"
-	"iosync/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -99,45 +98,9 @@ func (su *SessionUpdate) SetNillableExpiresAt(t *time.Time) *SessionUpdate {
 	return su
 }
 
-// AddUserIDs adds the "user" edge to the User entity by IDs.
-func (su *SessionUpdate) AddUserIDs(ids ...int) *SessionUpdate {
-	su.mutation.AddUserIDs(ids...)
-	return su
-}
-
-// AddUser adds the "user" edges to the User entity.
-func (su *SessionUpdate) AddUser(u ...*User) *SessionUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return su.AddUserIDs(ids...)
-}
-
 // Mutation returns the SessionMutation object of the builder.
 func (su *SessionUpdate) Mutation() *SessionMutation {
 	return su.mutation
-}
-
-// ClearUser clears all "user" edges to the User entity.
-func (su *SessionUpdate) ClearUser() *SessionUpdate {
-	su.mutation.ClearUser()
-	return su
-}
-
-// RemoveUserIDs removes the "user" edge to User entities by IDs.
-func (su *SessionUpdate) RemoveUserIDs(ids ...int) *SessionUpdate {
-	su.mutation.RemoveUserIDs(ids...)
-	return su
-}
-
-// RemoveUser removes "user" edges to User entities.
-func (su *SessionUpdate) RemoveUser(u ...*User) *SessionUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return su.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -203,51 +166,6 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.ExpiresAt(); ok {
 		_spec.SetField(session.FieldExpiresAt, field.TypeTime, value)
-	}
-	if su.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   session.UserTable,
-			Columns: session.UserPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedUserIDs(); len(nodes) > 0 && !su.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   session.UserTable,
-			Columns: session.UserPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   session.UserTable,
-			Columns: session.UserPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -339,45 +257,9 @@ func (suo *SessionUpdateOne) SetNillableExpiresAt(t *time.Time) *SessionUpdateOn
 	return suo
 }
 
-// AddUserIDs adds the "user" edge to the User entity by IDs.
-func (suo *SessionUpdateOne) AddUserIDs(ids ...int) *SessionUpdateOne {
-	suo.mutation.AddUserIDs(ids...)
-	return suo
-}
-
-// AddUser adds the "user" edges to the User entity.
-func (suo *SessionUpdateOne) AddUser(u ...*User) *SessionUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return suo.AddUserIDs(ids...)
-}
-
 // Mutation returns the SessionMutation object of the builder.
 func (suo *SessionUpdateOne) Mutation() *SessionMutation {
 	return suo.mutation
-}
-
-// ClearUser clears all "user" edges to the User entity.
-func (suo *SessionUpdateOne) ClearUser() *SessionUpdateOne {
-	suo.mutation.ClearUser()
-	return suo
-}
-
-// RemoveUserIDs removes the "user" edge to User entities by IDs.
-func (suo *SessionUpdateOne) RemoveUserIDs(ids ...int) *SessionUpdateOne {
-	suo.mutation.RemoveUserIDs(ids...)
-	return suo
-}
-
-// RemoveUser removes "user" edges to User entities.
-func (suo *SessionUpdateOne) RemoveUser(u ...*User) *SessionUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return suo.RemoveUserIDs(ids...)
 }
 
 // Where appends a list predicates to the SessionUpdate builder.
@@ -473,51 +355,6 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 	}
 	if value, ok := suo.mutation.ExpiresAt(); ok {
 		_spec.SetField(session.FieldExpiresAt, field.TypeTime, value)
-	}
-	if suo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   session.UserTable,
-			Columns: session.UserPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedUserIDs(); len(nodes) > 0 && !suo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   session.UserTable,
-			Columns: session.UserPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   session.UserTable,
-			Columns: session.UserPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Session{config: suo.config}
 	_spec.Assign = _node.assignValues

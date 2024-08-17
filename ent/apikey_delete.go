@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"iosync/ent/apikeys"
+	"iosync/ent/apikey"
 	"iosync/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
@@ -12,26 +12,26 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// ApiKeysDelete is the builder for deleting a ApiKeys entity.
-type ApiKeysDelete struct {
+// ApiKeyDelete is the builder for deleting a ApiKey entity.
+type ApiKeyDelete struct {
 	config
 	hooks    []Hook
-	mutation *ApiKeysMutation
+	mutation *ApiKeyMutation
 }
 
-// Where appends a list predicates to the ApiKeysDelete builder.
-func (akd *ApiKeysDelete) Where(ps ...predicate.ApiKeys) *ApiKeysDelete {
+// Where appends a list predicates to the ApiKeyDelete builder.
+func (akd *ApiKeyDelete) Where(ps ...predicate.ApiKey) *ApiKeyDelete {
 	akd.mutation.Where(ps...)
 	return akd
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (akd *ApiKeysDelete) Exec(ctx context.Context) (int, error) {
+func (akd *ApiKeyDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, akd.sqlExec, akd.mutation, akd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (akd *ApiKeysDelete) ExecX(ctx context.Context) int {
+func (akd *ApiKeyDelete) ExecX(ctx context.Context) int {
 	n, err := akd.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (akd *ApiKeysDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (akd *ApiKeysDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(apikeys.Table, sqlgraph.NewFieldSpec(apikeys.FieldID, field.TypeInt))
+func (akd *ApiKeyDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(apikey.Table, sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt))
 	if ps := akd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (akd *ApiKeysDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// ApiKeysDeleteOne is the builder for deleting a single ApiKeys entity.
-type ApiKeysDeleteOne struct {
-	akd *ApiKeysDelete
+// ApiKeyDeleteOne is the builder for deleting a single ApiKey entity.
+type ApiKeyDeleteOne struct {
+	akd *ApiKeyDelete
 }
 
-// Where appends a list predicates to the ApiKeysDelete builder.
-func (akdo *ApiKeysDeleteOne) Where(ps ...predicate.ApiKeys) *ApiKeysDeleteOne {
+// Where appends a list predicates to the ApiKeyDelete builder.
+func (akdo *ApiKeyDeleteOne) Where(ps ...predicate.ApiKey) *ApiKeyDeleteOne {
 	akdo.akd.mutation.Where(ps...)
 	return akdo
 }
 
 // Exec executes the deletion query.
-func (akdo *ApiKeysDeleteOne) Exec(ctx context.Context) error {
+func (akdo *ApiKeyDeleteOne) Exec(ctx context.Context) error {
 	n, err := akdo.akd.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{apikeys.Label}
+		return &NotFoundError{apikey.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (akdo *ApiKeysDeleteOne) ExecX(ctx context.Context) {
+func (akdo *ApiKeyDeleteOne) ExecX(ctx context.Context) {
 	if err := akdo.Exec(ctx); err != nil {
 		panic(err)
 	}
