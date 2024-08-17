@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -15,7 +16,6 @@ type Device struct {
 // Fields of the Device.
 func (Device) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("username").NotEmpty(),
 		field.String("name").NotEmpty(),
 		field.Bool("is_active").Default(true),
 		field.Time("created_at").Default(time.Now()),
@@ -25,5 +25,9 @@ func (Device) Fields() []ent.Field {
 
 // Edges of the Device.
 func (Device) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("user", User.Type).
+			Ref("devices").
+			Unique(),
+	}
 }

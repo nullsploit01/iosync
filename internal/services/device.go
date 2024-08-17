@@ -8,6 +8,7 @@ import (
 )
 
 type DeviceService struct {
+	userRepository   *repositories.UserRepository
 	deviceRepository *repositories.DeviceRepository
 }
 
@@ -18,19 +19,21 @@ type AddDeviceRequest struct {
 
 func NewDeviceService(dbClient *ent.Client) *DeviceService {
 	deviceRepository := repositories.NewDeviceRepository(dbClient)
+	userRepository := repositories.NewUserRepository(dbClient)
 
 	return &DeviceService{
 		deviceRepository: deviceRepository,
+		userRepository:   userRepository,
 	}
 }
 
 func (d *DeviceService) AddDevice(ctx context.Context, request AddDeviceRequest) (*ent.Device, error) {
-	addDevicePaylaod := repositories.AddDevicePayload{
-		Name:     request.Name,
-		Username: request.Username,
+	user, err := d.userRepository.GetByUsername(ctx, request.Username)
+	if err != nil {
+		return nil, err
 	}
 
-	return d.deviceRepository.Create(ctx, &addDevicePaylaod)
+	return d.deviceRepository.Create(ctx, request.Name, user)
 }
 
 func (d *DeviceService) GetDevices(ctx context.Context, username string) ([]*ent.Device, error) {

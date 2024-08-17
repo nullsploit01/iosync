@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"iosync/ent/device"
+	"iosync/ent/user"
 	"strings"
 	"time"
 
@@ -17,8 +18,6 @@ type Device struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Username holds the value of the "username" field.
-	Username string `json:"username,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// IsActive holds the value of the "is_active" field.
@@ -26,8 +25,32 @@ type Device struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DeviceQuery when eager-loading is set.
+	Edges        DeviceEdges `json:"edges"`
+	user_devices *int
 	selectValues sql.SelectValues
+}
+
+// DeviceEdges holds the relations/edges for other nodes in the graph.
+type DeviceEdges struct {
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DeviceEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -39,10 +62,12 @@ func (*Device) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case device.FieldID:
 			values[i] = new(sql.NullInt64)
-		case device.FieldUsername, device.FieldName:
+		case device.FieldName:
 			values[i] = new(sql.NullString)
 		case device.FieldCreatedAt, device.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case device.ForeignKeys[0]: // user_devices
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -64,12 +89,6 @@ func (d *Device) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			d.ID = int(value.Int64)
-		case device.FieldUsername:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field username", values[i])
-			} else if value.Valid {
-				d.Username = value.String
-			}
 		case device.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -94,6 +113,13 @@ func (d *Device) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				d.UpdatedAt = value.Time
 			}
+		case device.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field user_devices", value)
+			} else if value.Valid {
+				d.user_devices = new(int)
+				*d.user_devices = int(value.Int64)
+			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
 		}
@@ -105,6 +131,11 @@ func (d *Device) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (d *Device) Value(name string) (ent.Value, error) {
 	return d.selectValues.Get(name)
+}
+
+// QueryUser queries the "user" edge of the Device entity.
+func (d *Device) QueryUser() *UserQuery {
+	return NewDeviceClient(d.config).QueryUser(d)
 }
 
 // Update returns a builder for updating this Device.
@@ -130,9 +161,6 @@ func (d *Device) String() string {
 	var builder strings.Builder
 	builder.WriteString("Device(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", d.ID))
-	builder.WriteString("username=")
-	builder.WriteString(d.Username)
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(d.Name)
 	builder.WriteString(", ")

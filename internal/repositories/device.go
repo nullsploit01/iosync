@@ -4,30 +4,32 @@ import (
 	"context"
 	"iosync/ent"
 	"iosync/ent/device"
+	"iosync/ent/user"
 )
 
 type DeviceRepository struct {
 	dbClient *ent.Client
 }
 
-type AddDevicePayload struct {
-	Username string
-	Name     string
-}
-
 func NewDeviceRepository(dbClient *ent.Client) *DeviceRepository {
 	return &DeviceRepository{dbClient: dbClient}
 }
 
-func (d *DeviceRepository) Create(ctx context.Context, payload *AddDevicePayload) (*ent.Device, error) {
+func (d *DeviceRepository) Create(ctx context.Context, deviceName string, user *ent.User) (*ent.Device, error) {
 	return d.dbClient.Device.Create().
-		SetName(payload.Name).
-		SetUsername(payload.Username).
+		SetName(deviceName).
+		SetUser(user).
 		Save(ctx)
 }
 
 func (d *DeviceRepository) GetAll(ctx context.Context, username string) ([]*ent.Device, error) {
-	return d.dbClient.Device.Query().Where(device.Username(username)).All(ctx)
+	user, err := d.dbClient.User.
+		Query().
+		Where(user.Username(username)).
+		WithDevices(). // Preload the devices associated with the user
+		Only(ctx)      // Expect only one user, or return an error if none/more are found
+
+	return user.Edges.Devices, err
 }
 
 func (d *DeviceRepository) Get(ctx context.Context, deviceId int) (*ent.Device, error) {

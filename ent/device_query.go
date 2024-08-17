@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"iosync/ent/user"
 	"math"
 
 	"entgo.io/ent"
@@ -22,6 +23,8 @@ type DeviceQuery struct {
 	order      []device.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Device
+	withUser   *UserQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +59,28 @@ func (dq *DeviceQuery) Unique(unique bool) *DeviceQuery {
 func (dq *DeviceQuery) Order(o ...device.OrderOption) *DeviceQuery {
 	dq.order = append(dq.order, o...)
 	return dq
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (dq *DeviceQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(device.Table, device.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, device.UserTable, device.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Device entity from the query.
@@ -250,10 +275,22 @@ func (dq *DeviceQuery) Clone() *DeviceQuery {
 		order:      append([]device.OrderOption{}, dq.order...),
 		inters:     append([]Interceptor{}, dq.inters...),
 		predicates: append([]predicate.Device{}, dq.predicates...),
+		withUser:   dq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DeviceQuery) WithUser(opts ...func(*UserQuery)) *DeviceQuery {
+	query := (&UserClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withUser = query
+	return dq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -262,12 +299,12 @@ func (dq *DeviceQuery) Clone() *DeviceQuery {
 // Example:
 //
 //	var v []struct {
-//		Username string `json:"username,omitempty"`
+//		Name string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Device.Query().
-//		GroupBy(device.FieldUsername).
+//		GroupBy(device.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (dq *DeviceQuery) GroupBy(field string, fields ...string) *DeviceGroupBy {
@@ -285,11 +322,11 @@ func (dq *DeviceQuery) GroupBy(field string, fields ...string) *DeviceGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Username string `json:"username,omitempty"`
+//		Name string `json:"name,omitempty"`
 //	}
 //
 //	client.Device.Query().
-//		Select(device.FieldUsername).
+//		Select(device.FieldName).
 //		Scan(ctx, &v)
 func (dq *DeviceQuery) Select(fields ...string) *DeviceSelect {
 	dq.ctx.Fields = append(dq.ctx.Fields, fields...)
@@ -332,15 +369,26 @@ func (dq *DeviceQuery) prepareQuery(ctx context.Context) error {
 
 func (dq *DeviceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Device, error) {
 	var (
-		nodes = []*Device{}
-		_spec = dq.querySpec()
+		nodes       = []*Device{}
+		withFKs     = dq.withFKs
+		_spec       = dq.querySpec()
+		loadedTypes = [1]bool{
+			dq.withUser != nil,
+		}
 	)
+	if dq.withUser != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, device.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Device).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Device{config: dq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +400,46 @@ func (dq *DeviceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Devic
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := dq.withUser; query != nil {
+		if err := dq.loadUser(ctx, query, nodes, nil,
+			func(n *Device, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (dq *DeviceQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Device, init func(*Device), assign func(*Device, *User)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Device)
+	for i := range nodes {
+		if nodes[i].user_devices == nil {
+			continue
+		}
+		fk := *nodes[i].user_devices
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_devices" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (dq *DeviceQuery) sqlCount(ctx context.Context) (int, error) {

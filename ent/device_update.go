@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"iosync/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -25,20 +26,6 @@ type DeviceUpdate struct {
 // Where appends a list predicates to the DeviceUpdate builder.
 func (du *DeviceUpdate) Where(ps ...predicate.Device) *DeviceUpdate {
 	du.mutation.Where(ps...)
-	return du
-}
-
-// SetUsername sets the "username" field.
-func (du *DeviceUpdate) SetUsername(s string) *DeviceUpdate {
-	du.mutation.SetUsername(s)
-	return du
-}
-
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (du *DeviceUpdate) SetNillableUsername(s *string) *DeviceUpdate {
-	if s != nil {
-		du.SetUsername(*s)
-	}
 	return du
 }
 
@@ -98,9 +85,34 @@ func (du *DeviceUpdate) SetNillableUpdatedAt(t *time.Time) *DeviceUpdate {
 	return du
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (du *DeviceUpdate) SetUserID(id int) *DeviceUpdate {
+	du.mutation.SetUserID(id)
+	return du
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (du *DeviceUpdate) SetNillableUserID(id *int) *DeviceUpdate {
+	if id != nil {
+		du = du.SetUserID(*id)
+	}
+	return du
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (du *DeviceUpdate) SetUser(u *User) *DeviceUpdate {
+	return du.SetUserID(u.ID)
+}
+
 // Mutation returns the DeviceMutation object of the builder.
 func (du *DeviceUpdate) Mutation() *DeviceMutation {
 	return du.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (du *DeviceUpdate) ClearUser() *DeviceUpdate {
+	du.mutation.ClearUser()
+	return du
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -132,11 +144,6 @@ func (du *DeviceUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (du *DeviceUpdate) check() error {
-	if v, ok := du.mutation.Username(); ok {
-		if err := device.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Device.username": %w`, err)}
-		}
-	}
 	if v, ok := du.mutation.Name(); ok {
 		if err := device.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Device.name": %w`, err)}
@@ -157,9 +164,6 @@ func (du *DeviceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := du.mutation.Username(); ok {
-		_spec.SetField(device.FieldUsername, field.TypeString, value)
-	}
 	if value, ok := du.mutation.Name(); ok {
 		_spec.SetField(device.FieldName, field.TypeString, value)
 	}
@@ -171,6 +175,35 @@ func (du *DeviceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := du.mutation.UpdatedAt(); ok {
 		_spec.SetField(device.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if du.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   device.UserTable,
+			Columns: []string{device.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   device.UserTable,
+			Columns: []string{device.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -190,20 +223,6 @@ type DeviceUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *DeviceMutation
-}
-
-// SetUsername sets the "username" field.
-func (duo *DeviceUpdateOne) SetUsername(s string) *DeviceUpdateOne {
-	duo.mutation.SetUsername(s)
-	return duo
-}
-
-// SetNillableUsername sets the "username" field if the given value is not nil.
-func (duo *DeviceUpdateOne) SetNillableUsername(s *string) *DeviceUpdateOne {
-	if s != nil {
-		duo.SetUsername(*s)
-	}
-	return duo
 }
 
 // SetName sets the "name" field.
@@ -262,9 +281,34 @@ func (duo *DeviceUpdateOne) SetNillableUpdatedAt(t *time.Time) *DeviceUpdateOne 
 	return duo
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (duo *DeviceUpdateOne) SetUserID(id int) *DeviceUpdateOne {
+	duo.mutation.SetUserID(id)
+	return duo
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (duo *DeviceUpdateOne) SetNillableUserID(id *int) *DeviceUpdateOne {
+	if id != nil {
+		duo = duo.SetUserID(*id)
+	}
+	return duo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (duo *DeviceUpdateOne) SetUser(u *User) *DeviceUpdateOne {
+	return duo.SetUserID(u.ID)
+}
+
 // Mutation returns the DeviceMutation object of the builder.
 func (duo *DeviceUpdateOne) Mutation() *DeviceMutation {
 	return duo.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (duo *DeviceUpdateOne) ClearUser() *DeviceUpdateOne {
+	duo.mutation.ClearUser()
+	return duo
 }
 
 // Where appends a list predicates to the DeviceUpdate builder.
@@ -309,11 +353,6 @@ func (duo *DeviceUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (duo *DeviceUpdateOne) check() error {
-	if v, ok := duo.mutation.Username(); ok {
-		if err := device.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Device.username": %w`, err)}
-		}
-	}
 	if v, ok := duo.mutation.Name(); ok {
 		if err := device.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Device.name": %w`, err)}
@@ -351,9 +390,6 @@ func (duo *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err err
 			}
 		}
 	}
-	if value, ok := duo.mutation.Username(); ok {
-		_spec.SetField(device.FieldUsername, field.TypeString, value)
-	}
 	if value, ok := duo.mutation.Name(); ok {
 		_spec.SetField(device.FieldName, field.TypeString, value)
 	}
@@ -365,6 +401,35 @@ func (duo *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err err
 	}
 	if value, ok := duo.mutation.UpdatedAt(); ok {
 		_spec.SetField(device.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if duo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   device.UserTable,
+			Columns: []string{device.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   device.UserTable,
+			Columns: []string{device.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Device{config: duo.config}
 	_spec.Assign = _node.assignValues

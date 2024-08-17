@@ -35,24 +35,20 @@ func init() {
 	apikey.DefaultUpdatedAt = apikeyDescUpdatedAt.Default.(time.Time)
 	deviceFields := schema.Device{}.Fields()
 	_ = deviceFields
-	// deviceDescUsername is the schema descriptor for username field.
-	deviceDescUsername := deviceFields[0].Descriptor()
-	// device.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
-	device.UsernameValidator = deviceDescUsername.Validators[0].(func(string) error)
 	// deviceDescName is the schema descriptor for name field.
-	deviceDescName := deviceFields[1].Descriptor()
+	deviceDescName := deviceFields[0].Descriptor()
 	// device.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	device.NameValidator = deviceDescName.Validators[0].(func(string) error)
 	// deviceDescIsActive is the schema descriptor for is_active field.
-	deviceDescIsActive := deviceFields[2].Descriptor()
+	deviceDescIsActive := deviceFields[1].Descriptor()
 	// device.DefaultIsActive holds the default value on creation for the is_active field.
 	device.DefaultIsActive = deviceDescIsActive.Default.(bool)
 	// deviceDescCreatedAt is the schema descriptor for created_at field.
-	deviceDescCreatedAt := deviceFields[3].Descriptor()
+	deviceDescCreatedAt := deviceFields[2].Descriptor()
 	// device.DefaultCreatedAt holds the default value on creation for the created_at field.
 	device.DefaultCreatedAt = deviceDescCreatedAt.Default.(time.Time)
 	// deviceDescUpdatedAt is the schema descriptor for updated_at field.
-	deviceDescUpdatedAt := deviceFields[4].Descriptor()
+	deviceDescUpdatedAt := deviceFields[3].Descriptor()
 	// device.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	device.DefaultUpdatedAt = deviceDescUpdatedAt.Default.(time.Time)
 	sessionFields := schema.Session{}.Fields()

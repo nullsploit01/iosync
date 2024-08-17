@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"iosync/ent/device"
+	"iosync/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -18,12 +19,6 @@ type DeviceCreate struct {
 	config
 	mutation *DeviceMutation
 	hooks    []Hook
-}
-
-// SetUsername sets the "username" field.
-func (dc *DeviceCreate) SetUsername(s string) *DeviceCreate {
-	dc.mutation.SetUsername(s)
-	return dc
 }
 
 // SetName sets the "name" field.
@@ -72,6 +67,25 @@ func (dc *DeviceCreate) SetNillableUpdatedAt(t *time.Time) *DeviceCreate {
 		dc.SetUpdatedAt(*t)
 	}
 	return dc
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (dc *DeviceCreate) SetUserID(id int) *DeviceCreate {
+	dc.mutation.SetUserID(id)
+	return dc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (dc *DeviceCreate) SetNillableUserID(id *int) *DeviceCreate {
+	if id != nil {
+		dc = dc.SetUserID(*id)
+	}
+	return dc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (dc *DeviceCreate) SetUser(u *User) *DeviceCreate {
+	return dc.SetUserID(u.ID)
 }
 
 // Mutation returns the DeviceMutation object of the builder.
@@ -125,14 +139,6 @@ func (dc *DeviceCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (dc *DeviceCreate) check() error {
-	if _, ok := dc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "Device.username"`)}
-	}
-	if v, ok := dc.mutation.Username(); ok {
-		if err := device.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "Device.username": %w`, err)}
-		}
-	}
 	if _, ok := dc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Device.name"`)}
 	}
@@ -176,10 +182,6 @@ func (dc *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 		_node = &Device{config: dc.config}
 		_spec = sqlgraph.NewCreateSpec(device.Table, sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt))
 	)
-	if value, ok := dc.mutation.Username(); ok {
-		_spec.SetField(device.FieldUsername, field.TypeString, value)
-		_node.Username = value
-	}
 	if value, ok := dc.mutation.Name(); ok {
 		_spec.SetField(device.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -195,6 +197,23 @@ func (dc *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.UpdatedAt(); ok {
 		_spec.SetField(device.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := dc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   device.UserTable,
+			Columns: []string{device.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_devices = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
