@@ -14,6 +14,7 @@ type Server struct {
 	port           int
 	authService    *services.AuthService
 	deviceService  *services.DeviceService
+	apiKeyService  *services.ApiKeyService
 	sessionService *services.SessionService
 }
 
@@ -22,12 +23,14 @@ func InitServer(dbClient *ent.Client) *http.Server {
 
 	authService := services.NewAuthService(dbClient)
 	deviceService := services.NewDeviceService(dbClient)
+	apiKeyService := services.NewApiKeyService(dbClient)
 	sessionService := services.NewSessionService(dbClient)
 
 	server := &Server{
 		port:           port,
 		authService:    authService,
 		deviceService:  deviceService,
+		apiKeyService:  apiKeyService,
 		sessionService: sessionService,
 	}
 

@@ -17,10 +17,10 @@ const (
 	FieldKey = "key"
 	// FieldDeviceID holds the string denoting the device_id field in the database.
 	FieldDeviceID = "device_id"
-	// FieldLastUsed holds the string denoting the last_used field in the database.
-	FieldLastUsed = "last_used"
 	// FieldIsActive holds the string denoting the is_active field in the database.
 	FieldIsActive = "is_active"
+	// FieldLastUsed holds the string denoting the last_used field in the database.
+	FieldLastUsed = "last_used"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -34,8 +34,8 @@ var Columns = []string{
 	FieldID,
 	FieldKey,
 	FieldDeviceID,
-	FieldLastUsed,
 	FieldIsActive,
+	FieldLastUsed,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -53,6 +53,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIsActive holds the default value on creation for the "is_active" field.
 	DefaultIsActive bool
+	// DefaultLastUsed holds the default value on creation for the "last_used" field.
+	DefaultLastUsed time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -77,14 +79,14 @@ func ByDeviceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeviceID, opts...).ToFunc()
 }
 
-// ByLastUsed orders the results by the last_used field.
-func ByLastUsed(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastUsed, opts...).ToFunc()
-}
-
 // ByIsActive orders the results by the is_active field.
 func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
+}
+
+// ByLastUsed orders the results by the last_used field.
+func ByLastUsed(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUsed, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

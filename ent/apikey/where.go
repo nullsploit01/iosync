@@ -64,14 +64,14 @@ func DeviceID(v int) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldEQ(FieldDeviceID, v))
 }
 
-// LastUsed applies equality check predicate on the "last_used" field. It's identical to LastUsedEQ.
-func LastUsed(v time.Time) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldEQ(FieldLastUsed, v))
-}
-
 // IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
 func IsActive(v bool) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldEQ(FieldIsActive, v))
+}
+
+// LastUsed applies equality check predicate on the "last_used" field. It's identical to LastUsedEQ.
+func LastUsed(v time.Time) predicate.ApiKey {
+	return predicate.ApiKey(sql.FieldEQ(FieldLastUsed, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -189,6 +189,16 @@ func DeviceIDLTE(v int) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldLTE(FieldDeviceID, v))
 }
 
+// IsActiveEQ applies the EQ predicate on the "is_active" field.
+func IsActiveEQ(v bool) predicate.ApiKey {
+	return predicate.ApiKey(sql.FieldEQ(FieldIsActive, v))
+}
+
+// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
+func IsActiveNEQ(v bool) predicate.ApiKey {
+	return predicate.ApiKey(sql.FieldNEQ(FieldIsActive, v))
+}
+
 // LastUsedEQ applies the EQ predicate on the "last_used" field.
 func LastUsedEQ(v time.Time) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldEQ(FieldLastUsed, v))
@@ -227,16 +237,6 @@ func LastUsedLT(v time.Time) predicate.ApiKey {
 // LastUsedLTE applies the LTE predicate on the "last_used" field.
 func LastUsedLTE(v time.Time) predicate.ApiKey {
 	return predicate.ApiKey(sql.FieldLTE(FieldLastUsed, v))
-}
-
-// IsActiveEQ applies the EQ predicate on the "is_active" field.
-func IsActiveEQ(v bool) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldEQ(FieldIsActive, v))
-}
-
-// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
-func IsActiveNEQ(v bool) predicate.ApiKey {
-	return predicate.ApiKey(sql.FieldNEQ(FieldIsActive, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

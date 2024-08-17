@@ -42,8 +42,8 @@ type ApiKeyMutation struct {
 	key           *string
 	device_id     *int
 	adddevice_id  *int
-	last_used     *time.Time
 	is_active     *bool
+	last_used     *time.Time
 	created_at    *time.Time
 	updated_at    *time.Time
 	clearedFields map[string]struct{}
@@ -242,42 +242,6 @@ func (m *ApiKeyMutation) ResetDeviceID() {
 	m.adddevice_id = nil
 }
 
-// SetLastUsed sets the "last_used" field.
-func (m *ApiKeyMutation) SetLastUsed(t time.Time) {
-	m.last_used = &t
-}
-
-// LastUsed returns the value of the "last_used" field in the mutation.
-func (m *ApiKeyMutation) LastUsed() (r time.Time, exists bool) {
-	v := m.last_used
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastUsed returns the old "last_used" field's value of the ApiKey entity.
-// If the ApiKey object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ApiKeyMutation) OldLastUsed(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastUsed is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastUsed requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastUsed: %w", err)
-	}
-	return oldValue.LastUsed, nil
-}
-
-// ResetLastUsed resets all changes to the "last_used" field.
-func (m *ApiKeyMutation) ResetLastUsed() {
-	m.last_used = nil
-}
-
 // SetIsActive sets the "is_active" field.
 func (m *ApiKeyMutation) SetIsActive(b bool) {
 	m.is_active = &b
@@ -312,6 +276,42 @@ func (m *ApiKeyMutation) OldIsActive(ctx context.Context) (v bool, err error) {
 // ResetIsActive resets all changes to the "is_active" field.
 func (m *ApiKeyMutation) ResetIsActive() {
 	m.is_active = nil
+}
+
+// SetLastUsed sets the "last_used" field.
+func (m *ApiKeyMutation) SetLastUsed(t time.Time) {
+	m.last_used = &t
+}
+
+// LastUsed returns the value of the "last_used" field in the mutation.
+func (m *ApiKeyMutation) LastUsed() (r time.Time, exists bool) {
+	v := m.last_used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsed returns the old "last_used" field's value of the ApiKey entity.
+// If the ApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ApiKeyMutation) OldLastUsed(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsed: %w", err)
+	}
+	return oldValue.LastUsed, nil
+}
+
+// ResetLastUsed resets all changes to the "last_used" field.
+func (m *ApiKeyMutation) ResetLastUsed() {
+	m.last_used = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -427,11 +427,11 @@ func (m *ApiKeyMutation) Fields() []string {
 	if m.device_id != nil {
 		fields = append(fields, apikey.FieldDeviceID)
 	}
-	if m.last_used != nil {
-		fields = append(fields, apikey.FieldLastUsed)
-	}
 	if m.is_active != nil {
 		fields = append(fields, apikey.FieldIsActive)
+	}
+	if m.last_used != nil {
+		fields = append(fields, apikey.FieldLastUsed)
 	}
 	if m.created_at != nil {
 		fields = append(fields, apikey.FieldCreatedAt)
@@ -451,10 +451,10 @@ func (m *ApiKeyMutation) Field(name string) (ent.Value, bool) {
 		return m.Key()
 	case apikey.FieldDeviceID:
 		return m.DeviceID()
-	case apikey.FieldLastUsed:
-		return m.LastUsed()
 	case apikey.FieldIsActive:
 		return m.IsActive()
+	case apikey.FieldLastUsed:
+		return m.LastUsed()
 	case apikey.FieldCreatedAt:
 		return m.CreatedAt()
 	case apikey.FieldUpdatedAt:
@@ -472,10 +472,10 @@ func (m *ApiKeyMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldKey(ctx)
 	case apikey.FieldDeviceID:
 		return m.OldDeviceID(ctx)
-	case apikey.FieldLastUsed:
-		return m.OldLastUsed(ctx)
 	case apikey.FieldIsActive:
 		return m.OldIsActive(ctx)
+	case apikey.FieldLastUsed:
+		return m.OldLastUsed(ctx)
 	case apikey.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case apikey.FieldUpdatedAt:
@@ -503,19 +503,19 @@ func (m *ApiKeyMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDeviceID(v)
 		return nil
-	case apikey.FieldLastUsed:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastUsed(v)
-		return nil
 	case apikey.FieldIsActive:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsActive(v)
+		return nil
+	case apikey.FieldLastUsed:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsed(v)
 		return nil
 	case apikey.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -601,11 +601,11 @@ func (m *ApiKeyMutation) ResetField(name string) error {
 	case apikey.FieldDeviceID:
 		m.ResetDeviceID()
 		return nil
-	case apikey.FieldLastUsed:
-		m.ResetLastUsed()
-		return nil
 	case apikey.FieldIsActive:
 		m.ResetIsActive()
+		return nil
+	case apikey.FieldLastUsed:
+		m.ResetLastUsed()
 		return nil
 	case apikey.FieldCreatedAt:
 		m.ResetCreatedAt()

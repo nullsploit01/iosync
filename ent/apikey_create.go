@@ -32,12 +32,6 @@ func (akc *ApiKeyCreate) SetDeviceID(i int) *ApiKeyCreate {
 	return akc
 }
 
-// SetLastUsed sets the "last_used" field.
-func (akc *ApiKeyCreate) SetLastUsed(t time.Time) *ApiKeyCreate {
-	akc.mutation.SetLastUsed(t)
-	return akc
-}
-
 // SetIsActive sets the "is_active" field.
 func (akc *ApiKeyCreate) SetIsActive(b bool) *ApiKeyCreate {
 	akc.mutation.SetIsActive(b)
@@ -48,6 +42,20 @@ func (akc *ApiKeyCreate) SetIsActive(b bool) *ApiKeyCreate {
 func (akc *ApiKeyCreate) SetNillableIsActive(b *bool) *ApiKeyCreate {
 	if b != nil {
 		akc.SetIsActive(*b)
+	}
+	return akc
+}
+
+// SetLastUsed sets the "last_used" field.
+func (akc *ApiKeyCreate) SetLastUsed(t time.Time) *ApiKeyCreate {
+	akc.mutation.SetLastUsed(t)
+	return akc
+}
+
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (akc *ApiKeyCreate) SetNillableLastUsed(t *time.Time) *ApiKeyCreate {
+	if t != nil {
+		akc.SetLastUsed(*t)
 	}
 	return akc
 }
@@ -119,6 +127,10 @@ func (akc *ApiKeyCreate) defaults() {
 		v := apikey.DefaultIsActive
 		akc.mutation.SetIsActive(v)
 	}
+	if _, ok := akc.mutation.LastUsed(); !ok {
+		v := apikey.DefaultLastUsed
+		akc.mutation.SetLastUsed(v)
+	}
 	if _, ok := akc.mutation.CreatedAt(); !ok {
 		v := apikey.DefaultCreatedAt
 		akc.mutation.SetCreatedAt(v)
@@ -137,11 +149,11 @@ func (akc *ApiKeyCreate) check() error {
 	if _, ok := akc.mutation.DeviceID(); !ok {
 		return &ValidationError{Name: "device_id", err: errors.New(`ent: missing required field "ApiKey.device_id"`)}
 	}
-	if _, ok := akc.mutation.LastUsed(); !ok {
-		return &ValidationError{Name: "last_used", err: errors.New(`ent: missing required field "ApiKey.last_used"`)}
-	}
 	if _, ok := akc.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "ApiKey.is_active"`)}
+	}
+	if _, ok := akc.mutation.LastUsed(); !ok {
+		return &ValidationError{Name: "last_used", err: errors.New(`ent: missing required field "ApiKey.last_used"`)}
 	}
 	if _, ok := akc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ApiKey.created_at"`)}
@@ -183,13 +195,13 @@ func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 		_spec.SetField(apikey.FieldDeviceID, field.TypeInt, value)
 		_node.DeviceID = value
 	}
-	if value, ok := akc.mutation.LastUsed(); ok {
-		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
-		_node.LastUsed = value
-	}
 	if value, ok := akc.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
+	}
+	if value, ok := akc.mutation.LastUsed(); ok {
+		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
+		_node.LastUsed = value
 	}
 	if value, ok := akc.mutation.CreatedAt(); ok {
 		_spec.SetField(apikey.FieldCreatedAt, field.TypeTime, value)

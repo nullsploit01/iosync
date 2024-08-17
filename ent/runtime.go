@@ -18,9 +18,13 @@ func init() {
 	apikeyFields := schema.ApiKey{}.Fields()
 	_ = apikeyFields
 	// apikeyDescIsActive is the schema descriptor for is_active field.
-	apikeyDescIsActive := apikeyFields[3].Descriptor()
+	apikeyDescIsActive := apikeyFields[2].Descriptor()
 	// apikey.DefaultIsActive holds the default value on creation for the is_active field.
 	apikey.DefaultIsActive = apikeyDescIsActive.Default.(bool)
+	// apikeyDescLastUsed is the schema descriptor for last_used field.
+	apikeyDescLastUsed := apikeyFields[3].Descriptor()
+	// apikey.DefaultLastUsed holds the default value on creation for the last_used field.
+	apikey.DefaultLastUsed = apikeyDescLastUsed.Default.(time.Time)
 	// apikeyDescCreatedAt is the schema descriptor for created_at field.
 	apikeyDescCreatedAt := apikeyFields[4].Descriptor()
 	// apikey.DefaultCreatedAt holds the default value on creation for the created_at field.

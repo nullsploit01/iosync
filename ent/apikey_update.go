@@ -63,20 +63,6 @@ func (aku *ApiKeyUpdate) AddDeviceID(i int) *ApiKeyUpdate {
 	return aku
 }
 
-// SetLastUsed sets the "last_used" field.
-func (aku *ApiKeyUpdate) SetLastUsed(t time.Time) *ApiKeyUpdate {
-	aku.mutation.SetLastUsed(t)
-	return aku
-}
-
-// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
-func (aku *ApiKeyUpdate) SetNillableLastUsed(t *time.Time) *ApiKeyUpdate {
-	if t != nil {
-		aku.SetLastUsed(*t)
-	}
-	return aku
-}
-
 // SetIsActive sets the "is_active" field.
 func (aku *ApiKeyUpdate) SetIsActive(b bool) *ApiKeyUpdate {
 	aku.mutation.SetIsActive(b)
@@ -87,6 +73,20 @@ func (aku *ApiKeyUpdate) SetIsActive(b bool) *ApiKeyUpdate {
 func (aku *ApiKeyUpdate) SetNillableIsActive(b *bool) *ApiKeyUpdate {
 	if b != nil {
 		aku.SetIsActive(*b)
+	}
+	return aku
+}
+
+// SetLastUsed sets the "last_used" field.
+func (aku *ApiKeyUpdate) SetLastUsed(t time.Time) *ApiKeyUpdate {
+	aku.mutation.SetLastUsed(t)
+	return aku
+}
+
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (aku *ApiKeyUpdate) SetNillableLastUsed(t *time.Time) *ApiKeyUpdate {
+	if t != nil {
+		aku.SetLastUsed(*t)
 	}
 	return aku
 }
@@ -169,11 +169,11 @@ func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := aku.mutation.AddedDeviceID(); ok {
 		_spec.AddField(apikey.FieldDeviceID, field.TypeInt, value)
 	}
-	if value, ok := aku.mutation.LastUsed(); ok {
-		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
-	}
 	if value, ok := aku.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := aku.mutation.LastUsed(); ok {
+		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
 	}
 	if value, ok := aku.mutation.CreatedAt(); ok {
 		_spec.SetField(apikey.FieldCreatedAt, field.TypeTime, value)
@@ -236,20 +236,6 @@ func (akuo *ApiKeyUpdateOne) AddDeviceID(i int) *ApiKeyUpdateOne {
 	return akuo
 }
 
-// SetLastUsed sets the "last_used" field.
-func (akuo *ApiKeyUpdateOne) SetLastUsed(t time.Time) *ApiKeyUpdateOne {
-	akuo.mutation.SetLastUsed(t)
-	return akuo
-}
-
-// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
-func (akuo *ApiKeyUpdateOne) SetNillableLastUsed(t *time.Time) *ApiKeyUpdateOne {
-	if t != nil {
-		akuo.SetLastUsed(*t)
-	}
-	return akuo
-}
-
 // SetIsActive sets the "is_active" field.
 func (akuo *ApiKeyUpdateOne) SetIsActive(b bool) *ApiKeyUpdateOne {
 	akuo.mutation.SetIsActive(b)
@@ -260,6 +246,20 @@ func (akuo *ApiKeyUpdateOne) SetIsActive(b bool) *ApiKeyUpdateOne {
 func (akuo *ApiKeyUpdateOne) SetNillableIsActive(b *bool) *ApiKeyUpdateOne {
 	if b != nil {
 		akuo.SetIsActive(*b)
+	}
+	return akuo
+}
+
+// SetLastUsed sets the "last_used" field.
+func (akuo *ApiKeyUpdateOne) SetLastUsed(t time.Time) *ApiKeyUpdateOne {
+	akuo.mutation.SetLastUsed(t)
+	return akuo
+}
+
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (akuo *ApiKeyUpdateOne) SetNillableLastUsed(t *time.Time) *ApiKeyUpdateOne {
+	if t != nil {
+		akuo.SetLastUsed(*t)
 	}
 	return akuo
 }
@@ -372,11 +372,11 @@ func (akuo *ApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ApiKey, err er
 	if value, ok := akuo.mutation.AddedDeviceID(); ok {
 		_spec.AddField(apikey.FieldDeviceID, field.TypeInt, value)
 	}
-	if value, ok := akuo.mutation.LastUsed(); ok {
-		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
-	}
 	if value, ok := akuo.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := akuo.mutation.LastUsed(); ok {
+		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
 	}
 	if value, ok := akuo.mutation.CreatedAt(); ok {
 		_spec.SetField(apikey.FieldCreatedAt, field.TypeTime, value)
