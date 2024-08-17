@@ -26,7 +26,7 @@ func NewUserRepository(dbClient *ent.Client) *UserRepository {
 	return &UserRepository{dbClient: dbClient}
 }
 
-func (u *UserRepository) AddUser(ctx context.Context, payload *AddUserPayload) (*ent.User, error) {
+func (u *UserRepository) Create(ctx context.Context, payload *AddUserPayload) (*ent.User, error) {
 	return u.dbClient.User.Create().
 		SetName(payload.Name).
 		SetUsername(payload.Username).
@@ -36,13 +36,19 @@ func (u *UserRepository) AddUser(ctx context.Context, payload *AddUserPayload) (
 		Save(ctx)
 }
 
-func (u *UserRepository) FindUserByUsername(ctx context.Context, username string) (*ent.User, error) {
+func (u *UserRepository) GetByUsername(ctx context.Context, username string) (*ent.User, error) {
 	return u.dbClient.User.Query().
 		Where(user.Username(username)).
 		First(ctx)
 }
 
-func (u *UserRepository) UpdateLastLoginDate(ctx context.Context, username string) error {
-	_, err := u.dbClient.User.Update().Where(user.Username(username)).SetLastLogin(time.Now()).Save(ctx)
+func (u *UserRepository) Update(ctx context.Context, updatedUser *ent.User) error {
+	_, err := u.dbClient.User.Update().Where(user.Username(updatedUser.Username)).
+		SetName(updatedUser.Name).
+		SetPassword(updatedUser.Password).
+		SetIsActive(updatedUser.IsActive).
+		SetLastLogin(updatedUser.LastLogin).
+		SetUpdatedAt(updatedUser.UpdatedAt).
+		Save(ctx)
 	return err
 }

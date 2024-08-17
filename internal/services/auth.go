@@ -5,6 +5,7 @@ import (
 	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -34,7 +35,7 @@ func NewAuthService(dbClient *ent.Client) *AuthService {
 }
 
 func (a *AuthService) AuthenticateUser(ctx context.Context, request LoginRequest) (*ent.User, error) {
-	user, err := a.userRepository.FindUserByUsername(ctx, request.Username)
+	user, err := a.userRepository.GetByUsername(ctx, request.Username)
 	if err != nil {
 		return nil, errors.New("incorrect username or password")
 	}
@@ -43,7 +44,9 @@ func (a *AuthService) AuthenticateUser(ctx context.Context, request LoginRequest
 		return nil, errors.New("incorrect username or password")
 	}
 
-	a.userRepository.UpdateLastLoginDate(ctx, request.Username)
+	user.LastLogin = time.Now()
+
+	a.userRepository.Update(ctx, user)
 
 	return user, nil
 }
@@ -60,7 +63,7 @@ func (a *AuthService) AddUser(ctx context.Context, request RegisterRequest) (*en
 		Name:     request.Name,
 	}
 
-	user, err := a.userRepository.AddUser(ctx, &addUserPayload)
+	user, err := a.userRepository.Create(ctx, &addUserPayload)
 
 	if err != nil {
 		var constraintError *ent.ConstraintError

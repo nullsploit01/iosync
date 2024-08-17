@@ -30,11 +30,11 @@ func (d *DeviceService) AddDevice(ctx context.Context, request AddDeviceRequest)
 		Username: request.Username,
 	}
 
-	return d.deviceRepository.AddDevice(ctx, &addDevicePaylaod)
+	return d.deviceRepository.Create(ctx, &addDevicePaylaod)
 }
 
 func (d *DeviceService) GetDevices(ctx context.Context, username string) ([]*ent.Device, error) {
-	devices, err := d.deviceRepository.GetDevices(ctx, username)
+	devices, err := d.deviceRepository.GetAll(ctx, username)
 
 	if err != nil {
 		var notFoundError *ent.NotFoundError
@@ -48,7 +48,7 @@ func (d *DeviceService) GetDevices(ctx context.Context, username string) ([]*ent
 }
 
 func (d *DeviceService) GetDevice(ctx context.Context, deviceId int) (*ent.Device, error) {
-	device, err := d.deviceRepository.GetDevice(ctx, deviceId)
+	device, err := d.deviceRepository.Get(ctx, deviceId)
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {
@@ -61,7 +61,7 @@ func (d *DeviceService) GetDevice(ctx context.Context, deviceId int) (*ent.Devic
 }
 
 func (d *DeviceService) DeleteDevice(ctx context.Context, deviceId int) error {
-	err := d.deviceRepository.DeleteDevice(ctx, deviceId)
+	err := d.deviceRepository.Delete(ctx, deviceId)
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {

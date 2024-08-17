@@ -16,7 +16,7 @@ func NewSessionRepository(dbClient *ent.Client) *SessionRepository {
 	return &SessionRepository{dbClient: dbClient}
 }
 
-func (s *SessionRepository) CreateSession(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
+func (s *SessionRepository) Create(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
 	sessionId := utils.GenerateUuid()
 	return s.dbClient.Session.Create().
 		SetSessionID(sessionId).
@@ -27,13 +27,13 @@ func (s *SessionRepository) CreateSession(ctx context.Context, username string, 
 		Save(ctx)
 }
 
-func (s *SessionRepository) GetSessionBySessionId(ctx context.Context, sessionId string) (*ent.Session, error) {
+func (s *SessionRepository) GetBySessionId(ctx context.Context, sessionId string) (*ent.Session, error) {
 	return s.dbClient.Session.Query().
 		Where(session.SessionID(sessionId), session.ExpiresAtGTE(time.Now())).
 		First(ctx)
 }
 
-func (s *SessionRepository) UpdateSessionExpiryDate(ctx context.Context, sessionId string, newExpiryDate time.Time) error {
+func (s *SessionRepository) Update(ctx context.Context, sessionId string, newExpiryDate time.Time) error {
 	_, err := s.dbClient.Session.Update().
 		Where(session.SessionID(sessionId), session.ExpiresAtGTE(time.Now())).
 		SetExpiresAt(newExpiryDate).
@@ -42,7 +42,7 @@ func (s *SessionRepository) UpdateSessionExpiryDate(ctx context.Context, session
 	return err
 }
 
-func (s *SessionRepository) RemoveSession(ctx context.Context, sessionId string) error {
+func (s *SessionRepository) Delete(ctx context.Context, sessionId string) error {
 	_, err := s.dbClient.Session.Delete().
 		Where(session.SessionID(sessionId)).
 		Exec(ctx)

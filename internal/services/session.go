@@ -21,7 +21,7 @@ func NewSessionService(dbClient *ent.Client) *SessionService {
 }
 
 func (s *SessionService) CreateSession(ctx context.Context, username string, timeout time.Time) (*ent.Session, error) {
-	session, err := s.sessionRepository.CreateSession(ctx, username, timeout)
+	session, err := s.sessionRepository.Create(ctx, username, timeout)
 	if err != nil {
 		return nil, errors.New("error creating session")
 	}
@@ -30,7 +30,7 @@ func (s *SessionService) CreateSession(ctx context.Context, username string, tim
 }
 
 func (s *SessionService) VerifySession(ctx context.Context, sessionId string) (*ent.Session, error) {
-	session, err := s.sessionRepository.GetSessionBySessionId(ctx, sessionId)
+	session, err := s.sessionRepository.GetBySessionId(ctx, sessionId)
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {
@@ -45,7 +45,7 @@ func (s *SessionService) VerifySession(ctx context.Context, sessionId string) (*
 }
 
 func (s *SessionService) GetSessionDetails(ctx context.Context, sessionId string) (*ent.Session, error) {
-	session, err := s.sessionRepository.GetSessionBySessionId(ctx, sessionId)
+	session, err := s.sessionRepository.GetBySessionId(ctx, sessionId)
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {
@@ -65,7 +65,7 @@ func (s *SessionService) RefreshSessionExpiry(ctx context.Context, session *ent.
 		return nil
 	}
 
-	err := s.sessionRepository.UpdateSessionExpiryDate(ctx, session.SessionID, session.ExpiresAt.Add(30*time.Minute))
+	err := s.sessionRepository.Update(ctx, session.SessionID, session.ExpiresAt.Add(30*time.Minute))
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {
@@ -77,7 +77,7 @@ func (s *SessionService) RefreshSessionExpiry(ctx context.Context, session *ent.
 }
 
 func (s *SessionService) RemoveSession(ctx context.Context, sessionId string) error {
-	err := s.sessionRepository.RemoveSession(ctx, sessionId)
+	err := s.sessionRepository.Delete(ctx, sessionId)
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {
