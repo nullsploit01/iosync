@@ -59,3 +59,16 @@ func (d *DeviceService) GetDevice(ctx context.Context, deviceId int) (*ent.Devic
 
 	return device, nil
 }
+
+func (d *DeviceService) DeleteDevice(ctx context.Context, deviceId int) error {
+	err := d.deviceRepository.DeleteDevice(ctx, deviceId)
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return errors.New("device not found")
+		}
+		return err
+	}
+
+	return nil
+}

@@ -32,5 +32,9 @@ func (d *DeviceRepository) GetDevices(ctx context.Context, username string) ([]*
 
 func (d *DeviceRepository) GetDevice(ctx context.Context, deviceId int) (*ent.Device, error) {
 	return d.dbClient.Device.Query().Where(device.ID(deviceId)).First(ctx)
+}
 
+func (d *DeviceRepository) DeleteDevice(ctx context.Context, deviceId int) error {
+	_, err := d.dbClient.Device.Delete().Where(device.ID(deviceId)).Exec(ctx)
+	return err
 }

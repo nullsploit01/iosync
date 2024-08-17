@@ -71,6 +71,7 @@ func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) GetDevice(w http.ResponseWriter, r *http.Request) {
 	context := context.Background()
+
 	idParam := chi.URLParam(r, "id")
 	deviceId, err := strconv.Atoi(idParam)
 	if err != nil {
@@ -89,4 +90,23 @@ func (s *Server) GetDevice(w http.ResponseWriter, r *http.Request) {
 
 	s.WriteJson(w, http.StatusOK, responsePayload)
 
+}
+
+func (s *Server) DeleteDevice(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
+
+	idParam := chi.URLParam(r, "id")
+	deviceId, err := strconv.Atoi(idParam)
+	if err != nil {
+		s.ErrorJson(w, errors.New("invalid device id"), http.StatusBadRequest)
+		return
+	}
+
+	err = s.deviceService.DeleteDevice(context, deviceId)
+	if err != nil {
+		s.ErrorJson(w, errors.New("device not found"), http.StatusBadRequest)
+		return
+	}
+
+	s.WriteJson(w, http.StatusOK, Response{})
 }
