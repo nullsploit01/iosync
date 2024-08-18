@@ -22,12 +22,18 @@ type ApiKey struct {
 	Key string `json:"key,omitempty"`
 	// IsActive holds the value of the "is_active" field.
 	IsActive bool `json:"is_active,omitempty"`
+	// RevokedAt holds the value of the "revoked_at" field.
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
 	// LastUsed holds the value of the "last_used" field.
 	LastUsed time.Time `json:"last_used,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// ExpiresAt holds the value of the "expires_at" field.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	// Description holds the value of the "description" field.
+	Description *string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ApiKeyQuery when eager-loading is set.
 	Edges           ApiKeyEdges `json:"edges"`
@@ -64,9 +70,9 @@ func (*ApiKey) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case apikey.FieldID:
 			values[i] = new(sql.NullInt64)
-		case apikey.FieldKey:
+		case apikey.FieldKey, apikey.FieldDescription:
 			values[i] = new(sql.NullString)
-		case apikey.FieldLastUsed, apikey.FieldCreatedAt, apikey.FieldUpdatedAt:
+		case apikey.FieldRevokedAt, apikey.FieldLastUsed, apikey.FieldCreatedAt, apikey.FieldUpdatedAt, apikey.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
 		case apikey.ForeignKeys[0]: // device_api_keys
 			values[i] = new(sql.NullInt64)
@@ -103,6 +109,13 @@ func (ak *ApiKey) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ak.IsActive = value.Bool
 			}
+		case apikey.FieldRevokedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field revoked_at", values[i])
+			} else if value.Valid {
+				ak.RevokedAt = new(time.Time)
+				*ak.RevokedAt = value.Time
+			}
 		case apikey.FieldLastUsed:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_used", values[i])
@@ -120,6 +133,20 @@ func (ak *ApiKey) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				ak.UpdatedAt = value.Time
+			}
+		case apikey.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				ak.ExpiresAt = new(time.Time)
+				*ak.ExpiresAt = value.Time
+			}
+		case apikey.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				ak.Description = new(string)
+				*ak.Description = value.String
 			}
 		case apikey.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -175,6 +202,11 @@ func (ak *ApiKey) String() string {
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", ak.IsActive))
 	builder.WriteString(", ")
+	if v := ak.RevokedAt; v != nil {
+		builder.WriteString("revoked_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("last_used=")
 	builder.WriteString(ak.LastUsed.Format(time.ANSIC))
 	builder.WriteString(", ")
@@ -183,6 +215,16 @@ func (ak *ApiKey) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(ak.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := ak.ExpiresAt; v != nil {
+		builder.WriteString("expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := ak.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -41,6 +41,20 @@ func (akc *ApiKeyCreate) SetNillableIsActive(b *bool) *ApiKeyCreate {
 	return akc
 }
 
+// SetRevokedAt sets the "revoked_at" field.
+func (akc *ApiKeyCreate) SetRevokedAt(t time.Time) *ApiKeyCreate {
+	akc.mutation.SetRevokedAt(t)
+	return akc
+}
+
+// SetNillableRevokedAt sets the "revoked_at" field if the given value is not nil.
+func (akc *ApiKeyCreate) SetNillableRevokedAt(t *time.Time) *ApiKeyCreate {
+	if t != nil {
+		akc.SetRevokedAt(*t)
+	}
+	return akc
+}
+
 // SetLastUsed sets the "last_used" field.
 func (akc *ApiKeyCreate) SetLastUsed(t time.Time) *ApiKeyCreate {
 	akc.mutation.SetLastUsed(t)
@@ -79,6 +93,34 @@ func (akc *ApiKeyCreate) SetUpdatedAt(t time.Time) *ApiKeyCreate {
 func (akc *ApiKeyCreate) SetNillableUpdatedAt(t *time.Time) *ApiKeyCreate {
 	if t != nil {
 		akc.SetUpdatedAt(*t)
+	}
+	return akc
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (akc *ApiKeyCreate) SetExpiresAt(t time.Time) *ApiKeyCreate {
+	akc.mutation.SetExpiresAt(t)
+	return akc
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (akc *ApiKeyCreate) SetNillableExpiresAt(t *time.Time) *ApiKeyCreate {
+	if t != nil {
+		akc.SetExpiresAt(*t)
+	}
+	return akc
+}
+
+// SetDescription sets the "description" field.
+func (akc *ApiKeyCreate) SetDescription(s string) *ApiKeyCreate {
+	akc.mutation.SetDescription(s)
+	return akc
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (akc *ApiKeyCreate) SetNillableDescription(s *string) *ApiKeyCreate {
+	if s != nil {
+		akc.SetDescription(*s)
 	}
 	return akc
 }
@@ -206,6 +248,10 @@ func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
 	}
+	if value, ok := akc.mutation.RevokedAt(); ok {
+		_spec.SetField(apikey.FieldRevokedAt, field.TypeTime, value)
+		_node.RevokedAt = &value
+	}
 	if value, ok := akc.mutation.LastUsed(); ok {
 		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
 		_node.LastUsed = value
@@ -217,6 +263,14 @@ func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 	if value, ok := akc.mutation.UpdatedAt(); ok {
 		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := akc.mutation.ExpiresAt(); ok {
+		_spec.SetField(apikey.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = &value
+	}
+	if value, ok := akc.mutation.Description(); ok {
+		_spec.SetField(apikey.FieldDescription, field.TypeString, value)
+		_node.Description = &value
 	}
 	if nodes := akc.mutation.DeviceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

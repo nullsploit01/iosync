@@ -22,17 +22,19 @@ func init() {
 	// apikey.DefaultIsActive holds the default value on creation for the is_active field.
 	apikey.DefaultIsActive = apikeyDescIsActive.Default.(bool)
 	// apikeyDescLastUsed is the schema descriptor for last_used field.
-	apikeyDescLastUsed := apikeyFields[2].Descriptor()
+	apikeyDescLastUsed := apikeyFields[3].Descriptor()
 	// apikey.DefaultLastUsed holds the default value on creation for the last_used field.
 	apikey.DefaultLastUsed = apikeyDescLastUsed.Default.(func() time.Time)
 	// apikeyDescCreatedAt is the schema descriptor for created_at field.
-	apikeyDescCreatedAt := apikeyFields[3].Descriptor()
+	apikeyDescCreatedAt := apikeyFields[4].Descriptor()
 	// apikey.DefaultCreatedAt holds the default value on creation for the created_at field.
 	apikey.DefaultCreatedAt = apikeyDescCreatedAt.Default.(func() time.Time)
 	// apikeyDescUpdatedAt is the schema descriptor for updated_at field.
-	apikeyDescUpdatedAt := apikeyFields[4].Descriptor()
+	apikeyDescUpdatedAt := apikeyFields[5].Descriptor()
 	// apikey.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	apikey.DefaultUpdatedAt = apikeyDescUpdatedAt.Default.(func() time.Time)
+	// apikey.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	apikey.UpdateDefaultUpdatedAt = apikeyDescUpdatedAt.UpdateDefault.(func() time.Time)
 	deviceFields := schema.Device{}.Fields()
 	_ = deviceFields
 	// deviceDescName is the schema descriptor for name field.

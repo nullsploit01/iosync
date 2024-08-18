@@ -57,6 +57,26 @@ func (aku *ApiKeyUpdate) SetNillableIsActive(b *bool) *ApiKeyUpdate {
 	return aku
 }
 
+// SetRevokedAt sets the "revoked_at" field.
+func (aku *ApiKeyUpdate) SetRevokedAt(t time.Time) *ApiKeyUpdate {
+	aku.mutation.SetRevokedAt(t)
+	return aku
+}
+
+// SetNillableRevokedAt sets the "revoked_at" field if the given value is not nil.
+func (aku *ApiKeyUpdate) SetNillableRevokedAt(t *time.Time) *ApiKeyUpdate {
+	if t != nil {
+		aku.SetRevokedAt(*t)
+	}
+	return aku
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (aku *ApiKeyUpdate) ClearRevokedAt() *ApiKeyUpdate {
+	aku.mutation.ClearRevokedAt()
+	return aku
+}
+
 // SetLastUsed sets the "last_used" field.
 func (aku *ApiKeyUpdate) SetLastUsed(t time.Time) *ApiKeyUpdate {
 	aku.mutation.SetLastUsed(t)
@@ -91,11 +111,43 @@ func (aku *ApiKeyUpdate) SetUpdatedAt(t time.Time) *ApiKeyUpdate {
 	return aku
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (aku *ApiKeyUpdate) SetNillableUpdatedAt(t *time.Time) *ApiKeyUpdate {
+// SetExpiresAt sets the "expires_at" field.
+func (aku *ApiKeyUpdate) SetExpiresAt(t time.Time) *ApiKeyUpdate {
+	aku.mutation.SetExpiresAt(t)
+	return aku
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (aku *ApiKeyUpdate) SetNillableExpiresAt(t *time.Time) *ApiKeyUpdate {
 	if t != nil {
-		aku.SetUpdatedAt(*t)
+		aku.SetExpiresAt(*t)
 	}
+	return aku
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (aku *ApiKeyUpdate) ClearExpiresAt() *ApiKeyUpdate {
+	aku.mutation.ClearExpiresAt()
+	return aku
+}
+
+// SetDescription sets the "description" field.
+func (aku *ApiKeyUpdate) SetDescription(s string) *ApiKeyUpdate {
+	aku.mutation.SetDescription(s)
+	return aku
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (aku *ApiKeyUpdate) SetNillableDescription(s *string) *ApiKeyUpdate {
+	if s != nil {
+		aku.SetDescription(*s)
+	}
+	return aku
+}
+
+// ClearDescription clears the value of the "description" field.
+func (aku *ApiKeyUpdate) ClearDescription() *ApiKeyUpdate {
+	aku.mutation.ClearDescription()
 	return aku
 }
 
@@ -131,6 +183,7 @@ func (aku *ApiKeyUpdate) ClearDevice() *ApiKeyUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (aku *ApiKeyUpdate) Save(ctx context.Context) (int, error) {
+	aku.defaults()
 	return withHooks(ctx, aku.sqlSave, aku.mutation, aku.hooks)
 }
 
@@ -156,6 +209,14 @@ func (aku *ApiKeyUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (aku *ApiKeyUpdate) defaults() {
+	if _, ok := aku.mutation.UpdatedAt(); !ok {
+		v := apikey.UpdateDefaultUpdatedAt()
+		aku.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(apikey.Table, apikey.Columns, sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt))
 	if ps := aku.mutation.predicates; len(ps) > 0 {
@@ -171,6 +232,12 @@ func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := aku.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 	}
+	if value, ok := aku.mutation.RevokedAt(); ok {
+		_spec.SetField(apikey.FieldRevokedAt, field.TypeTime, value)
+	}
+	if aku.mutation.RevokedAtCleared() {
+		_spec.ClearField(apikey.FieldRevokedAt, field.TypeTime)
+	}
 	if value, ok := aku.mutation.LastUsed(); ok {
 		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
 	}
@@ -179,6 +246,18 @@ func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := aku.mutation.UpdatedAt(); ok {
 		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := aku.mutation.ExpiresAt(); ok {
+		_spec.SetField(apikey.FieldExpiresAt, field.TypeTime, value)
+	}
+	if aku.mutation.ExpiresAtCleared() {
+		_spec.ClearField(apikey.FieldExpiresAt, field.TypeTime)
+	}
+	if value, ok := aku.mutation.Description(); ok {
+		_spec.SetField(apikey.FieldDescription, field.TypeString, value)
+	}
+	if aku.mutation.DescriptionCleared() {
+		_spec.ClearField(apikey.FieldDescription, field.TypeString)
 	}
 	if aku.mutation.DeviceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -257,6 +336,26 @@ func (akuo *ApiKeyUpdateOne) SetNillableIsActive(b *bool) *ApiKeyUpdateOne {
 	return akuo
 }
 
+// SetRevokedAt sets the "revoked_at" field.
+func (akuo *ApiKeyUpdateOne) SetRevokedAt(t time.Time) *ApiKeyUpdateOne {
+	akuo.mutation.SetRevokedAt(t)
+	return akuo
+}
+
+// SetNillableRevokedAt sets the "revoked_at" field if the given value is not nil.
+func (akuo *ApiKeyUpdateOne) SetNillableRevokedAt(t *time.Time) *ApiKeyUpdateOne {
+	if t != nil {
+		akuo.SetRevokedAt(*t)
+	}
+	return akuo
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (akuo *ApiKeyUpdateOne) ClearRevokedAt() *ApiKeyUpdateOne {
+	akuo.mutation.ClearRevokedAt()
+	return akuo
+}
+
 // SetLastUsed sets the "last_used" field.
 func (akuo *ApiKeyUpdateOne) SetLastUsed(t time.Time) *ApiKeyUpdateOne {
 	akuo.mutation.SetLastUsed(t)
@@ -291,11 +390,43 @@ func (akuo *ApiKeyUpdateOne) SetUpdatedAt(t time.Time) *ApiKeyUpdateOne {
 	return akuo
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (akuo *ApiKeyUpdateOne) SetNillableUpdatedAt(t *time.Time) *ApiKeyUpdateOne {
+// SetExpiresAt sets the "expires_at" field.
+func (akuo *ApiKeyUpdateOne) SetExpiresAt(t time.Time) *ApiKeyUpdateOne {
+	akuo.mutation.SetExpiresAt(t)
+	return akuo
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (akuo *ApiKeyUpdateOne) SetNillableExpiresAt(t *time.Time) *ApiKeyUpdateOne {
 	if t != nil {
-		akuo.SetUpdatedAt(*t)
+		akuo.SetExpiresAt(*t)
 	}
+	return akuo
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (akuo *ApiKeyUpdateOne) ClearExpiresAt() *ApiKeyUpdateOne {
+	akuo.mutation.ClearExpiresAt()
+	return akuo
+}
+
+// SetDescription sets the "description" field.
+func (akuo *ApiKeyUpdateOne) SetDescription(s string) *ApiKeyUpdateOne {
+	akuo.mutation.SetDescription(s)
+	return akuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (akuo *ApiKeyUpdateOne) SetNillableDescription(s *string) *ApiKeyUpdateOne {
+	if s != nil {
+		akuo.SetDescription(*s)
+	}
+	return akuo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (akuo *ApiKeyUpdateOne) ClearDescription() *ApiKeyUpdateOne {
+	akuo.mutation.ClearDescription()
 	return akuo
 }
 
@@ -344,6 +475,7 @@ func (akuo *ApiKeyUpdateOne) Select(field string, fields ...string) *ApiKeyUpdat
 
 // Save executes the query and returns the updated ApiKey entity.
 func (akuo *ApiKeyUpdateOne) Save(ctx context.Context) (*ApiKey, error) {
+	akuo.defaults()
 	return withHooks(ctx, akuo.sqlSave, akuo.mutation, akuo.hooks)
 }
 
@@ -366,6 +498,14 @@ func (akuo *ApiKeyUpdateOne) Exec(ctx context.Context) error {
 func (akuo *ApiKeyUpdateOne) ExecX(ctx context.Context) {
 	if err := akuo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (akuo *ApiKeyUpdateOne) defaults() {
+	if _, ok := akuo.mutation.UpdatedAt(); !ok {
+		v := apikey.UpdateDefaultUpdatedAt()
+		akuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -401,6 +541,12 @@ func (akuo *ApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ApiKey, err er
 	if value, ok := akuo.mutation.IsActive(); ok {
 		_spec.SetField(apikey.FieldIsActive, field.TypeBool, value)
 	}
+	if value, ok := akuo.mutation.RevokedAt(); ok {
+		_spec.SetField(apikey.FieldRevokedAt, field.TypeTime, value)
+	}
+	if akuo.mutation.RevokedAtCleared() {
+		_spec.ClearField(apikey.FieldRevokedAt, field.TypeTime)
+	}
 	if value, ok := akuo.mutation.LastUsed(); ok {
 		_spec.SetField(apikey.FieldLastUsed, field.TypeTime, value)
 	}
@@ -409,6 +555,18 @@ func (akuo *ApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ApiKey, err er
 	}
 	if value, ok := akuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(apikey.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := akuo.mutation.ExpiresAt(); ok {
+		_spec.SetField(apikey.FieldExpiresAt, field.TypeTime, value)
+	}
+	if akuo.mutation.ExpiresAtCleared() {
+		_spec.ClearField(apikey.FieldExpiresAt, field.TypeTime)
+	}
+	if value, ok := akuo.mutation.Description(); ok {
+		_spec.SetField(apikey.FieldDescription, field.TypeString, value)
+	}
+	if akuo.mutation.DescriptionCleared() {
+		_spec.ClearField(apikey.FieldDescription, field.TypeString)
 	}
 	if akuo.mutation.DeviceCleared() {
 		edge := &sqlgraph.EdgeSpec{

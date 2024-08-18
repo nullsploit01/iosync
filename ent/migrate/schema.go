@@ -11,11 +11,14 @@ var (
 	// APIKeysColumns holds the columns for the "api_keys" table.
 	APIKeysColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "key", Type: field.TypeString},
+		{Name: "key", Type: field.TypeString, Unique: true},
 		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
 		{Name: "last_used", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "device_api_keys", Type: field.TypeInt, Nullable: true},
 	}
 	// APIKeysTable holds the schema information for the "api_keys" table.
@@ -26,7 +29,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "api_keys_devices_api_keys",
-				Columns:    []*schema.Column{APIKeysColumns[6]},
+				Columns:    []*schema.Column{APIKeysColumns[9]},
 				RefColumns: []*schema.Column{DevicesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
