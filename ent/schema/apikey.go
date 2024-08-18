@@ -16,11 +16,14 @@ type ApiKey struct {
 // Fields of the ApiKeys.
 func (ApiKey) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("key"),
+		field.String("key").Unique(),
 		field.Bool("is_active").Default(true),
+		field.Time("revoked_at").Optional().Nillable(),
 		field.Time("last_used").Default(time.Now),
 		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("expires_at").Optional().Nillable(),
+		field.String("description").Optional().Nillable(),
 	}
 }
 
