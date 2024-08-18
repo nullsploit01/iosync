@@ -3,6 +3,8 @@ package repositories
 import (
 	"context"
 	"iosync/ent"
+	"iosync/ent/apikey"
+	"iosync/ent/device"
 	"time"
 )
 
@@ -29,4 +31,35 @@ func (a *ApiKeyRepository) Create(ctx context.Context, payload *CreateApiKeyPayl
 		SetExpiresAt(payload.ExpiresAt).
 		SetDevice(device).
 		Save(ctx)
+}
+
+func (a *ApiKeyRepository) Update(ctx context.Context, apiKeyToUpdate *ent.ApiKey) error {
+	updateQuery := a.dbClient.ApiKey.Update().Where(apikey.ID(apiKeyToUpdate.ID))
+
+	if apiKeyToUpdate.Description != nil {
+		updateQuery.SetDescription(*apiKeyToUpdate.Description)
+	}
+	if apiKeyToUpdate.ExpiresAt != nil {
+		updateQuery.SetExpiresAt(*apiKeyToUpdate.ExpiresAt)
+	}
+	if apiKeyToUpdate.RevokedAt != nil {
+		updateQuery.SetRevokedAt(*apiKeyToUpdate.RevokedAt)
+	}
+	if apiKeyToUpdate.LastUsed != (time.Time{}) {
+		updateQuery.SetLastUsed(apiKeyToUpdate.LastUsed)
+	}
+	updateQuery.SetIsActive(apiKeyToUpdate.IsActive)
+
+	_, err := updateQuery.Save(ctx)
+	return err
+}
+
+func (a *ApiKeyRepository) GetDeviceKey(ctx context.Context, deviceId int, apiKey string) (*ent.ApiKey, error) {
+	return a.dbClient.ApiKey.
+		Query().
+		Where(
+			apikey.Key(apiKey),
+			apikey.HasDeviceWith(device.ID(deviceId)),
+		).
+		First(ctx)
 }

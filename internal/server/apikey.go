@@ -46,3 +46,34 @@ func (s *Server) CreateApiKey(w http.ResponseWriter, r *http.Request) {
 
 	s.WriteJson(w, http.StatusCreated, responsPaylaod)
 }
+
+func (s *Server) RevokeApiKey(w http.ResponseWriter, r *http.Request) {
+	context := context.Background()
+
+	key := chi.URLParam(r, "key")
+	if key == "" {
+		s.ErrorJson(w, errors.New("invalid api key"), http.StatusBadRequest)
+		return
+	}
+
+	idParam := chi.URLParam(r, "id")
+	deviceId, err := strconv.Atoi(idParam)
+	if err != nil {
+		s.ErrorJson(w, errors.New("invalid device id"), http.StatusBadRequest)
+		return
+	}
+
+	err = s.apiKeyService.RevokeApiKey(context, deviceId, key)
+	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			s.ErrorJson(w, errors.New("device or API key not found"), http.StatusBadRequest)
+			return
+		}
+
+		s.ErrorJson(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	s.WriteJson(w, http.StatusOK, Response{})
+}

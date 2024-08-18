@@ -43,6 +43,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 			r.Delete("/{id}", s.DeleteDevice)
 
 			r.Post("/{id}/apikey", s.CreateApiKey)
+			r.Post("/{id}/apikey/{key}/revoke", s.RevokeApiKey)
 		})
 	})
 	return r
