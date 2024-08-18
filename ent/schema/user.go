@@ -18,7 +18,7 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").Unique(),
-		field.String("password"),
+		field.String("password").StructTag(`json:"-"`),
 		field.String("name"),
 		field.Bool("is_active").Default(true),
 		field.Time("last_login").Default(time.Now),
