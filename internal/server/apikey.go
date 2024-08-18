@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"iosync/ent"
+	"iosync/internal/services"
 	"net/http"
 	"strconv"
 
@@ -19,7 +20,14 @@ func (s *Server) CreateApiKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiKey, err := s.apiKeyService.CreateApiKey(context, deviceId)
+	var request services.CreateApiKeyRequest
+
+	if err := s.ReadJson(w, r, &request); err != nil {
+		s.ErrorJson(w, errors.New("invalid request body"))
+		return
+	}
+
+	apiKey, err := s.apiKeyService.CreateApiKey(context, deviceId, &request)
 
 	if err != nil {
 		var notFoundError *ent.NotFoundError

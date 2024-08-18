@@ -6,11 +6,16 @@ import (
 	"iosync/ent"
 	"iosync/internal/repositories"
 	"iosync/pkg/utils"
+	"time"
 )
 
 type ApiKeyService struct {
 	apiKeyRepository *repositories.ApiKeyRepository
 	deviceRepository *repositories.DeviceRepository
+}
+
+type CreateApiKeyRequest struct {
+	Description string `json:"description"`
 }
 
 func NewApiKeyService(dbClient *ent.Client) *ApiKeyService {
@@ -23,7 +28,7 @@ func NewApiKeyService(dbClient *ent.Client) *ApiKeyService {
 	}
 }
 
-func (a *ApiKeyService) CreateApiKey(ctx context.Context, deviceId int) (*ent.ApiKey, error) {
+func (a *ApiKeyService) CreateApiKey(ctx context.Context, deviceId int, request *CreateApiKeyRequest) (*ent.ApiKey, error) {
 	apiKey, err := utils.GenerateRandomString(32) // Fixed size of 32 digits for API KEYS
 	if err != nil {
 		return nil, errors.New("something went wrong")
@@ -34,5 +39,13 @@ func (a *ApiKeyService) CreateApiKey(ctx context.Context, deviceId int) (*ent.Ap
 		return nil, err
 	}
 
-	return a.apiKeyRepository.Create(ctx, apiKey, device)
+	expiryDate := time.Now().AddDate(10, 0, 0)
+
+	payload := repositories.CreateApiKeyPayload{
+		ApiKey:      apiKey,
+		ExpiresAt:   expiryDate,
+		Description: request.Description,
+	}
+
+	return a.apiKeyRepository.Create(ctx, &payload, device)
 }

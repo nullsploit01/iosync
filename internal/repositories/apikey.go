@@ -3,10 +3,17 @@ package repositories
 import (
 	"context"
 	"iosync/ent"
+	"time"
 )
 
 type ApiKeyRepository struct {
 	dbClient *ent.Client
+}
+
+type CreateApiKeyPayload struct {
+	ApiKey      string
+	Description string
+	ExpiresAt   time.Time
 }
 
 func NewApiKeyRepository(dbClient *ent.Client) *ApiKeyRepository {
@@ -15,9 +22,11 @@ func NewApiKeyRepository(dbClient *ent.Client) *ApiKeyRepository {
 	}
 }
 
-func (a *ApiKeyRepository) Create(ctx context.Context, apiKey string, device *ent.Device) (*ent.ApiKey, error) {
+func (a *ApiKeyRepository) Create(ctx context.Context, payload *CreateApiKeyPayload, device *ent.Device) (*ent.ApiKey, error) {
 	return a.dbClient.ApiKey.Create().
-		SetKey(apiKey).
+		SetKey(payload.ApiKey).
+		SetDescription(payload.Description).
+		SetExpiresAt(payload.ExpiresAt).
 		SetDevice(device).
 		Save(ctx)
 }
