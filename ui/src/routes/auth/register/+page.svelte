@@ -10,7 +10,6 @@
 
   const handleSubmit = async () => {
     await authService.register(name, username, password)
-    goto('/')
   }
 </script>
 

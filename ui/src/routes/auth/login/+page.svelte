@@ -14,7 +14,6 @@
 
   const handleSubmit = async () => {
     await authService.login(username, password, checked)
-    goto('/')
   }
 </script>
 

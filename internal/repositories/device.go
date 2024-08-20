@@ -26,8 +26,8 @@ func (d *DeviceRepository) GetAll(ctx context.Context, username string) ([]*ent.
 	user, err := d.dbClient.User.
 		Query().
 		Where(user.Username(username)).
-		WithDevices(). // Preload the devices associated with the user
-		Only(ctx)      // Expect only one user, or return an error if none/more are found
+		WithDevices().
+		Only(ctx)
 
 	return user.Edges.Devices, err
 }

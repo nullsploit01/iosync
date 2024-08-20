@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { getContext, onDestroy, onMount } from 'svelte'
-  import { ContextKeys } from '@/config/context'
+  import { getContext, onDestroy } from 'svelte'
   import { goto } from '$app/navigation'
+  import { ContextKeys } from '@/config/context'
   import type { ISession } from '@/types/models'
-  import type { Readable } from 'svelte/store'
+  import type { Writable } from 'svelte/store'
 
-  const unsubscribe = getContext<Readable<ISession | undefined>>(
-    ContextKeys.user.session
-  ).subscribe((value) => {
-    if (!value) goto('/auth/login')
+  const session = getContext<Writable<ISession | undefined>>(ContextKeys.user.session)
+
+  const unsubscribe = session.subscribe((value) => {
+    if (!value) {
+      goto('/auth/login')
+    }
   })
 
   onDestroy(unsubscribe)
