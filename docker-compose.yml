@@ -13,7 +13,7 @@ services:
       POSTGRES_DB: iosync
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - db-data:/var/lib/postgresql/data/
+      - persistant-storage:/var/lib/postgresql/data/
 
   rabbitmq:
     image: rabbitmq:management-alpine
@@ -36,7 +36,7 @@ services:
         source: ./config/rabbitmq/advanced.config
         target: /etc/rabbitmq/advanced.config
         read_only: true
-      - db-data:/var/lib/rabbitmq/
+      - persistant-storage:/var/lib/rabbitmq/
 
 volumes:
-  db-data:
+  persistant-storage:

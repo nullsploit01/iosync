@@ -4,11 +4,13 @@ import (
 	"context"
 	"iosync/internal/repositories"
 	"iosync/internal/server"
+	"iosync/internal/services"
 	"log"
 )
 
 func main() {
 	c := context.Background()
+	services.InitMQTTClient()
 
 	dbClient, err := repositories.GetDbClient(c)
 
