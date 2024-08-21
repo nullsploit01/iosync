@@ -10,7 +10,7 @@ import (
 func InitMQTTClient() {
 	mqttClientOptions := mqtt.NewClientOptions()
 	mqttClientOptions.AddBroker("tcp://localhost:1883")
-	mqttClientOptions.SetClientID("go-mqtt-client")
+	mqttClientOptions.SetClientID("IOSYNC_MQTT_CLIENT")
 	mqttClientOptions.SetUsername("admin")
 	mqttClientOptions.SetPassword("instar")
 

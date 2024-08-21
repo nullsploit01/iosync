@@ -26,7 +26,7 @@ services:
       - "15675:15675"
     command: '/bin/bash -c "rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_amqp1_0; rabbitmq-server"'
     env_file:
-      - config/rabbitmq/login.env
+      - ./.env
     volumes:
       - type: bind
         source: ./config/rabbitmq/rabbitmq.conf
