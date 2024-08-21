@@ -5,9 +5,12 @@ import (
 	"errors"
 	"iosync/ent"
 	"iosync/internal/repositories"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type DeviceService struct {
+	mqttService      *MQTTService
 	userRepository   *repositories.UserRepository
 	deviceRepository *repositories.DeviceRepository
 }
@@ -17,13 +20,15 @@ type AddDeviceRequest struct {
 	Username string
 }
 
-func NewDeviceService(dbClient *ent.Client) *DeviceService {
+func NewDeviceService(mqttClient *mqtt.Client, dbClient *ent.Client) *DeviceService {
 	deviceRepository := repositories.NewDeviceRepository(dbClient)
 	userRepository := repositories.NewUserRepository(dbClient)
+	mqttService := NewMQTTService(mqttClient)
 
 	return &DeviceService{
 		deviceRepository: deviceRepository,
 		userRepository:   userRepository,
+		mqttService:      mqttService,
 	}
 }
 

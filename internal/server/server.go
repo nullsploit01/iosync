@@ -24,8 +24,8 @@ func InitServer(mqttClient *mqtt.Client, dbClient *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
 	authService := services.NewAuthService(dbClient)
-	deviceService := services.NewDeviceService(dbClient)
-	apiKeyService := services.NewApiKeyService(dbClient)
+	deviceService := services.NewDeviceService(mqttClient, dbClient)
+	apiKeyService := services.NewApiKeyService(mqttClient, dbClient)
 	sessionService := services.NewSessionService(dbClient)
 
 	server := &Server{

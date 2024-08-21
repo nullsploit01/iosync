@@ -7,24 +7,29 @@ import (
 	"iosync/internal/repositories"
 	"iosync/pkg/utils"
 	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type ApiKeyService struct {
 	apiKeyRepository *repositories.ApiKeyRepository
 	deviceRepository *repositories.DeviceRepository
+	mqttService      *MQTTService
 }
 
 type CreateApiKeyRequest struct {
 	Description string `json:"description"`
 }
 
-func NewApiKeyService(dbClient *ent.Client) *ApiKeyService {
+func NewApiKeyService(mqttClient *mqtt.Client, dbClient *ent.Client) *ApiKeyService {
 	apiKeyRepository := repositories.NewApiKeyRepository(dbClient)
 	deviceRepository := repositories.NewDeviceRepository(dbClient)
+	mqttService := NewMQTTService(mqttClient)
 
 	return &ApiKeyService{
 		apiKeyRepository: apiKeyRepository,
 		deviceRepository: deviceRepository,
+		mqttService:      mqttService,
 	}
 }
 
