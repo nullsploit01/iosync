@@ -2,21 +2,31 @@ package main
 
 import (
 	"context"
-	"iosync/internal/repositories"
 	"iosync/internal/server"
+	"iosync/pkg/client"
+	"iosync/pkg/config"
 	"log"
 )
 
 func main() {
-	c := context.Background()
+	ctx := context.Background()
 
-	dbClient, err := repositories.GetDbClient(c)
-
+	environment, err := config.LoadEnvironment()
 	if err != nil {
-		log.Fatal("error occured connecting database, ", err)
+		log.Fatalf("cannot start server: %s", err)
 	}
 
-	server := server.InitServer(dbClient)
+	dbClient, err := client.NewDbClient(ctx, environment)
+	if err != nil {
+		log.Fatal("error occured connecting database", err)
+	}
+
+	mqttClient, err := client.NewMQTTClient(environment)
+	if err != nil {
+		log.Fatal("error occured connecting mqtt broker", err)
+	}
+
+	server := server.InitServer(mqttClient, dbClient)
 
 	log.Println("Started Server on address", server.Addr)
 
