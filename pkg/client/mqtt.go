@@ -7,7 +7,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func NewMQTTClient(environment *config.Environment) (*mqtt.Client, error) {
+func NewMQTTClient(environment *config.Environment) (mqtt.Client, error) {
 
 	mqttClientOptions := mqtt.NewClientOptions()
 	mqttClientOptions.AddBroker(environment.RABBITMQ_BROKER)
@@ -29,5 +29,5 @@ func NewMQTTClient(environment *config.Environment) (*mqtt.Client, error) {
 		return nil, token.Error()
 	}
 
-	return &client, nil
+	return client, nil
 }

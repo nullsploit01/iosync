@@ -21,7 +21,7 @@ type CreateApiKeyRequest struct {
 	Description string `json:"description"`
 }
 
-func NewApiKeyService(mqttClient *mqtt.Client, dbClient *ent.Client) *ApiKeyService {
+func NewApiKeyService(mqttClient mqtt.Client, dbClient *ent.Client) *ApiKeyService {
 	apiKeyRepository := repositories.NewApiKeyRepository(dbClient)
 	deviceRepository := repositories.NewDeviceRepository(dbClient)
 	mqttService := NewMQTTService(mqttClient)

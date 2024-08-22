@@ -20,7 +20,7 @@ type Server struct {
 	sessionService *services.SessionService
 }
 
-func InitServer(mqttClient *mqtt.Client, dbClient *ent.Client) *http.Server {
+func InitServer(mqttClient mqtt.Client, dbClient *ent.Client) *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
 	authService := services.NewAuthService(dbClient)

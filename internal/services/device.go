@@ -20,7 +20,7 @@ type AddDeviceRequest struct {
 	Username string
 }
 
-func NewDeviceService(mqttClient *mqtt.Client, dbClient *ent.Client) *DeviceService {
+func NewDeviceService(mqttClient mqtt.Client, dbClient *ent.Client) *DeviceService {
 	deviceRepository := repositories.NewDeviceRepository(dbClient)
 	userRepository := repositories.NewUserRepository(dbClient)
 	mqttService := NewMQTTService(mqttClient)
