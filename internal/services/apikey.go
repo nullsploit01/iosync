@@ -55,6 +55,18 @@ func (a *ApiKeyService) CreateApiKey(ctx context.Context, deviceId int, request 
 	return a.apiKeyRepository.Create(ctx, &payload, device)
 }
 
+func (a *ApiKeyService) ActivateApiKey(ctx context.Context, deviceId int, key string) error {
+	apiKey, err := a.apiKeyRepository.GetDeviceKey(ctx, deviceId, key)
+	if err != nil {
+		return err
+	}
+
+	apiKey.IsActive = true
+	apiKey.RevokedAt = &time.Time{}
+
+	return a.apiKeyRepository.Update(ctx, apiKey)
+}
+
 func (a *ApiKeyService) RevokeApiKey(ctx context.Context, deviceId int, key string) error {
 	apiKey, err := a.apiKeyRepository.GetDeviceKey(ctx, deviceId, key)
 	if err != nil {
