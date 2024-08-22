@@ -15,5 +15,8 @@ type Device func(*sql.Selector)
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 
+// Topic is the predicate function for topic builders.
+type Topic func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

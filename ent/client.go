@@ -14,6 +14,7 @@ import (
 	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/session"
+	"iosync/ent/topic"
 	"iosync/ent/user"
 
 	"entgo.io/ent"
@@ -33,6 +34,8 @@ type Client struct {
 	Device *DeviceClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// Topic is the client for interacting with the Topic builders.
+	Topic *TopicClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -49,6 +52,7 @@ func (c *Client) init() {
 	c.ApiKey = NewApiKeyClient(c.config)
 	c.Device = NewDeviceClient(c.config)
 	c.Session = NewSessionClient(c.config)
+	c.Topic = NewTopicClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -145,6 +149,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ApiKey:  NewApiKeyClient(cfg),
 		Device:  NewDeviceClient(cfg),
 		Session: NewSessionClient(cfg),
+		Topic:   NewTopicClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
 }
@@ -168,6 +173,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ApiKey:  NewApiKeyClient(cfg),
 		Device:  NewDeviceClient(cfg),
 		Session: NewSessionClient(cfg),
+		Topic:   NewTopicClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
 }
@@ -200,6 +206,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ApiKey.Use(hooks...)
 	c.Device.Use(hooks...)
 	c.Session.Use(hooks...)
+	c.Topic.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -209,6 +216,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.ApiKey.Intercept(interceptors...)
 	c.Device.Intercept(interceptors...)
 	c.Session.Intercept(interceptors...)
+	c.Topic.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
@@ -221,6 +229,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Device.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
+	case *TopicMutation:
+		return c.Topic.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -345,6 +355,22 @@ func (c *ApiKeyClient) QueryDevice(ak *ApiKey) *DeviceQuery {
 			sqlgraph.From(apikey.Table, apikey.FieldID, id),
 			sqlgraph.To(device.Table, device.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, apikey.DeviceTable, apikey.DeviceColumn),
+		)
+		fromV = sqlgraph.Neighbors(ak.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTopics queries the topics edge of a ApiKey.
+func (c *ApiKeyClient) QueryTopics(ak *ApiKey) *TopicQuery {
+	query := (&TopicClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ak.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, id),
+			sqlgraph.To(topic.Table, topic.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, apikey.TopicsTable, apikey.TopicsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ak.driver.Dialect(), step)
 		return fromV, nil
@@ -510,6 +536,22 @@ func (c *DeviceClient) QueryAPIKey(d *Device) *ApiKeyQuery {
 			sqlgraph.From(device.Table, device.FieldID, id),
 			sqlgraph.To(apikey.Table, apikey.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, device.APIKeyTable, device.APIKeyColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTopics queries the topics edge of a Device.
+func (c *DeviceClient) QueryTopics(d *Device) *TopicQuery {
+	query := (&TopicClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(device.Table, device.FieldID, id),
+			sqlgraph.To(topic.Table, topic.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, device.TopicsTable, device.TopicsColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -691,6 +733,171 @@ func (c *SessionClient) mutate(ctx context.Context, m *SessionMutation) (Value, 
 	}
 }
 
+// TopicClient is a client for the Topic schema.
+type TopicClient struct {
+	config
+}
+
+// NewTopicClient returns a client for the Topic from the given config.
+func NewTopicClient(c config) *TopicClient {
+	return &TopicClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `topic.Hooks(f(g(h())))`.
+func (c *TopicClient) Use(hooks ...Hook) {
+	c.hooks.Topic = append(c.hooks.Topic, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `topic.Intercept(f(g(h())))`.
+func (c *TopicClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Topic = append(c.inters.Topic, interceptors...)
+}
+
+// Create returns a builder for creating a Topic entity.
+func (c *TopicClient) Create() *TopicCreate {
+	mutation := newTopicMutation(c.config, OpCreate)
+	return &TopicCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Topic entities.
+func (c *TopicClient) CreateBulk(builders ...*TopicCreate) *TopicCreateBulk {
+	return &TopicCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TopicClient) MapCreateBulk(slice any, setFunc func(*TopicCreate, int)) *TopicCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TopicCreateBulk{err: fmt.Errorf("calling to TopicClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TopicCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TopicCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Topic.
+func (c *TopicClient) Update() *TopicUpdate {
+	mutation := newTopicMutation(c.config, OpUpdate)
+	return &TopicUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TopicClient) UpdateOne(t *Topic) *TopicUpdateOne {
+	mutation := newTopicMutation(c.config, OpUpdateOne, withTopic(t))
+	return &TopicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TopicClient) UpdateOneID(id int) *TopicUpdateOne {
+	mutation := newTopicMutation(c.config, OpUpdateOne, withTopicID(id))
+	return &TopicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Topic.
+func (c *TopicClient) Delete() *TopicDelete {
+	mutation := newTopicMutation(c.config, OpDelete)
+	return &TopicDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TopicClient) DeleteOne(t *Topic) *TopicDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TopicClient) DeleteOneID(id int) *TopicDeleteOne {
+	builder := c.Delete().Where(topic.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TopicDeleteOne{builder}
+}
+
+// Query returns a query builder for Topic.
+func (c *TopicClient) Query() *TopicQuery {
+	return &TopicQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTopic},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Topic entity by its id.
+func (c *TopicClient) Get(ctx context.Context, id int) (*Topic, error) {
+	return c.Query().Where(topic.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TopicClient) GetX(ctx context.Context, id int) *Topic {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryDevice queries the device edge of a Topic.
+func (c *TopicClient) QueryDevice(t *Topic) *DeviceQuery {
+	query := (&DeviceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(topic.Table, topic.FieldID, id),
+			sqlgraph.To(device.Table, device.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, topic.DeviceTable, topic.DeviceColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAPIKey queries the api_key edge of a Topic.
+func (c *TopicClient) QueryAPIKey(t *Topic) *ApiKeyQuery {
+	query := (&ApiKeyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(topic.Table, topic.FieldID, id),
+			sqlgraph.To(apikey.Table, apikey.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, topic.APIKeyTable, topic.APIKeyColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TopicClient) Hooks() []Hook {
+	return c.hooks.Topic
+}
+
+// Interceptors returns the client interceptors.
+func (c *TopicClient) Interceptors() []Interceptor {
+	return c.inters.Topic
+}
+
+func (c *TopicClient) mutate(ctx context.Context, m *TopicMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TopicCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TopicUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TopicUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TopicDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Topic mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -859,9 +1066,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ApiKey, Device, Session, User []ent.Hook
+		ApiKey, Device, Session, Topic, User []ent.Hook
 	}
 	inters struct {
-		ApiKey, Device, Session, User []ent.Interceptor
+		ApiKey, Device, Session, Topic, User []ent.Interceptor
 	}
 )

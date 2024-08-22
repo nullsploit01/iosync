@@ -276,6 +276,29 @@ func HasAPIKeyWith(preds ...predicate.ApiKey) predicate.Device {
 	})
 }
 
+// HasTopics applies the HasEdge predicate on the "topics" edge.
+func HasTopics() predicate.Device {
+	return predicate.Device(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TopicsTable, TopicsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTopicsWith applies the HasEdge predicate on the "topics" edge with a given conditions (other predicates).
+func HasTopicsWith(preds ...predicate.Topic) predicate.Device {
+	return predicate.Device(func(s *sql.Selector) {
+		step := newTopicsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Device) predicate.Device {
 	return predicate.Device(sql.AndPredicates(predicates...))

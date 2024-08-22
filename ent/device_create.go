@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"iosync/ent/apikey"
 	"iosync/ent/device"
+	"iosync/ent/topic"
 	"iosync/ent/user"
 	"time"
 
@@ -106,6 +107,21 @@ func (dc *DeviceCreate) SetNillableAPIKeyID(id *int) *DeviceCreate {
 // SetAPIKey sets the "api_key" edge to the ApiKey entity.
 func (dc *DeviceCreate) SetAPIKey(a *ApiKey) *DeviceCreate {
 	return dc.SetAPIKeyID(a.ID)
+}
+
+// AddTopicIDs adds the "topics" edge to the Topic entity by IDs.
+func (dc *DeviceCreate) AddTopicIDs(ids ...int) *DeviceCreate {
+	dc.mutation.AddTopicIDs(ids...)
+	return dc
+}
+
+// AddTopics adds the "topics" edges to the Topic entity.
+func (dc *DeviceCreate) AddTopics(t ...*Topic) *DeviceCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return dc.AddTopicIDs(ids...)
 }
 
 // Mutation returns the DeviceMutation object of the builder.
@@ -244,6 +260,22 @@ func (dc *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.TopicsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

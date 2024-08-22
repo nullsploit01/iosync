@@ -32,6 +32,8 @@ const (
 	FieldDescription = "description"
 	// EdgeDevice holds the string denoting the device edge name in mutations.
 	EdgeDevice = "device"
+	// EdgeTopics holds the string denoting the topics edge name in mutations.
+	EdgeTopics = "topics"
 	// Table holds the table name of the apikey in the database.
 	Table = "api_keys"
 	// DeviceTable is the table that holds the device relation/edge.
@@ -41,6 +43,13 @@ const (
 	DeviceInverseTable = "devices"
 	// DeviceColumn is the table column denoting the device relation/edge.
 	DeviceColumn = "device_api_key"
+	// TopicsTable is the table that holds the topics relation/edge.
+	TopicsTable = "topics"
+	// TopicsInverseTable is the table name for the Topic entity.
+	// It exists in this package in order to avoid circular dependency with the "topic" package.
+	TopicsInverseTable = "topics"
+	// TopicsColumn is the table column denoting the topics relation/edge.
+	TopicsColumn = "api_key_topics"
 )
 
 // Columns holds all SQL columns for apikey fields.
@@ -144,10 +153,31 @@ func ByDeviceField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDeviceStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByTopicsCount orders the results by topics count.
+func ByTopicsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTopicsStep(), opts...)
+	}
+}
+
+// ByTopics orders the results by topics terms.
+func ByTopics(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTopicsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newDeviceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DeviceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, true, DeviceTable, DeviceColumn),
+	)
+}
+func newTopicsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TopicsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TopicsTable, TopicsColumn),
 	)
 }

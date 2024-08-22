@@ -9,6 +9,7 @@ import (
 	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/session"
+	"iosync/ent/topic"
 	"iosync/ent/user"
 	"reflect"
 	"sync"
@@ -79,6 +80,7 @@ func checkColumn(table, column string) error {
 			apikey.Table:  apikey.ValidColumn,
 			device.Table:  device.ValidColumn,
 			session.Table: session.ValidColumn,
+			topic.Table:   topic.ValidColumn,
 			user.Table:    user.ValidColumn,
 		})
 	})

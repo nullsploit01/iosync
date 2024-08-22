@@ -9,6 +9,7 @@ import (
 	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"iosync/ent/topic"
 	"iosync/ent/user"
 	"time"
 
@@ -124,6 +125,21 @@ func (du *DeviceUpdate) SetAPIKey(a *ApiKey) *DeviceUpdate {
 	return du.SetAPIKeyID(a.ID)
 }
 
+// AddTopicIDs adds the "topics" edge to the Topic entity by IDs.
+func (du *DeviceUpdate) AddTopicIDs(ids ...int) *DeviceUpdate {
+	du.mutation.AddTopicIDs(ids...)
+	return du
+}
+
+// AddTopics adds the "topics" edges to the Topic entity.
+func (du *DeviceUpdate) AddTopics(t ...*Topic) *DeviceUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return du.AddTopicIDs(ids...)
+}
+
 // Mutation returns the DeviceMutation object of the builder.
 func (du *DeviceUpdate) Mutation() *DeviceMutation {
 	return du.mutation
@@ -139,6 +155,27 @@ func (du *DeviceUpdate) ClearUser() *DeviceUpdate {
 func (du *DeviceUpdate) ClearAPIKey() *DeviceUpdate {
 	du.mutation.ClearAPIKey()
 	return du
+}
+
+// ClearTopics clears all "topics" edges to the Topic entity.
+func (du *DeviceUpdate) ClearTopics() *DeviceUpdate {
+	du.mutation.ClearTopics()
+	return du
+}
+
+// RemoveTopicIDs removes the "topics" edge to Topic entities by IDs.
+func (du *DeviceUpdate) RemoveTopicIDs(ids ...int) *DeviceUpdate {
+	du.mutation.RemoveTopicIDs(ids...)
+	return du
+}
+
+// RemoveTopics removes "topics" edges to Topic entities.
+func (du *DeviceUpdate) RemoveTopics(t ...*Topic) *DeviceUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return du.RemoveTopicIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -260,6 +297,51 @@ func (du *DeviceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedTopicsIDs(); len(nodes) > 0 && !du.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.TopicsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{device.Label}
@@ -374,6 +456,21 @@ func (duo *DeviceUpdateOne) SetAPIKey(a *ApiKey) *DeviceUpdateOne {
 	return duo.SetAPIKeyID(a.ID)
 }
 
+// AddTopicIDs adds the "topics" edge to the Topic entity by IDs.
+func (duo *DeviceUpdateOne) AddTopicIDs(ids ...int) *DeviceUpdateOne {
+	duo.mutation.AddTopicIDs(ids...)
+	return duo
+}
+
+// AddTopics adds the "topics" edges to the Topic entity.
+func (duo *DeviceUpdateOne) AddTopics(t ...*Topic) *DeviceUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return duo.AddTopicIDs(ids...)
+}
+
 // Mutation returns the DeviceMutation object of the builder.
 func (duo *DeviceUpdateOne) Mutation() *DeviceMutation {
 	return duo.mutation
@@ -389,6 +486,27 @@ func (duo *DeviceUpdateOne) ClearUser() *DeviceUpdateOne {
 func (duo *DeviceUpdateOne) ClearAPIKey() *DeviceUpdateOne {
 	duo.mutation.ClearAPIKey()
 	return duo
+}
+
+// ClearTopics clears all "topics" edges to the Topic entity.
+func (duo *DeviceUpdateOne) ClearTopics() *DeviceUpdateOne {
+	duo.mutation.ClearTopics()
+	return duo
+}
+
+// RemoveTopicIDs removes the "topics" edge to Topic entities by IDs.
+func (duo *DeviceUpdateOne) RemoveTopicIDs(ids ...int) *DeviceUpdateOne {
+	duo.mutation.RemoveTopicIDs(ids...)
+	return duo
+}
+
+// RemoveTopics removes "topics" edges to Topic entities.
+func (duo *DeviceUpdateOne) RemoveTopics(t ...*Topic) *DeviceUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return duo.RemoveTopicIDs(ids...)
 }
 
 // Where appends a list predicates to the DeviceUpdate builder.
@@ -533,6 +651,51 @@ func (duo *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedTopicsIDs(); len(nodes) > 0 && !duo.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.TopicsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   device.TopicsTable,
+			Columns: []string{device.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

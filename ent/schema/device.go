@@ -32,5 +32,7 @@ func (Device) Edges() []ent.Edge {
 
 		edge.To("api_key", ApiKey.Type).
 			Unique(),
+
+		edge.To("topics", Topic.Type),
 	}
 }

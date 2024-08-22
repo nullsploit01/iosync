@@ -7,6 +7,7 @@ import (
 	"iosync/ent/device"
 	"iosync/ent/schema"
 	"iosync/ent/session"
+	"iosync/ent/topic"
 	"iosync/ent/user"
 	"time"
 )
@@ -63,6 +64,34 @@ func init() {
 	sessionDescUpdatedAt := sessionFields[2].Descriptor()
 	// session.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	session.DefaultUpdatedAt = sessionDescUpdatedAt.Default.(func() time.Time)
+	topicFields := schema.Topic{}.Fields()
+	_ = topicFields
+	// topicDescName is the schema descriptor for name field.
+	topicDescName := topicFields[0].Descriptor()
+	// topic.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	topic.NameValidator = topicDescName.Validators[0].(func(string) error)
+	// topicDescIsActive is the schema descriptor for is_active field.
+	topicDescIsActive := topicFields[1].Descriptor()
+	// topic.DefaultIsActive holds the default value on creation for the is_active field.
+	topic.DefaultIsActive = topicDescIsActive.Default.(bool)
+	// topicDescQos is the schema descriptor for qos field.
+	topicDescQos := topicFields[2].Descriptor()
+	// topic.DefaultQos holds the default value on creation for the qos field.
+	topic.DefaultQos = topicDescQos.Default.(int)
+	// topicDescRetain is the schema descriptor for retain field.
+	topicDescRetain := topicFields[3].Descriptor()
+	// topic.DefaultRetain holds the default value on creation for the retain field.
+	topic.DefaultRetain = topicDescRetain.Default.(bool)
+	// topicDescCreatedAt is the schema descriptor for created_at field.
+	topicDescCreatedAt := topicFields[5].Descriptor()
+	// topic.DefaultCreatedAt holds the default value on creation for the created_at field.
+	topic.DefaultCreatedAt = topicDescCreatedAt.Default.(func() time.Time)
+	// topicDescUpdatedAt is the schema descriptor for updated_at field.
+	topicDescUpdatedAt := topicFields[6].Descriptor()
+	// topic.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	topic.DefaultUpdatedAt = topicDescUpdatedAt.Default.(func() time.Time)
+	// topic.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	topic.UpdateDefaultUpdatedAt = topicDescUpdatedAt.UpdateDefault.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescIsActive is the schema descriptor for is_active field.

@@ -18,6 +18,8 @@ type Tx struct {
 	Device *DeviceClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// Topic is the client for interacting with the Topic builders.
+	Topic *TopicClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -154,6 +156,7 @@ func (tx *Tx) init() {
 	tx.ApiKey = NewApiKeyClient(tx.config)
 	tx.Device = NewDeviceClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
+	tx.Topic = NewTopicClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

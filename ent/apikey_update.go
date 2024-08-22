@@ -9,6 +9,7 @@ import (
 	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"iosync/ent/topic"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -170,6 +171,21 @@ func (aku *ApiKeyUpdate) SetDevice(d *Device) *ApiKeyUpdate {
 	return aku.SetDeviceID(d.ID)
 }
 
+// AddTopicIDs adds the "topics" edge to the Topic entity by IDs.
+func (aku *ApiKeyUpdate) AddTopicIDs(ids ...int) *ApiKeyUpdate {
+	aku.mutation.AddTopicIDs(ids...)
+	return aku
+}
+
+// AddTopics adds the "topics" edges to the Topic entity.
+func (aku *ApiKeyUpdate) AddTopics(t ...*Topic) *ApiKeyUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return aku.AddTopicIDs(ids...)
+}
+
 // Mutation returns the ApiKeyMutation object of the builder.
 func (aku *ApiKeyUpdate) Mutation() *ApiKeyMutation {
 	return aku.mutation
@@ -179,6 +195,27 @@ func (aku *ApiKeyUpdate) Mutation() *ApiKeyMutation {
 func (aku *ApiKeyUpdate) ClearDevice() *ApiKeyUpdate {
 	aku.mutation.ClearDevice()
 	return aku
+}
+
+// ClearTopics clears all "topics" edges to the Topic entity.
+func (aku *ApiKeyUpdate) ClearTopics() *ApiKeyUpdate {
+	aku.mutation.ClearTopics()
+	return aku
+}
+
+// RemoveTopicIDs removes the "topics" edge to Topic entities by IDs.
+func (aku *ApiKeyUpdate) RemoveTopicIDs(ids ...int) *ApiKeyUpdate {
+	aku.mutation.RemoveTopicIDs(ids...)
+	return aku
+}
+
+// RemoveTopics removes "topics" edges to Topic entities.
+func (aku *ApiKeyUpdate) RemoveTopics(t ...*Topic) *ApiKeyUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return aku.RemoveTopicIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -281,6 +318,51 @@ func (aku *ApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if aku.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.TopicsTable,
+			Columns: []string{apikey.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := aku.mutation.RemovedTopicsIDs(); len(nodes) > 0 && !aku.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.TopicsTable,
+			Columns: []string{apikey.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := aku.mutation.TopicsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.TopicsTable,
+			Columns: []string{apikey.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -449,6 +531,21 @@ func (akuo *ApiKeyUpdateOne) SetDevice(d *Device) *ApiKeyUpdateOne {
 	return akuo.SetDeviceID(d.ID)
 }
 
+// AddTopicIDs adds the "topics" edge to the Topic entity by IDs.
+func (akuo *ApiKeyUpdateOne) AddTopicIDs(ids ...int) *ApiKeyUpdateOne {
+	akuo.mutation.AddTopicIDs(ids...)
+	return akuo
+}
+
+// AddTopics adds the "topics" edges to the Topic entity.
+func (akuo *ApiKeyUpdateOne) AddTopics(t ...*Topic) *ApiKeyUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return akuo.AddTopicIDs(ids...)
+}
+
 // Mutation returns the ApiKeyMutation object of the builder.
 func (akuo *ApiKeyUpdateOne) Mutation() *ApiKeyMutation {
 	return akuo.mutation
@@ -458,6 +555,27 @@ func (akuo *ApiKeyUpdateOne) Mutation() *ApiKeyMutation {
 func (akuo *ApiKeyUpdateOne) ClearDevice() *ApiKeyUpdateOne {
 	akuo.mutation.ClearDevice()
 	return akuo
+}
+
+// ClearTopics clears all "topics" edges to the Topic entity.
+func (akuo *ApiKeyUpdateOne) ClearTopics() *ApiKeyUpdateOne {
+	akuo.mutation.ClearTopics()
+	return akuo
+}
+
+// RemoveTopicIDs removes the "topics" edge to Topic entities by IDs.
+func (akuo *ApiKeyUpdateOne) RemoveTopicIDs(ids ...int) *ApiKeyUpdateOne {
+	akuo.mutation.RemoveTopicIDs(ids...)
+	return akuo
+}
+
+// RemoveTopics removes "topics" edges to Topic entities.
+func (akuo *ApiKeyUpdateOne) RemoveTopics(t ...*Topic) *ApiKeyUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return akuo.RemoveTopicIDs(ids...)
 }
 
 // Where appends a list predicates to the ApiKeyUpdate builder.
@@ -590,6 +708,51 @@ func (akuo *ApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ApiKey, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if akuo.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.TopicsTable,
+			Columns: []string{apikey.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := akuo.mutation.RemovedTopicsIDs(); len(nodes) > 0 && !akuo.mutation.TopicsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.TopicsTable,
+			Columns: []string{apikey.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := akuo.mutation.TopicsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.TopicsTable,
+			Columns: []string{apikey.TopicsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

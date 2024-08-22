@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"iosync/ent/topic"
 	"math"
 
 	"entgo.io/ent"
@@ -24,6 +26,7 @@ type ApiKeyQuery struct {
 	inters     []Interceptor
 	predicates []predicate.ApiKey
 	withDevice *DeviceQuery
+	withTopics *TopicQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -76,6 +79,28 @@ func (akq *ApiKeyQuery) QueryDevice() *DeviceQuery {
 			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
 			sqlgraph.To(device.Table, device.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, apikey.DeviceTable, apikey.DeviceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(akq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTopics chains the current query on the "topics" edge.
+func (akq *ApiKeyQuery) QueryTopics() *TopicQuery {
+	query := (&TopicClient{config: akq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := akq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := akq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
+			sqlgraph.To(topic.Table, topic.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, apikey.TopicsTable, apikey.TopicsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(akq.driver.Dialect(), step)
 		return fromU, nil
@@ -276,6 +301,7 @@ func (akq *ApiKeyQuery) Clone() *ApiKeyQuery {
 		inters:     append([]Interceptor{}, akq.inters...),
 		predicates: append([]predicate.ApiKey{}, akq.predicates...),
 		withDevice: akq.withDevice.Clone(),
+		withTopics: akq.withTopics.Clone(),
 		// clone intermediate query.
 		sql:  akq.sql.Clone(),
 		path: akq.path,
@@ -290,6 +316,17 @@ func (akq *ApiKeyQuery) WithDevice(opts ...func(*DeviceQuery)) *ApiKeyQuery {
 		opt(query)
 	}
 	akq.withDevice = query
+	return akq
+}
+
+// WithTopics tells the query-builder to eager-load the nodes that are connected to
+// the "topics" edge. The optional arguments are used to configure the query builder of the edge.
+func (akq *ApiKeyQuery) WithTopics(opts ...func(*TopicQuery)) *ApiKeyQuery {
+	query := (&TopicClient{config: akq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	akq.withTopics = query
 	return akq
 }
 
@@ -372,8 +409,9 @@ func (akq *ApiKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ApiK
 		nodes       = []*ApiKey{}
 		withFKs     = akq.withFKs
 		_spec       = akq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			akq.withDevice != nil,
+			akq.withTopics != nil,
 		}
 	)
 	if akq.withDevice != nil {
@@ -403,6 +441,13 @@ func (akq *ApiKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ApiK
 	if query := akq.withDevice; query != nil {
 		if err := akq.loadDevice(ctx, query, nodes, nil,
 			func(n *ApiKey, e *Device) { n.Edges.Device = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := akq.withTopics; query != nil {
+		if err := akq.loadTopics(ctx, query, nodes,
+			func(n *ApiKey) { n.Edges.Topics = []*Topic{} },
+			func(n *ApiKey, e *Topic) { n.Edges.Topics = append(n.Edges.Topics, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -438,6 +483,37 @@ func (akq *ApiKeyQuery) loadDevice(ctx context.Context, query *DeviceQuery, node
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (akq *ApiKeyQuery) loadTopics(ctx context.Context, query *TopicQuery, nodes []*ApiKey, init func(*ApiKey), assign func(*ApiKey, *Topic)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*ApiKey)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Topic(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(apikey.TopicsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.api_key_topics
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "api_key_topics" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "api_key_topics" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

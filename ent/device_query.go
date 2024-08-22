@@ -9,6 +9,7 @@ import (
 	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
+	"iosync/ent/topic"
 	"iosync/ent/user"
 	"math"
 
@@ -27,6 +28,7 @@ type DeviceQuery struct {
 	predicates []predicate.Device
 	withUser   *UserQuery
 	withAPIKey *ApiKeyQuery
+	withTopics *TopicQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -101,6 +103,28 @@ func (dq *DeviceQuery) QueryAPIKey() *ApiKeyQuery {
 			sqlgraph.From(device.Table, device.FieldID, selector),
 			sqlgraph.To(apikey.Table, apikey.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, device.APIKeyTable, device.APIKeyColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTopics chains the current query on the "topics" edge.
+func (dq *DeviceQuery) QueryTopics() *TopicQuery {
+	query := (&TopicClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(device.Table, device.FieldID, selector),
+			sqlgraph.To(topic.Table, topic.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, device.TopicsTable, device.TopicsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +326,7 @@ func (dq *DeviceQuery) Clone() *DeviceQuery {
 		predicates: append([]predicate.Device{}, dq.predicates...),
 		withUser:   dq.withUser.Clone(),
 		withAPIKey: dq.withAPIKey.Clone(),
+		withTopics: dq.withTopics.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -327,6 +352,17 @@ func (dq *DeviceQuery) WithAPIKey(opts ...func(*ApiKeyQuery)) *DeviceQuery {
 		opt(query)
 	}
 	dq.withAPIKey = query
+	return dq
+}
+
+// WithTopics tells the query-builder to eager-load the nodes that are connected to
+// the "topics" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DeviceQuery) WithTopics(opts ...func(*TopicQuery)) *DeviceQuery {
+	query := (&TopicClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withTopics = query
 	return dq
 }
 
@@ -409,9 +445,10 @@ func (dq *DeviceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Devic
 		nodes       = []*Device{}
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			dq.withUser != nil,
 			dq.withAPIKey != nil,
+			dq.withTopics != nil,
 		}
 	)
 	if dq.withUser != nil {
@@ -447,6 +484,13 @@ func (dq *DeviceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Devic
 	if query := dq.withAPIKey; query != nil {
 		if err := dq.loadAPIKey(ctx, query, nodes, nil,
 			func(n *Device, e *ApiKey) { n.Edges.APIKey = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withTopics; query != nil {
+		if err := dq.loadTopics(ctx, query, nodes,
+			func(n *Device) { n.Edges.Topics = []*Topic{} },
+			func(n *Device, e *Topic) { n.Edges.Topics = append(n.Edges.Topics, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -508,6 +552,37 @@ func (dq *DeviceQuery) loadAPIKey(ctx context.Context, query *ApiKeyQuery, nodes
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "device_api_key" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (dq *DeviceQuery) loadTopics(ctx context.Context, query *TopicQuery, nodes []*Device, init func(*Device), assign func(*Device, *Topic)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Device)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Topic(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(device.TopicsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.device_topics
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "device_topics" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "device_topics" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

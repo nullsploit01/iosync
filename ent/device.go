@@ -40,9 +40,11 @@ type DeviceEdges struct {
 	User *User `json:"user,omitempty"`
 	// APIKey holds the value of the api_key edge.
 	APIKey *ApiKey `json:"api_key,omitempty"`
+	// Topics holds the value of the topics edge.
+	Topics []*Topic `json:"topics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -65,6 +67,15 @@ func (e DeviceEdges) APIKeyOrErr() (*ApiKey, error) {
 		return nil, &NotFoundError{label: apikey.Label}
 	}
 	return nil, &NotLoadedError{edge: "api_key"}
+}
+
+// TopicsOrErr returns the Topics value or an error if the edge
+// was not loaded in eager-loading.
+func (e DeviceEdges) TopicsOrErr() ([]*Topic, error) {
+	if e.loadedTypes[2] {
+		return e.Topics, nil
+	}
+	return nil, &NotLoadedError{edge: "topics"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -155,6 +166,11 @@ func (d *Device) QueryUser() *UserQuery {
 // QueryAPIKey queries the "api_key" edge of the Device entity.
 func (d *Device) QueryAPIKey() *ApiKeyQuery {
 	return NewDeviceClient(d.config).QueryAPIKey(d)
+}
+
+// QueryTopics queries the "topics" edge of the Device entity.
+func (d *Device) QueryTopics() *TopicQuery {
+	return NewDeviceClient(d.config).QueryTopics(d)
 }
 
 // Update returns a builder for updating this Device.

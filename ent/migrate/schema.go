@@ -81,6 +81,39 @@ var (
 			},
 		},
 	}
+	// TopicsColumns holds the columns for the "topics" table.
+	TopicsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "qos", Type: field.TypeInt, Default: 0},
+		{Name: "retain", Type: field.TypeBool, Default: false},
+		{Name: "last_used", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "api_key_topics", Type: field.TypeInt, Nullable: true},
+		{Name: "device_topics", Type: field.TypeInt, Nullable: true},
+	}
+	// TopicsTable holds the schema information for the "topics" table.
+	TopicsTable = &schema.Table{
+		Name:       "topics",
+		Columns:    TopicsColumns,
+		PrimaryKey: []*schema.Column{TopicsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "topics_api_keys_topics",
+				Columns:    []*schema.Column{TopicsColumns[8]},
+				RefColumns: []*schema.Column{APIKeysColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "topics_devices_topics",
+				Columns:    []*schema.Column{TopicsColumns[9]},
+				RefColumns: []*schema.Column{DevicesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -110,6 +143,7 @@ var (
 		APIKeysTable,
 		DevicesTable,
 		SessionsTable,
+		TopicsTable,
 		UsersTable,
 	}
 )
@@ -118,4 +152,6 @@ func init() {
 	APIKeysTable.ForeignKeys[0].RefTable = DevicesTable
 	DevicesTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	TopicsTable.ForeignKeys[0].RefTable = APIKeysTable
+	TopicsTable.ForeignKeys[1].RefTable = DevicesTable
 }
