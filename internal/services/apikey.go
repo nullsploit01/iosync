@@ -55,6 +55,10 @@ func (a *ApiKeyService) CreateApiKey(ctx context.Context, deviceId int, request 
 	return a.apiKeyRepository.Create(ctx, &payload, device)
 }
 
+func (a *ApiKeyService) GetApiKey(ctx context.Context, deviceId int, key string) (*ent.ApiKey, error) {
+	return a.apiKeyRepository.GetDeviceKey(ctx, deviceId, key)
+}
+
 func (a *ApiKeyService) ActivateApiKey(ctx context.Context, deviceId int, key string) error {
 	apiKey, err := a.apiKeyRepository.GetDeviceKey(ctx, deviceId, key)
 	if err != nil {
