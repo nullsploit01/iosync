@@ -27,7 +27,7 @@ type Topic struct {
 	// Retain holds the value of the "retain" field.
 	Retain bool `json:"retain,omitempty"`
 	// LastUsed holds the value of the "last_used" field.
-	LastUsed time.Time `json:"last_used,omitempty"`
+	LastUsed *time.Time `json:"last_used,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -123,7 +123,8 @@ func (t *Topic) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_used", values[i])
 			} else if value.Valid {
-				t.LastUsed = value.Time
+				t.LastUsed = new(time.Time)
+				*t.LastUsed = value.Time
 			}
 		case topic.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -197,8 +198,10 @@ func (t *Topic) String() string {
 	builder.WriteString("retain=")
 	builder.WriteString(fmt.Sprintf("%v", t.Retain))
 	builder.WriteString(", ")
-	builder.WriteString("last_used=")
-	builder.WriteString(t.LastUsed.Format(time.ANSIC))
+	if v := t.LastUsed; v != nil {
+		builder.WriteString("last_used=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))

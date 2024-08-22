@@ -88,7 +88,7 @@ var (
 		{Name: "is_active", Type: field.TypeBool, Default: true},
 		{Name: "qos", Type: field.TypeInt, Default: 0},
 		{Name: "retain", Type: field.TypeBool, Default: false},
-		{Name: "last_used", Type: field.TypeTime},
+		{Name: "last_used", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "device_topics", Type: field.TypeInt, Nullable: true},

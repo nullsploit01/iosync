@@ -20,7 +20,7 @@ func (Topic) Fields() []ent.Field {
 		field.Bool("is_active").Default(true),
 		field.Int("qos").Default(0), // QoS defaults to 0
 		field.Bool("retain").Default(false),
-		field.Time("last_used"),
+		field.Time("last_used").Optional().Nillable(),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

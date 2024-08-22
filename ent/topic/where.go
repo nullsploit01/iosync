@@ -255,6 +255,16 @@ func LastUsedLTE(v time.Time) predicate.Topic {
 	return predicate.Topic(sql.FieldLTE(FieldLastUsed, v))
 }
 
+// LastUsedIsNil applies the IsNil predicate on the "last_used" field.
+func LastUsedIsNil() predicate.Topic {
+	return predicate.Topic(sql.FieldIsNull(FieldLastUsed))
+}
+
+// LastUsedNotNil applies the NotNil predicate on the "last_used" field.
+func LastUsedNotNil() predicate.Topic {
+	return predicate.Topic(sql.FieldNotNull(FieldLastUsed))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldCreatedAt, v))

@@ -106,6 +106,12 @@ func (tu *TopicUpdate) SetNillableLastUsed(t *time.Time) *TopicUpdate {
 	return tu
 }
 
+// ClearLastUsed clears the value of the "last_used" field.
+func (tu *TopicUpdate) ClearLastUsed() *TopicUpdate {
+	tu.mutation.ClearLastUsed()
+	return tu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tu *TopicUpdate) SetCreatedAt(t time.Time) *TopicUpdate {
 	tu.mutation.SetCreatedAt(t)
@@ -231,6 +237,9 @@ func (tu *TopicUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.LastUsed(); ok {
 		_spec.SetField(topic.FieldLastUsed, field.TypeTime, value)
+	}
+	if tu.mutation.LastUsedCleared() {
+		_spec.ClearField(topic.FieldLastUsed, field.TypeTime)
 	}
 	if value, ok := tu.mutation.CreatedAt(); ok {
 		_spec.SetField(topic.FieldCreatedAt, field.TypeTime, value)
@@ -361,6 +370,12 @@ func (tuo *TopicUpdateOne) SetNillableLastUsed(t *time.Time) *TopicUpdateOne {
 	if t != nil {
 		tuo.SetLastUsed(*t)
 	}
+	return tuo
+}
+
+// ClearLastUsed clears the value of the "last_used" field.
+func (tuo *TopicUpdateOne) ClearLastUsed() *TopicUpdateOne {
+	tuo.mutation.ClearLastUsed()
 	return tuo
 }
 
@@ -519,6 +534,9 @@ func (tuo *TopicUpdateOne) sqlSave(ctx context.Context) (_node *Topic, err error
 	}
 	if value, ok := tuo.mutation.LastUsed(); ok {
 		_spec.SetField(topic.FieldLastUsed, field.TypeTime, value)
+	}
+	if tuo.mutation.LastUsedCleared() {
+		_spec.ClearField(topic.FieldLastUsed, field.TypeTime)
 	}
 	if value, ok := tuo.mutation.CreatedAt(); ok {
 		_spec.SetField(topic.FieldCreatedAt, field.TypeTime, value)

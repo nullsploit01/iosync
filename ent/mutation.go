@@ -2421,7 +2421,7 @@ func (m *TopicMutation) LastUsed() (r time.Time, exists bool) {
 // OldLastUsed returns the old "last_used" field's value of the Topic entity.
 // If the Topic object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TopicMutation) OldLastUsed(ctx context.Context) (v time.Time, err error) {
+func (m *TopicMutation) OldLastUsed(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldLastUsed is only allowed on UpdateOne operations")
 	}
@@ -2435,9 +2435,22 @@ func (m *TopicMutation) OldLastUsed(ctx context.Context) (v time.Time, err error
 	return oldValue.LastUsed, nil
 }
 
+// ClearLastUsed clears the value of the "last_used" field.
+func (m *TopicMutation) ClearLastUsed() {
+	m.last_used = nil
+	m.clearedFields[topic.FieldLastUsed] = struct{}{}
+}
+
+// LastUsedCleared returns if the "last_used" field was cleared in this mutation.
+func (m *TopicMutation) LastUsedCleared() bool {
+	_, ok := m.clearedFields[topic.FieldLastUsed]
+	return ok
+}
+
 // ResetLastUsed resets all changes to the "last_used" field.
 func (m *TopicMutation) ResetLastUsed() {
 	m.last_used = nil
+	delete(m.clearedFields, topic.FieldLastUsed)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -2754,7 +2767,11 @@ func (m *TopicMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TopicMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(topic.FieldLastUsed) {
+		fields = append(fields, topic.FieldLastUsed)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2767,6 +2784,11 @@ func (m *TopicMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TopicMutation) ClearField(name string) error {
+	switch name {
+	case topic.FieldLastUsed:
+		m.ClearLastUsed()
+		return nil
+	}
 	return fmt.Errorf("unknown Topic nullable field %s", name)
 }
 

@@ -75,6 +75,14 @@ func (tc *TopicCreate) SetLastUsed(t time.Time) *TopicCreate {
 	return tc
 }
 
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (tc *TopicCreate) SetNillableLastUsed(t *time.Time) *TopicCreate {
+	if t != nil {
+		tc.SetLastUsed(*t)
+	}
+	return tc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tc *TopicCreate) SetCreatedAt(t time.Time) *TopicCreate {
 	tc.mutation.SetCreatedAt(t)
@@ -198,9 +206,6 @@ func (tc *TopicCreate) check() error {
 	if _, ok := tc.mutation.Retain(); !ok {
 		return &ValidationError{Name: "retain", err: errors.New(`ent: missing required field "Topic.retain"`)}
 	}
-	if _, ok := tc.mutation.LastUsed(); !ok {
-		return &ValidationError{Name: "last_used", err: errors.New(`ent: missing required field "Topic.last_used"`)}
-	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Topic.created_at"`)}
 	}
@@ -251,7 +256,7 @@ func (tc *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.LastUsed(); ok {
 		_spec.SetField(topic.FieldLastUsed, field.TypeTime, value)
-		_node.LastUsed = value
+		_node.LastUsed = &value
 	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(topic.FieldCreatedAt, field.TypeTime, value)
