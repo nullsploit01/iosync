@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"iosync/ent"
 	"iosync/internal/services"
 	"net/http"
@@ -32,7 +33,13 @@ func (s *Server) CreateApiKey(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var notFoundError *ent.NotFoundError
 		if errors.As(err, &notFoundError) {
-			s.ErrorJson(w, errors.New("device not found"), http.StatusBadRequest)
+			s.ErrorJson(w, errors.New("device not found"))
+			return
+		}
+
+		var constraintError *ent.ConstraintError
+		if errors.As(err, &constraintError) {
+			s.ErrorJson(w, fmt.Errorf("device with ID %d already has an associated API key", deviceId))
 			return
 		}
 
