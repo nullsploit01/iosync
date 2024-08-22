@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"iosync/ent/apikey"
 	"iosync/ent/device"
-	"iosync/ent/topic"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -143,21 +142,6 @@ func (akc *ApiKeyCreate) SetNillableDeviceID(id *int) *ApiKeyCreate {
 // SetDevice sets the "device" edge to the Device entity.
 func (akc *ApiKeyCreate) SetDevice(d *Device) *ApiKeyCreate {
 	return akc.SetDeviceID(d.ID)
-}
-
-// AddTopicIDs adds the "topics" edge to the Topic entity by IDs.
-func (akc *ApiKeyCreate) AddTopicIDs(ids ...int) *ApiKeyCreate {
-	akc.mutation.AddTopicIDs(ids...)
-	return akc
-}
-
-// AddTopics adds the "topics" edges to the Topic entity.
-func (akc *ApiKeyCreate) AddTopics(t ...*Topic) *ApiKeyCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return akc.AddTopicIDs(ids...)
 }
 
 // Mutation returns the ApiKeyMutation object of the builder.
@@ -303,22 +287,6 @@ func (akc *ApiKeyCreate) createSpec() (*ApiKey, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.device_api_key = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := akc.mutation.TopicsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   apikey.TopicsTable,
-			Columns: []string{apikey.TopicsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

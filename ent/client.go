@@ -362,22 +362,6 @@ func (c *ApiKeyClient) QueryDevice(ak *ApiKey) *DeviceQuery {
 	return query
 }
 
-// QueryTopics queries the topics edge of a ApiKey.
-func (c *ApiKeyClient) QueryTopics(ak *ApiKey) *TopicQuery {
-	query := (&TopicClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ak.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(apikey.Table, apikey.FieldID, id),
-			sqlgraph.To(topic.Table, topic.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, apikey.TopicsTable, apikey.TopicsColumn),
-		)
-		fromV = sqlgraph.Neighbors(ak.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *ApiKeyClient) Hooks() []Hook {
 	return c.hooks.ApiKey
@@ -850,22 +834,6 @@ func (c *TopicClient) QueryDevice(t *Topic) *DeviceQuery {
 			sqlgraph.From(topic.Table, topic.FieldID, id),
 			sqlgraph.To(device.Table, device.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, topic.DeviceTable, topic.DeviceColumn),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAPIKey queries the api_key edge of a Topic.
-func (c *TopicClient) QueryAPIKey(t *Topic) *ApiKeyQuery {
-	query := (&ApiKeyClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(topic.Table, topic.FieldID, id),
-			sqlgraph.To(apikey.Table, apikey.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, topic.APIKeyTable, topic.APIKeyColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"fmt"
-	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/topic"
 	"strings"
@@ -35,21 +34,18 @@ type Topic struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TopicQuery when eager-loading is set.
-	Edges          TopicEdges `json:"edges"`
-	api_key_topics *int
-	device_topics  *int
-	selectValues   sql.SelectValues
+	Edges         TopicEdges `json:"edges"`
+	device_topics *int
+	selectValues  sql.SelectValues
 }
 
 // TopicEdges holds the relations/edges for other nodes in the graph.
 type TopicEdges struct {
 	// Device holds the value of the device edge.
 	Device *Device `json:"device,omitempty"`
-	// APIKey holds the value of the api_key edge.
-	APIKey *ApiKey `json:"api_key,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // DeviceOrErr returns the Device value or an error if the edge
@@ -61,17 +57,6 @@ func (e TopicEdges) DeviceOrErr() (*Device, error) {
 		return nil, &NotFoundError{label: device.Label}
 	}
 	return nil, &NotLoadedError{edge: "device"}
-}
-
-// APIKeyOrErr returns the APIKey value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e TopicEdges) APIKeyOrErr() (*ApiKey, error) {
-	if e.APIKey != nil {
-		return e.APIKey, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: apikey.Label}
-	}
-	return nil, &NotLoadedError{edge: "api_key"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -87,9 +72,7 @@ func (*Topic) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case topic.FieldLastUsed, topic.FieldCreatedAt, topic.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case topic.ForeignKeys[0]: // api_key_topics
-			values[i] = new(sql.NullInt64)
-		case topic.ForeignKeys[1]: // device_topics
+		case topic.ForeignKeys[0]: // device_topics
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -156,13 +139,6 @@ func (t *Topic) assignValues(columns []string, values []any) error {
 			}
 		case topic.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field api_key_topics", value)
-			} else if value.Valid {
-				t.api_key_topics = new(int)
-				*t.api_key_topics = int(value.Int64)
-			}
-		case topic.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field device_topics", value)
 			} else if value.Valid {
 				t.device_topics = new(int)
@@ -184,11 +160,6 @@ func (t *Topic) Value(name string) (ent.Value, error) {
 // QueryDevice queries the "device" edge of the Topic entity.
 func (t *Topic) QueryDevice() *DeviceQuery {
 	return NewTopicClient(t.config).QueryDevice(t)
-}
-
-// QueryAPIKey queries the "api_key" edge of the Topic entity.
-func (t *Topic) QueryAPIKey() *ApiKeyQuery {
-	return NewTopicClient(t.config).QueryAPIKey(t)
 }
 
 // Update returns a builder for updating this Topic.

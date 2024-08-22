@@ -32,9 +32,5 @@ func (Topic) Edges() []ent.Edge {
 		edge.From("device", Device.Type).
 			Ref("topics").
 			Unique(),
-
-		edge.From("api_key", ApiKey.Type).
-			Ref("topics").
-			Unique(),
 	}
 }

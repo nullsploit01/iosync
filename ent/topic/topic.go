@@ -30,8 +30,6 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeDevice holds the string denoting the device edge name in mutations.
 	EdgeDevice = "device"
-	// EdgeAPIKey holds the string denoting the api_key edge name in mutations.
-	EdgeAPIKey = "api_key"
 	// Table holds the table name of the topic in the database.
 	Table = "topics"
 	// DeviceTable is the table that holds the device relation/edge.
@@ -41,13 +39,6 @@ const (
 	DeviceInverseTable = "devices"
 	// DeviceColumn is the table column denoting the device relation/edge.
 	DeviceColumn = "device_topics"
-	// APIKeyTable is the table that holds the api_key relation/edge.
-	APIKeyTable = "topics"
-	// APIKeyInverseTable is the table name for the ApiKey entity.
-	// It exists in this package in order to avoid circular dependency with the "apikey" package.
-	APIKeyInverseTable = "api_keys"
-	// APIKeyColumn is the table column denoting the api_key relation/edge.
-	APIKeyColumn = "api_key_topics"
 )
 
 // Columns holds all SQL columns for topic fields.
@@ -65,7 +56,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "topics"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"api_key_topics",
 	"device_topics",
 }
 
@@ -150,24 +140,10 @@ func ByDeviceField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDeviceStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByAPIKeyField orders the results by api_key field.
-func ByAPIKeyField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAPIKeyStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newDeviceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DeviceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, DeviceTable, DeviceColumn),
-	)
-}
-func newAPIKeyStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(APIKeyInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, APIKeyTable, APIKeyColumn),
 	)
 }

@@ -5,7 +5,6 @@ package ent
 import (
 	"context"
 	"fmt"
-	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
 	"iosync/ent/topic"
@@ -25,7 +24,6 @@ type TopicQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Topic
 	withDevice *DeviceQuery
-	withAPIKey *ApiKeyQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -78,28 +76,6 @@ func (tq *TopicQuery) QueryDevice() *DeviceQuery {
 			sqlgraph.From(topic.Table, topic.FieldID, selector),
 			sqlgraph.To(device.Table, device.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, topic.DeviceTable, topic.DeviceColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAPIKey chains the current query on the "api_key" edge.
-func (tq *TopicQuery) QueryAPIKey() *ApiKeyQuery {
-	query := (&ApiKeyClient{config: tq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := tq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(topic.Table, topic.FieldID, selector),
-			sqlgraph.To(apikey.Table, apikey.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, topic.APIKeyTable, topic.APIKeyColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -300,7 +276,6 @@ func (tq *TopicQuery) Clone() *TopicQuery {
 		inters:     append([]Interceptor{}, tq.inters...),
 		predicates: append([]predicate.Topic{}, tq.predicates...),
 		withDevice: tq.withDevice.Clone(),
-		withAPIKey: tq.withAPIKey.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -315,17 +290,6 @@ func (tq *TopicQuery) WithDevice(opts ...func(*DeviceQuery)) *TopicQuery {
 		opt(query)
 	}
 	tq.withDevice = query
-	return tq
-}
-
-// WithAPIKey tells the query-builder to eager-load the nodes that are connected to
-// the "api_key" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TopicQuery) WithAPIKey(opts ...func(*ApiKeyQuery)) *TopicQuery {
-	query := (&ApiKeyClient{config: tq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	tq.withAPIKey = query
 	return tq
 }
 
@@ -408,12 +372,11 @@ func (tq *TopicQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Topic,
 		nodes       = []*Topic{}
 		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			tq.withDevice != nil,
-			tq.withAPIKey != nil,
 		}
 	)
-	if tq.withDevice != nil || tq.withAPIKey != nil {
+	if tq.withDevice != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -440,12 +403,6 @@ func (tq *TopicQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Topic,
 	if query := tq.withDevice; query != nil {
 		if err := tq.loadDevice(ctx, query, nodes, nil,
 			func(n *Topic, e *Device) { n.Edges.Device = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := tq.withAPIKey; query != nil {
-		if err := tq.loadAPIKey(ctx, query, nodes, nil,
-			func(n *Topic, e *ApiKey) { n.Edges.APIKey = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -477,38 +434,6 @@ func (tq *TopicQuery) loadDevice(ctx context.Context, query *DeviceQuery, nodes 
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "device_topics" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (tq *TopicQuery) loadAPIKey(ctx context.Context, query *ApiKeyQuery, nodes []*Topic, init func(*Topic), assign func(*Topic, *ApiKey)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Topic)
-	for i := range nodes {
-		if nodes[i].api_key_topics == nil {
-			continue
-		}
-		fk := *nodes[i].api_key_topics
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(apikey.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "api_key_topics" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

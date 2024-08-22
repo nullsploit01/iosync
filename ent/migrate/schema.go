@@ -91,7 +91,6 @@ var (
 		{Name: "last_used", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "api_key_topics", Type: field.TypeInt, Nullable: true},
 		{Name: "device_topics", Type: field.TypeInt, Nullable: true},
 	}
 	// TopicsTable holds the schema information for the "topics" table.
@@ -101,14 +100,8 @@ var (
 		PrimaryKey: []*schema.Column{TopicsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "topics_api_keys_topics",
-				Columns:    []*schema.Column{TopicsColumns[8]},
-				RefColumns: []*schema.Column{APIKeysColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "topics_devices_topics",
-				Columns:    []*schema.Column{TopicsColumns[9]},
+				Columns:    []*schema.Column{TopicsColumns[8]},
 				RefColumns: []*schema.Column{DevicesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -152,6 +145,5 @@ func init() {
 	APIKeysTable.ForeignKeys[0].RefTable = DevicesTable
 	DevicesTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
-	TopicsTable.ForeignKeys[0].RefTable = APIKeysTable
-	TopicsTable.ForeignKeys[1].RefTable = DevicesTable
+	TopicsTable.ForeignKeys[0].RefTable = DevicesTable
 }

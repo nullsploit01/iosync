@@ -18,6 +18,7 @@ type Server struct {
 	deviceService  *services.DeviceService
 	apiKeyService  *services.ApiKeyService
 	sessionService *services.SessionService
+	topicService   *services.TopicService
 }
 
 func InitServer(mqttClient mqtt.Client, dbClient *ent.Client) *http.Server {
@@ -27,6 +28,7 @@ func InitServer(mqttClient mqtt.Client, dbClient *ent.Client) *http.Server {
 	deviceService := services.NewDeviceService(mqttClient, dbClient)
 	apiKeyService := services.NewApiKeyService(mqttClient, dbClient)
 	sessionService := services.NewSessionService(dbClient)
+	topicService := services.NewTopicService(dbClient)
 
 	server := &Server{
 		port:           port,
@@ -34,6 +36,7 @@ func InitServer(mqttClient mqtt.Client, dbClient *ent.Client) *http.Server {
 		deviceService:  deviceService,
 		apiKeyService:  apiKeyService,
 		sessionService: sessionService,
+		topicService:   topicService,
 	}
 
 	httpServer := &http.Server{

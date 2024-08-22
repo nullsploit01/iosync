@@ -42,6 +42,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 			r.Get("/{id}", s.GetDevice)
 			r.Delete("/{id}", s.DeleteDevice)
 
+			r.Post("/{id}/topic", s.CreateTopic)
+
 			r.Post("/{id}/apikey", s.CreateApiKey)
 			r.Get("/{id}/apikey/{key}", s.GetApiKey)
 			r.Post("/{id}/apikey/{key}/activate", s.ActivateApiKey)

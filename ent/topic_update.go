@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/predicate"
 	"iosync/ent/topic"
@@ -146,25 +145,6 @@ func (tu *TopicUpdate) SetDevice(d *Device) *TopicUpdate {
 	return tu.SetDeviceID(d.ID)
 }
 
-// SetAPIKeyID sets the "api_key" edge to the ApiKey entity by ID.
-func (tu *TopicUpdate) SetAPIKeyID(id int) *TopicUpdate {
-	tu.mutation.SetAPIKeyID(id)
-	return tu
-}
-
-// SetNillableAPIKeyID sets the "api_key" edge to the ApiKey entity by ID if the given value is not nil.
-func (tu *TopicUpdate) SetNillableAPIKeyID(id *int) *TopicUpdate {
-	if id != nil {
-		tu = tu.SetAPIKeyID(*id)
-	}
-	return tu
-}
-
-// SetAPIKey sets the "api_key" edge to the ApiKey entity.
-func (tu *TopicUpdate) SetAPIKey(a *ApiKey) *TopicUpdate {
-	return tu.SetAPIKeyID(a.ID)
-}
-
 // Mutation returns the TopicMutation object of the builder.
 func (tu *TopicUpdate) Mutation() *TopicMutation {
 	return tu.mutation
@@ -173,12 +153,6 @@ func (tu *TopicUpdate) Mutation() *TopicMutation {
 // ClearDevice clears the "device" edge to the Device entity.
 func (tu *TopicUpdate) ClearDevice() *TopicUpdate {
 	tu.mutation.ClearDevice()
-	return tu
-}
-
-// ClearAPIKey clears the "api_key" edge to the ApiKey entity.
-func (tu *TopicUpdate) ClearAPIKey() *TopicUpdate {
-	tu.mutation.ClearAPIKey()
 	return tu
 }
 
@@ -286,35 +260,6 @@ func (tu *TopicUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tu.mutation.APIKeyCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   topic.APIKeyTable,
-			Columns: []string{topic.APIKeyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.APIKeyIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   topic.APIKeyTable,
-			Columns: []string{topic.APIKeyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -458,25 +403,6 @@ func (tuo *TopicUpdateOne) SetDevice(d *Device) *TopicUpdateOne {
 	return tuo.SetDeviceID(d.ID)
 }
 
-// SetAPIKeyID sets the "api_key" edge to the ApiKey entity by ID.
-func (tuo *TopicUpdateOne) SetAPIKeyID(id int) *TopicUpdateOne {
-	tuo.mutation.SetAPIKeyID(id)
-	return tuo
-}
-
-// SetNillableAPIKeyID sets the "api_key" edge to the ApiKey entity by ID if the given value is not nil.
-func (tuo *TopicUpdateOne) SetNillableAPIKeyID(id *int) *TopicUpdateOne {
-	if id != nil {
-		tuo = tuo.SetAPIKeyID(*id)
-	}
-	return tuo
-}
-
-// SetAPIKey sets the "api_key" edge to the ApiKey entity.
-func (tuo *TopicUpdateOne) SetAPIKey(a *ApiKey) *TopicUpdateOne {
-	return tuo.SetAPIKeyID(a.ID)
-}
-
 // Mutation returns the TopicMutation object of the builder.
 func (tuo *TopicUpdateOne) Mutation() *TopicMutation {
 	return tuo.mutation
@@ -485,12 +411,6 @@ func (tuo *TopicUpdateOne) Mutation() *TopicMutation {
 // ClearDevice clears the "device" edge to the Device entity.
 func (tuo *TopicUpdateOne) ClearDevice() *TopicUpdateOne {
 	tuo.mutation.ClearDevice()
-	return tuo
-}
-
-// ClearAPIKey clears the "api_key" edge to the ApiKey entity.
-func (tuo *TopicUpdateOne) ClearAPIKey() *TopicUpdateOne {
-	tuo.mutation.ClearAPIKey()
 	return tuo
 }
 
@@ -628,35 +548,6 @@ func (tuo *TopicUpdateOne) sqlSave(ctx context.Context) (_node *Topic, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(device.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tuo.mutation.APIKeyCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   topic.APIKeyTable,
-			Columns: []string{topic.APIKeyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.APIKeyIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   topic.APIKeyTable,
-			Columns: []string{topic.APIKeyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

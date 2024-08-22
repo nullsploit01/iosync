@@ -45,11 +45,9 @@ type ApiKey struct {
 type ApiKeyEdges struct {
 	// Device holds the value of the device edge.
 	Device *Device `json:"device,omitempty"`
-	// Topics holds the value of the topics edge.
-	Topics []*Topic `json:"topics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // DeviceOrErr returns the Device value or an error if the edge
@@ -61,15 +59,6 @@ func (e ApiKeyEdges) DeviceOrErr() (*Device, error) {
 		return nil, &NotFoundError{label: device.Label}
 	}
 	return nil, &NotLoadedError{edge: "device"}
-}
-
-// TopicsOrErr returns the Topics value or an error if the edge
-// was not loaded in eager-loading.
-func (e ApiKeyEdges) TopicsOrErr() ([]*Topic, error) {
-	if e.loadedTypes[1] {
-		return e.Topics, nil
-	}
-	return nil, &NotLoadedError{edge: "topics"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -182,11 +171,6 @@ func (ak *ApiKey) Value(name string) (ent.Value, error) {
 // QueryDevice queries the "device" edge of the ApiKey entity.
 func (ak *ApiKey) QueryDevice() *DeviceQuery {
 	return NewApiKeyClient(ak.config).QueryDevice(ak)
-}
-
-// QueryTopics queries the "topics" edge of the ApiKey entity.
-func (ak *ApiKey) QueryTopics() *TopicQuery {
-	return NewApiKeyClient(ak.config).QueryTopics(ak)
 }
 
 // Update returns a builder for updating this ApiKey.

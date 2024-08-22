@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"iosync/ent/apikey"
 	"iosync/ent/device"
 	"iosync/ent/topic"
 	"time"
@@ -121,25 +120,6 @@ func (tc *TopicCreate) SetNillableDeviceID(id *int) *TopicCreate {
 // SetDevice sets the "device" edge to the Device entity.
 func (tc *TopicCreate) SetDevice(d *Device) *TopicCreate {
 	return tc.SetDeviceID(d.ID)
-}
-
-// SetAPIKeyID sets the "api_key" edge to the ApiKey entity by ID.
-func (tc *TopicCreate) SetAPIKeyID(id int) *TopicCreate {
-	tc.mutation.SetAPIKeyID(id)
-	return tc
-}
-
-// SetNillableAPIKeyID sets the "api_key" edge to the ApiKey entity by ID if the given value is not nil.
-func (tc *TopicCreate) SetNillableAPIKeyID(id *int) *TopicCreate {
-	if id != nil {
-		tc = tc.SetAPIKeyID(*id)
-	}
-	return tc
-}
-
-// SetAPIKey sets the "api_key" edge to the ApiKey entity.
-func (tc *TopicCreate) SetAPIKey(a *ApiKey) *TopicCreate {
-	return tc.SetAPIKeyID(a.ID)
 }
 
 // Mutation returns the TopicMutation object of the builder.
@@ -296,23 +276,6 @@ func (tc *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.device_topics = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.APIKeyIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   topic.APIKeyTable,
-			Columns: []string{topic.APIKeyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.api_key_topics = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
