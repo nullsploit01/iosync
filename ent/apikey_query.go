@@ -75,7 +75,7 @@ func (akq *ApiKeyQuery) QueryDevice() *DeviceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(apikey.Table, apikey.FieldID, selector),
 			sqlgraph.To(device.Table, device.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, apikey.DeviceTable, apikey.DeviceColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, apikey.DeviceTable, apikey.DeviceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(akq.driver.Dialect(), step)
 		return fromU, nil
@@ -413,10 +413,10 @@ func (akq *ApiKeyQuery) loadDevice(ctx context.Context, query *DeviceQuery, node
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*ApiKey)
 	for i := range nodes {
-		if nodes[i].device_api_keys == nil {
+		if nodes[i].device_api_key == nil {
 			continue
 		}
-		fk := *nodes[i].device_api_keys
+		fk := *nodes[i].device_api_key
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -433,7 +433,7 @@ func (akq *ApiKeyQuery) loadDevice(ctx context.Context, query *DeviceQuery, node
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "device_api_keys" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "device_api_key" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

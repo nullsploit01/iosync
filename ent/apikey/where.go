@@ -470,7 +470,7 @@ func HasDevice() predicate.ApiKey {
 	return predicate.ApiKey(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, DeviceTable, DeviceColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, DeviceTable, DeviceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

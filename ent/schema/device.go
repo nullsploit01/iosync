@@ -30,6 +30,7 @@ func (Device) Edges() []ent.Edge {
 			Ref("devices").
 			Unique(),
 
-		edge.To("api_keys", ApiKey.Type),
+		edge.To("api_key", ApiKey.Type).
+			Unique(),
 	}
 }

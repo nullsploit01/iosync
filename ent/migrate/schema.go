@@ -19,7 +19,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "device_api_keys", Type: field.TypeInt, Nullable: true},
+		{Name: "device_api_key", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// APIKeysTable holds the schema information for the "api_keys" table.
 	APIKeysTable = &schema.Table{
@@ -28,7 +28,7 @@ var (
 		PrimaryKey: []*schema.Column{APIKeysColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "api_keys_devices_api_keys",
+				Symbol:     "api_keys_devices_api_key",
 				Columns:    []*schema.Column{APIKeysColumns[9]},
 				RefColumns: []*schema.Column{DevicesColumns[0]},
 				OnDelete:   schema.SetNull,

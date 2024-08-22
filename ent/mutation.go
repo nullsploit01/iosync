@@ -867,22 +867,21 @@ func (m *ApiKeyMutation) ResetEdge(name string) error {
 // DeviceMutation represents an operation that mutates the Device nodes in the graph.
 type DeviceMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	name            *string
-	is_active       *bool
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	user            *int
-	cleareduser     bool
-	api_keys        map[int]struct{}
-	removedapi_keys map[int]struct{}
-	clearedapi_keys bool
-	done            bool
-	oldValue        func(context.Context) (*Device, error)
-	predicates      []predicate.Device
+	op             Op
+	typ            string
+	id             *int
+	name           *string
+	is_active      *bool
+	created_at     *time.Time
+	updated_at     *time.Time
+	clearedFields  map[string]struct{}
+	user           *int
+	cleareduser    bool
+	api_key        *int
+	clearedapi_key bool
+	done           bool
+	oldValue       func(context.Context) (*Device, error)
+	predicates     []predicate.Device
 }
 
 var _ ent.Mutation = (*DeviceMutation)(nil)
@@ -1166,58 +1165,43 @@ func (m *DeviceMutation) ResetUser() {
 	m.cleareduser = false
 }
 
-// AddAPIKeyIDs adds the "api_keys" edge to the ApiKey entity by ids.
-func (m *DeviceMutation) AddAPIKeyIDs(ids ...int) {
-	if m.api_keys == nil {
-		m.api_keys = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.api_keys[ids[i]] = struct{}{}
-	}
+// SetAPIKeyID sets the "api_key" edge to the ApiKey entity by id.
+func (m *DeviceMutation) SetAPIKeyID(id int) {
+	m.api_key = &id
 }
 
-// ClearAPIKeys clears the "api_keys" edge to the ApiKey entity.
-func (m *DeviceMutation) ClearAPIKeys() {
-	m.clearedapi_keys = true
+// ClearAPIKey clears the "api_key" edge to the ApiKey entity.
+func (m *DeviceMutation) ClearAPIKey() {
+	m.clearedapi_key = true
 }
 
-// APIKeysCleared reports if the "api_keys" edge to the ApiKey entity was cleared.
-func (m *DeviceMutation) APIKeysCleared() bool {
-	return m.clearedapi_keys
+// APIKeyCleared reports if the "api_key" edge to the ApiKey entity was cleared.
+func (m *DeviceMutation) APIKeyCleared() bool {
+	return m.clearedapi_key
 }
 
-// RemoveAPIKeyIDs removes the "api_keys" edge to the ApiKey entity by IDs.
-func (m *DeviceMutation) RemoveAPIKeyIDs(ids ...int) {
-	if m.removedapi_keys == nil {
-		m.removedapi_keys = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.api_keys, ids[i])
-		m.removedapi_keys[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAPIKeys returns the removed IDs of the "api_keys" edge to the ApiKey entity.
-func (m *DeviceMutation) RemovedAPIKeysIDs() (ids []int) {
-	for id := range m.removedapi_keys {
-		ids = append(ids, id)
+// APIKeyID returns the "api_key" edge ID in the mutation.
+func (m *DeviceMutation) APIKeyID() (id int, exists bool) {
+	if m.api_key != nil {
+		return *m.api_key, true
 	}
 	return
 }
 
-// APIKeysIDs returns the "api_keys" edge IDs in the mutation.
-func (m *DeviceMutation) APIKeysIDs() (ids []int) {
-	for id := range m.api_keys {
-		ids = append(ids, id)
+// APIKeyIDs returns the "api_key" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// APIKeyID instead. It exists only for internal usage by the builders.
+func (m *DeviceMutation) APIKeyIDs() (ids []int) {
+	if id := m.api_key; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetAPIKeys resets all changes to the "api_keys" edge.
-func (m *DeviceMutation) ResetAPIKeys() {
-	m.api_keys = nil
-	m.clearedapi_keys = false
-	m.removedapi_keys = nil
+// ResetAPIKey resets all changes to the "api_key" edge.
+func (m *DeviceMutation) ResetAPIKey() {
+	m.api_key = nil
+	m.clearedapi_key = false
 }
 
 // Where appends a list predicates to the DeviceMutation builder.
@@ -1408,8 +1392,8 @@ func (m *DeviceMutation) AddedEdges() []string {
 	if m.user != nil {
 		edges = append(edges, device.EdgeUser)
 	}
-	if m.api_keys != nil {
-		edges = append(edges, device.EdgeAPIKeys)
+	if m.api_key != nil {
+		edges = append(edges, device.EdgeAPIKey)
 	}
 	return edges
 }
@@ -1422,12 +1406,10 @@ func (m *DeviceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
-	case device.EdgeAPIKeys:
-		ids := make([]ent.Value, 0, len(m.api_keys))
-		for id := range m.api_keys {
-			ids = append(ids, id)
+	case device.EdgeAPIKey:
+		if id := m.api_key; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -1435,23 +1417,12 @@ func (m *DeviceMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DeviceMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedapi_keys != nil {
-		edges = append(edges, device.EdgeAPIKeys)
-	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *DeviceMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case device.EdgeAPIKeys:
-		ids := make([]ent.Value, 0, len(m.removedapi_keys))
-		for id := range m.removedapi_keys {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
@@ -1461,8 +1432,8 @@ func (m *DeviceMutation) ClearedEdges() []string {
 	if m.cleareduser {
 		edges = append(edges, device.EdgeUser)
 	}
-	if m.clearedapi_keys {
-		edges = append(edges, device.EdgeAPIKeys)
+	if m.clearedapi_key {
+		edges = append(edges, device.EdgeAPIKey)
 	}
 	return edges
 }
@@ -1473,8 +1444,8 @@ func (m *DeviceMutation) EdgeCleared(name string) bool {
 	switch name {
 	case device.EdgeUser:
 		return m.cleareduser
-	case device.EdgeAPIKeys:
-		return m.clearedapi_keys
+	case device.EdgeAPIKey:
+		return m.clearedapi_key
 	}
 	return false
 }
@@ -1485,6 +1456,9 @@ func (m *DeviceMutation) ClearEdge(name string) error {
 	switch name {
 	case device.EdgeUser:
 		m.ClearUser()
+		return nil
+	case device.EdgeAPIKey:
+		m.ClearAPIKey()
 		return nil
 	}
 	return fmt.Errorf("unknown Device unique edge %s", name)
@@ -1497,8 +1471,8 @@ func (m *DeviceMutation) ResetEdge(name string) error {
 	case device.EdgeUser:
 		m.ResetUser()
 		return nil
-	case device.EdgeAPIKeys:
-		m.ResetAPIKeys()
+	case device.EdgeAPIKey:
+		m.ResetAPIKey()
 		return nil
 	}
 	return fmt.Errorf("unknown Device edge %s", name)

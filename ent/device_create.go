@@ -89,19 +89,23 @@ func (dc *DeviceCreate) SetUser(u *User) *DeviceCreate {
 	return dc.SetUserID(u.ID)
 }
 
-// AddAPIKeyIDs adds the "api_keys" edge to the ApiKey entity by IDs.
-func (dc *DeviceCreate) AddAPIKeyIDs(ids ...int) *DeviceCreate {
-	dc.mutation.AddAPIKeyIDs(ids...)
+// SetAPIKeyID sets the "api_key" edge to the ApiKey entity by ID.
+func (dc *DeviceCreate) SetAPIKeyID(id int) *DeviceCreate {
+	dc.mutation.SetAPIKeyID(id)
 	return dc
 }
 
-// AddAPIKeys adds the "api_keys" edges to the ApiKey entity.
-func (dc *DeviceCreate) AddAPIKeys(a ...*ApiKey) *DeviceCreate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableAPIKeyID sets the "api_key" edge to the ApiKey entity by ID if the given value is not nil.
+func (dc *DeviceCreate) SetNillableAPIKeyID(id *int) *DeviceCreate {
+	if id != nil {
+		dc = dc.SetAPIKeyID(*id)
 	}
-	return dc.AddAPIKeyIDs(ids...)
+	return dc
+}
+
+// SetAPIKey sets the "api_key" edge to the ApiKey entity.
+func (dc *DeviceCreate) SetAPIKey(a *ApiKey) *DeviceCreate {
+	return dc.SetAPIKeyID(a.ID)
 }
 
 // Mutation returns the DeviceMutation object of the builder.
@@ -231,12 +235,12 @@ func (dc *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 		_node.user_devices = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := dc.mutation.APIKeysIDs(); len(nodes) > 0 {
+	if nodes := dc.mutation.APIKeyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   device.APIKeysTable,
-			Columns: []string{device.APIKeysColumn},
+			Table:   device.APIKeyTable,
+			Columns: []string{device.APIKeyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeInt),

@@ -40,7 +40,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "device" package.
 	DeviceInverseTable = "devices"
 	// DeviceColumn is the table column denoting the device relation/edge.
-	DeviceColumn = "device_api_keys"
+	DeviceColumn = "device_api_key"
 )
 
 // Columns holds all SQL columns for apikey fields.
@@ -59,7 +59,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "api_keys"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"device_api_keys",
+	"device_api_key",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -148,6 +148,6 @@ func newDeviceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DeviceInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, DeviceTable, DeviceColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, DeviceTable, DeviceColumn),
 	)
 }

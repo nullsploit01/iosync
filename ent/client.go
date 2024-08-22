@@ -344,7 +344,7 @@ func (c *ApiKeyClient) QueryDevice(ak *ApiKey) *DeviceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(apikey.Table, apikey.FieldID, id),
 			sqlgraph.To(device.Table, device.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, apikey.DeviceTable, apikey.DeviceColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, apikey.DeviceTable, apikey.DeviceColumn),
 		)
 		fromV = sqlgraph.Neighbors(ak.driver.Dialect(), step)
 		return fromV, nil
@@ -501,15 +501,15 @@ func (c *DeviceClient) QueryUser(d *Device) *UserQuery {
 	return query
 }
 
-// QueryAPIKeys queries the api_keys edge of a Device.
-func (c *DeviceClient) QueryAPIKeys(d *Device) *ApiKeyQuery {
+// QueryAPIKey queries the api_key edge of a Device.
+func (c *DeviceClient) QueryAPIKey(d *Device) *ApiKeyQuery {
 	query := (&ApiKeyClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(device.Table, device.FieldID, id),
 			sqlgraph.To(apikey.Table, apikey.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, device.APIKeysTable, device.APIKeysColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, device.APIKeyTable, device.APIKeyColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil

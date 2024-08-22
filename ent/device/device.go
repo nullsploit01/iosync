@@ -24,8 +24,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
-	// EdgeAPIKeys holds the string denoting the api_keys edge name in mutations.
-	EdgeAPIKeys = "api_keys"
+	// EdgeAPIKey holds the string denoting the api_key edge name in mutations.
+	EdgeAPIKey = "api_key"
 	// Table holds the table name of the device in the database.
 	Table = "devices"
 	// UserTable is the table that holds the user relation/edge.
@@ -35,13 +35,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_devices"
-	// APIKeysTable is the table that holds the api_keys relation/edge.
-	APIKeysTable = "api_keys"
-	// APIKeysInverseTable is the table name for the ApiKey entity.
+	// APIKeyTable is the table that holds the api_key relation/edge.
+	APIKeyTable = "api_keys"
+	// APIKeyInverseTable is the table name for the ApiKey entity.
 	// It exists in this package in order to avoid circular dependency with the "apikey" package.
-	APIKeysInverseTable = "api_keys"
-	// APIKeysColumn is the table column denoting the api_keys relation/edge.
-	APIKeysColumn = "device_api_keys"
+	APIKeyInverseTable = "api_keys"
+	// APIKeyColumn is the table column denoting the api_key relation/edge.
+	APIKeyColumn = "device_api_key"
 )
 
 // Columns holds all SQL columns for device fields.
@@ -120,17 +120,10 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAPIKeysCount orders the results by api_keys count.
-func ByAPIKeysCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAPIKeyField orders the results by api_key field.
+func ByAPIKeyField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAPIKeysStep(), opts...)
-	}
-}
-
-// ByAPIKeys orders the results by api_keys terms.
-func ByAPIKeys(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAPIKeysStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newAPIKeyStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newUserStep() *sqlgraph.Step {
@@ -140,10 +133,10 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }
-func newAPIKeysStep() *sqlgraph.Step {
+func newAPIKeyStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(APIKeysInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, APIKeysTable, APIKeysColumn),
+		sqlgraph.To(APIKeyInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, APIKeyTable, APIKeyColumn),
 	)
 }

@@ -33,7 +33,7 @@ func (d *DeviceRepository) GetAll(ctx context.Context, username string) ([]*ent.
 }
 
 func (d *DeviceRepository) Get(ctx context.Context, deviceId int) (*ent.Device, error) {
-	return d.dbClient.Device.Query().Where(device.ID(deviceId)).WithAPIKeys().First(ctx)
+	return d.dbClient.Device.Query().Where(device.ID(deviceId)).WithAPIKey().First(ctx)
 }
 
 func (d *DeviceRepository) Delete(ctx context.Context, deviceId int) error {

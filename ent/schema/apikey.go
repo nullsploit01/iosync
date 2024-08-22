@@ -27,11 +27,11 @@ func (ApiKey) Fields() []ent.Field {
 	}
 }
 
-// Edges of the ApiKeys.
+// Edges of the ApiKey.
 func (ApiKey) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("device", Device.Type).
-			Ref("api_keys").
+			Ref("api_key").
 			Unique(),
 	}
 }

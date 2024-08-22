@@ -36,9 +36,9 @@ type ApiKey struct {
 	Description *string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ApiKeyQuery when eager-loading is set.
-	Edges           ApiKeyEdges `json:"edges"`
-	device_api_keys *int
-	selectValues    sql.SelectValues
+	Edges          ApiKeyEdges `json:"edges"`
+	device_api_key *int
+	selectValues   sql.SelectValues
 }
 
 // ApiKeyEdges holds the relations/edges for other nodes in the graph.
@@ -74,7 +74,7 @@ func (*ApiKey) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case apikey.FieldRevokedAt, apikey.FieldLastUsed, apikey.FieldCreatedAt, apikey.FieldUpdatedAt, apikey.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
-		case apikey.ForeignKeys[0]: // device_api_keys
+		case apikey.ForeignKeys[0]: // device_api_key
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -150,10 +150,10 @@ func (ak *ApiKey) assignValues(columns []string, values []any) error {
 			}
 		case apikey.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field device_api_keys", value)
+				return fmt.Errorf("unexpected type %T for edge-field device_api_key", value)
 			} else if value.Valid {
-				ak.device_api_keys = new(int)
-				*ak.device_api_keys = int(value.Int64)
+				ak.device_api_key = new(int)
+				*ak.device_api_key = int(value.Int64)
 			}
 		default:
 			ak.selectValues.Set(columns[i], values[i])
