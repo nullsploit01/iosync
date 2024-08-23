@@ -1,7 +1,9 @@
+import Navbar from "./components/molecules/nav-bar";
+
 const App = () => {
   return (
     <>
-      <div>IoSync</div>
+      <Navbar />
     </>
   );
 };
