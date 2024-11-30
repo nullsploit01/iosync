@@ -63,3 +63,9 @@ run/live:
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
 		--misc.clean_on_exit "true"
 
+up: 
+	@echo "Stopping docker images (if running...)"
+	docker-compose down
+	@echo "Building (when required) and starting docker images..."
+	docker-compose up --build -d
+	@echo "Docker images built and started!"
