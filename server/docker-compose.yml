@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: "postgres:latest"
+    ports:
+      - "5432:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: iosync
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - iosync-volume:/var/lib/postgresql/data/
+
+volumes:
+  iosync-volume:
