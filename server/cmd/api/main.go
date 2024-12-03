@@ -9,20 +9,11 @@ import (
 	"sync"
 
 	"github.com/lmittmann/tint"
-	"github.com/nullsploit01/iosync/internal/env"
 	"github.com/nullsploit01/iosync/internal/version"
 )
 
-type config struct {
-	baseURL  string
-	httpPort int
-	db       struct {
-		dsn string
-	}
-}
-
 type application struct {
-	config config
+	config appConfig
 	logger *slog.Logger
 	wg     sync.WaitGroup
 }
@@ -39,11 +30,7 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	var cfg config
-
-	cfg.baseURL = env.GetString("BASE_URL", "http://localhost:4444")
-	cfg.httpPort = env.GetInt("HTTP_PORT", 4444)
-
+	config := GetAppConfig()
 	showVersion := flag.Bool("version", false, "display version and exit")
 
 	flag.Parse()
@@ -54,7 +41,7 @@ func run(logger *slog.Logger) error {
 	}
 
 	app := &application{
-		config: cfg,
+		config: config,
 		logger: logger,
 	}
 
