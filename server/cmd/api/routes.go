@@ -18,7 +18,7 @@ func (app *application) routes() http.Handler {
 	mux.Use(app.recoverPanic)
 	mux.Use(middleware.RedirectSlashes)
 
-	mux.Use(middleware.Heartbeat("/ping"))
+	mux.Use(middleware.Heartbeat("/v1/ping"))
 
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
@@ -29,7 +29,13 @@ func (app *application) routes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	mux.Get("/status", app.status)
+	mux.Route("/v1", func(mux chi.Router) {
+		mux.Get("/status", app.status)
+		mux.Route("/nodes", func(mux chi.Router) {
+			mux.Get("/", app.GetNodes)
+			mux.Get("/{id}", app.GetNode)
+		})
+	})
 
 	return mux
 }
