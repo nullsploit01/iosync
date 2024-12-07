@@ -5,9 +5,6 @@ import "github.com/nullsploit01/iosync/internal/env"
 type appConfig struct {
 	baseURL  string
 	httpPort int
-	db       struct {
-		dsn string
-	}
 }
 
 func GetAppConfig() appConfig {
