@@ -13,9 +13,15 @@ import (
 
 // Node is the model entity for the Node schema.
 type Node struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID           int `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
+	// IsActive holds the value of the "is_active" field.
+	IsActive     string `json:"is_active,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -26,6 +32,8 @@ func (*Node) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case node.FieldID:
 			values[i] = new(sql.NullInt64)
+		case node.FieldName, node.FieldDescription, node.FieldIsActive:
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -47,6 +55,24 @@ func (n *Node) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			n.ID = int(value.Int64)
+		case node.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				n.Name = value.String
+			}
+		case node.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				n.Description = value.String
+			}
+		case node.FieldIsActive:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field is_active", values[i])
+			} else if value.Valid {
+				n.IsActive = value.String
+			}
 		default:
 			n.selectValues.Set(columns[i], values[i])
 		}
@@ -82,7 +108,15 @@ func (n *Node) Unwrap() *Node {
 func (n *Node) String() string {
 	var builder strings.Builder
 	builder.WriteString("Node(")
-	builder.WriteString(fmt.Sprintf("id=%v", n.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", n.ID))
+	builder.WriteString("name=")
+	builder.WriteString(n.Name)
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(n.Description)
+	builder.WriteString(", ")
+	builder.WriteString("is_active=")
+	builder.WriteString(n.IsActive)
 	builder.WriteByte(')')
 	return builder.String()
 }

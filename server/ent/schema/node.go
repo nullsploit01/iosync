@@ -1,6 +1,9 @@
 package schema
 
-import "entgo.io/ent"
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/field"
+)
 
 // Node holds the schema definition for the Node entity.
 type Node struct {
@@ -9,7 +12,11 @@ type Node struct {
 
 // Fields of the Node.
 func (Node) Fields() []ent.Field {
-	return nil
+	return []ent.Field{
+		field.String("name"),
+		field.String("description"),
+		field.String("is_active"),
+	}
 }
 
 // Edges of the Node.

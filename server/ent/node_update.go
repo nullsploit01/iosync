@@ -27,6 +27,48 @@ func (nu *NodeUpdate) Where(ps ...predicate.Node) *NodeUpdate {
 	return nu
 }
 
+// SetName sets the "name" field.
+func (nu *NodeUpdate) SetName(s string) *NodeUpdate {
+	nu.mutation.SetName(s)
+	return nu
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (nu *NodeUpdate) SetNillableName(s *string) *NodeUpdate {
+	if s != nil {
+		nu.SetName(*s)
+	}
+	return nu
+}
+
+// SetDescription sets the "description" field.
+func (nu *NodeUpdate) SetDescription(s string) *NodeUpdate {
+	nu.mutation.SetDescription(s)
+	return nu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (nu *NodeUpdate) SetNillableDescription(s *string) *NodeUpdate {
+	if s != nil {
+		nu.SetDescription(*s)
+	}
+	return nu
+}
+
+// SetIsActive sets the "is_active" field.
+func (nu *NodeUpdate) SetIsActive(s string) *NodeUpdate {
+	nu.mutation.SetIsActive(s)
+	return nu
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (nu *NodeUpdate) SetNillableIsActive(s *string) *NodeUpdate {
+	if s != nil {
+		nu.SetIsActive(*s)
+	}
+	return nu
+}
+
 // Mutation returns the NodeMutation object of the builder.
 func (nu *NodeUpdate) Mutation() *NodeMutation {
 	return nu.mutation
@@ -68,6 +110,15 @@ func (nu *NodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := nu.mutation.Name(); ok {
+		_spec.SetField(node.FieldName, field.TypeString, value)
+	}
+	if value, ok := nu.mutation.Description(); ok {
+		_spec.SetField(node.FieldDescription, field.TypeString, value)
+	}
+	if value, ok := nu.mutation.IsActive(); ok {
+		_spec.SetField(node.FieldIsActive, field.TypeString, value)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{node.Label}
@@ -86,6 +137,48 @@ type NodeUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *NodeMutation
+}
+
+// SetName sets the "name" field.
+func (nuo *NodeUpdateOne) SetName(s string) *NodeUpdateOne {
+	nuo.mutation.SetName(s)
+	return nuo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (nuo *NodeUpdateOne) SetNillableName(s *string) *NodeUpdateOne {
+	if s != nil {
+		nuo.SetName(*s)
+	}
+	return nuo
+}
+
+// SetDescription sets the "description" field.
+func (nuo *NodeUpdateOne) SetDescription(s string) *NodeUpdateOne {
+	nuo.mutation.SetDescription(s)
+	return nuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (nuo *NodeUpdateOne) SetNillableDescription(s *string) *NodeUpdateOne {
+	if s != nil {
+		nuo.SetDescription(*s)
+	}
+	return nuo
+}
+
+// SetIsActive sets the "is_active" field.
+func (nuo *NodeUpdateOne) SetIsActive(s string) *NodeUpdateOne {
+	nuo.mutation.SetIsActive(s)
+	return nuo
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (nuo *NodeUpdateOne) SetNillableIsActive(s *string) *NodeUpdateOne {
+	if s != nil {
+		nuo.SetIsActive(*s)
+	}
+	return nuo
 }
 
 // Mutation returns the NodeMutation object of the builder.
@@ -158,6 +251,15 @@ func (nuo *NodeUpdateOne) sqlSave(ctx context.Context) (_node *Node, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := nuo.mutation.Name(); ok {
+		_spec.SetField(node.FieldName, field.TypeString, value)
+	}
+	if value, ok := nuo.mutation.Description(); ok {
+		_spec.SetField(node.FieldDescription, field.TypeString, value)
+	}
+	if value, ok := nuo.mutation.IsActive(); ok {
+		_spec.SetField(node.FieldIsActive, field.TypeString, value)
 	}
 	_node = &Node{config: nuo.config}
 	_spec.Assign = _node.assignValues

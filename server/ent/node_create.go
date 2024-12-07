@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,6 +17,24 @@ type NodeCreate struct {
 	config
 	mutation *NodeMutation
 	hooks    []Hook
+}
+
+// SetName sets the "name" field.
+func (nc *NodeCreate) SetName(s string) *NodeCreate {
+	nc.mutation.SetName(s)
+	return nc
+}
+
+// SetDescription sets the "description" field.
+func (nc *NodeCreate) SetDescription(s string) *NodeCreate {
+	nc.mutation.SetDescription(s)
+	return nc
+}
+
+// SetIsActive sets the "is_active" field.
+func (nc *NodeCreate) SetIsActive(s string) *NodeCreate {
+	nc.mutation.SetIsActive(s)
+	return nc
 }
 
 // Mutation returns the NodeMutation object of the builder.
@@ -52,6 +71,15 @@ func (nc *NodeCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (nc *NodeCreate) check() error {
+	if _, ok := nc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Node.name"`)}
+	}
+	if _, ok := nc.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Node.description"`)}
+	}
+	if _, ok := nc.mutation.IsActive(); !ok {
+		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Node.is_active"`)}
+	}
 	return nil
 }
 
@@ -78,6 +106,18 @@ func (nc *NodeCreate) createSpec() (*Node, *sqlgraph.CreateSpec) {
 		_node = &Node{config: nc.config}
 		_spec = sqlgraph.NewCreateSpec(node.Table, sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt))
 	)
+	if value, ok := nc.mutation.Name(); ok {
+		_spec.SetField(node.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
+	if value, ok := nc.mutation.Description(); ok {
+		_spec.SetField(node.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
+	if value, ok := nc.mutation.IsActive(); ok {
+		_spec.SetField(node.FieldIsActive, field.TypeString, value)
+		_node.IsActive = value
+	}
 	return _node, _spec
 }
 

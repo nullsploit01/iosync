@@ -52,6 +52,216 @@ func IDLTE(id int) predicate.Node {
 	return predicate.Node(sql.FieldLTE(FieldID, id))
 }
 
+// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
+func Name(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldName, v))
+}
+
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldDescription, v))
+}
+
+// IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
+func IsActive(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
+}
+
+// NameEQ applies the EQ predicate on the "name" field.
+func NameEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldName, v))
+}
+
+// NameNEQ applies the NEQ predicate on the "name" field.
+func NameNEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldName, v))
+}
+
+// NameIn applies the In predicate on the "name" field.
+func NameIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldName, vs...))
+}
+
+// NameNotIn applies the NotIn predicate on the "name" field.
+func NameNotIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldName, vs...))
+}
+
+// NameGT applies the GT predicate on the "name" field.
+func NameGT(v string) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldName, v))
+}
+
+// NameGTE applies the GTE predicate on the "name" field.
+func NameGTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldName, v))
+}
+
+// NameLT applies the LT predicate on the "name" field.
+func NameLT(v string) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldName, v))
+}
+
+// NameLTE applies the LTE predicate on the "name" field.
+func NameLTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldName, v))
+}
+
+// NameContains applies the Contains predicate on the "name" field.
+func NameContains(v string) predicate.Node {
+	return predicate.Node(sql.FieldContains(FieldName, v))
+}
+
+// NameHasPrefix applies the HasPrefix predicate on the "name" field.
+func NameHasPrefix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasPrefix(FieldName, v))
+}
+
+// NameHasSuffix applies the HasSuffix predicate on the "name" field.
+func NameHasSuffix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasSuffix(FieldName, v))
+}
+
+// NameEqualFold applies the EqualFold predicate on the "name" field.
+func NameEqualFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldEqualFold(FieldName, v))
+}
+
+// NameContainsFold applies the ContainsFold predicate on the "name" field.
+func NameContainsFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldContainsFold(FieldName, v))
+}
+
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldDescription, v))
+}
+
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldDescription, v))
+}
+
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldDescription, vs...))
+}
+
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldDescription, vs...))
+}
+
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldDescription, v))
+}
+
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldDescription, v))
+}
+
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldDescription, v))
+}
+
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldDescription, v))
+}
+
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Node {
+	return predicate.Node(sql.FieldContains(FieldDescription, v))
+}
+
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasPrefix(FieldDescription, v))
+}
+
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasSuffix(FieldDescription, v))
+}
+
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldEqualFold(FieldDescription, v))
+}
+
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// IsActiveEQ applies the EQ predicate on the "is_active" field.
+func IsActiveEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
+}
+
+// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
+func IsActiveNEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldIsActive, v))
+}
+
+// IsActiveIn applies the In predicate on the "is_active" field.
+func IsActiveIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldIsActive, vs...))
+}
+
+// IsActiveNotIn applies the NotIn predicate on the "is_active" field.
+func IsActiveNotIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldIsActive, vs...))
+}
+
+// IsActiveGT applies the GT predicate on the "is_active" field.
+func IsActiveGT(v string) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldIsActive, v))
+}
+
+// IsActiveGTE applies the GTE predicate on the "is_active" field.
+func IsActiveGTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldIsActive, v))
+}
+
+// IsActiveLT applies the LT predicate on the "is_active" field.
+func IsActiveLT(v string) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldIsActive, v))
+}
+
+// IsActiveLTE applies the LTE predicate on the "is_active" field.
+func IsActiveLTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldIsActive, v))
+}
+
+// IsActiveContains applies the Contains predicate on the "is_active" field.
+func IsActiveContains(v string) predicate.Node {
+	return predicate.Node(sql.FieldContains(FieldIsActive, v))
+}
+
+// IsActiveHasPrefix applies the HasPrefix predicate on the "is_active" field.
+func IsActiveHasPrefix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasPrefix(FieldIsActive, v))
+}
+
+// IsActiveHasSuffix applies the HasSuffix predicate on the "is_active" field.
+func IsActiveHasSuffix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasSuffix(FieldIsActive, v))
+}
+
+// IsActiveEqualFold applies the EqualFold predicate on the "is_active" field.
+func IsActiveEqualFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldEqualFold(FieldIsActive, v))
+}
+
+// IsActiveContainsFold applies the ContainsFold predicate on the "is_active" field.
+func IsActiveContainsFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldContainsFold(FieldIsActive, v))
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Node) predicate.Node {
 	return predicate.Node(sql.AndPredicates(predicates...))

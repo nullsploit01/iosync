@@ -11,6 +11,9 @@ var (
 	// NodesColumns holds the columns for the "nodes" table.
 	NodesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "is_active", Type: field.TypeString},
 	}
 	// NodesTable holds the schema information for the "nodes" table.
 	NodesTable = &schema.Table{

@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/nullsploit01/iosync/ent/node"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -31,6 +32,9 @@ type NodeMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	name          *string
+	description   *string
+	is_active     *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Node, error)
@@ -135,6 +139,114 @@ func (m *NodeMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
+// SetName sets the "name" field.
+func (m *NodeMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *NodeMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *NodeMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *NodeMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *NodeMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *NodeMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetIsActive sets the "is_active" field.
+func (m *NodeMutation) SetIsActive(s string) {
+	m.is_active = &s
+}
+
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *NodeMutation) IsActive() (r string, exists bool) {
+	v := m.is_active
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsActive returns the old "is_active" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldIsActive(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
+	}
+	return oldValue.IsActive, nil
+}
+
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *NodeMutation) ResetIsActive() {
+	m.is_active = nil
+}
+
 // Where appends a list predicates to the NodeMutation builder.
 func (m *NodeMutation) Where(ps ...predicate.Node) {
 	m.predicates = append(m.predicates, ps...)
@@ -169,7 +281,16 @@ func (m *NodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NodeMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 3)
+	if m.name != nil {
+		fields = append(fields, node.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, node.FieldDescription)
+	}
+	if m.is_active != nil {
+		fields = append(fields, node.FieldIsActive)
+	}
 	return fields
 }
 
@@ -177,6 +298,14 @@ func (m *NodeMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *NodeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case node.FieldName:
+		return m.Name()
+	case node.FieldDescription:
+		return m.Description()
+	case node.FieldIsActive:
+		return m.IsActive()
+	}
 	return nil, false
 }
 
@@ -184,6 +313,14 @@ func (m *NodeMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *NodeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case node.FieldName:
+		return m.OldName(ctx)
+	case node.FieldDescription:
+		return m.OldDescription(ctx)
+	case node.FieldIsActive:
+		return m.OldIsActive(ctx)
+	}
 	return nil, fmt.Errorf("unknown Node field %s", name)
 }
 
@@ -192,6 +329,27 @@ func (m *NodeMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *NodeMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case node.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case node.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case node.FieldIsActive:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsActive(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Node field %s", name)
 }
@@ -213,6 +371,8 @@ func (m *NodeMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *NodeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Node numeric field %s", name)
 }
 
@@ -238,6 +398,17 @@ func (m *NodeMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *NodeMutation) ResetField(name string) error {
+	switch name {
+	case node.FieldName:
+		m.ResetName()
+		return nil
+	case node.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case node.FieldIsActive:
+		m.ResetIsActive()
+		return nil
+	}
 	return fmt.Errorf("unknown Node field %s", name)
 }
 

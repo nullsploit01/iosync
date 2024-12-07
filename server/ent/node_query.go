@@ -258,6 +258,18 @@ func (nq *NodeQuery) Clone() *NodeQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Node.Query().
+//		GroupBy(node.FieldName).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (nq *NodeQuery) GroupBy(field string, fields ...string) *NodeGroupBy {
 	nq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &NodeGroupBy{build: nq}
@@ -269,6 +281,16 @@ func (nq *NodeQuery) GroupBy(field string, fields ...string) *NodeGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//	}
+//
+//	client.Node.Query().
+//		Select(node.FieldName).
+//		Scan(ctx, &v)
 func (nq *NodeQuery) Select(fields ...string) *NodeSelect {
 	nq.ctx.Fields = append(nq.ctx.Fields, fields...)
 	sbuild := &NodeSelect{NodeQuery: nq}
