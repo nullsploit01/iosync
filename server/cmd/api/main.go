@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -30,7 +31,11 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	config := GetAppConfig()
+	config, err := GetAppConfig(context.Background())
+	if err != nil {
+		return err
+	}
+
 	showVersion := flag.Bool("version", false, "display version and exit")
 
 	flag.Parse()
