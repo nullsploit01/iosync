@@ -6,7 +6,7 @@ import (
 )
 
 type NodeService struct {
-	repo *repository.NodeRepository
+	repo repository.NodeRepository
 }
 
 func NewNodeService(db *ent.Client) NodeService {

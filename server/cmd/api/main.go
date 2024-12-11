@@ -11,13 +11,19 @@ import (
 
 	"github.com/lmittmann/tint"
 	"github.com/nullsploit01/iosync/internal/database"
+	"github.com/nullsploit01/iosync/internal/service"
 	"github.com/nullsploit01/iosync/internal/version"
 )
 
 type application struct {
-	config appConfig
-	logger *slog.Logger
-	wg     sync.WaitGroup
+	config   appConfig
+	logger   *slog.Logger
+	wg       sync.WaitGroup
+	services appServices
+}
+
+type appServices struct {
+	nodeService service.NodeService
 }
 
 func main() {
@@ -53,10 +59,16 @@ func run(logger *slog.Logger) error {
 		return nil
 	}
 
+	nodeService := service.NewNodeService(dbClient)
+
+	appServices := appServices{
+		nodeService: nodeService,
+	}
+
 	app := &application{
 		config:   config,
-		dbClient: dbClient,
 		logger:   logger,
+		services: appServices,
 	}
 
 	app.logger.Info("connected to database", slog.Group("database", "host", config.databaseHost, "port", config.databasePort, "name", config.databaseName))
