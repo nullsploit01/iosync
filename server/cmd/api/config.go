@@ -17,7 +17,7 @@ type appConfig struct {
 func GetAppConfig() (appConfig, error) {
 	return appConfig{
 		httpPort:         env.GetInt("PORT", 8080),
-		baseURL:          env.GetString("BASE_URL", "http://localhost:4444"),
+		baseURL:          env.GetString("BASE_URL", "http://localhost:8080"),
 		databaseUser:     env.GetString("DATABASE_USER", "postgres"),
 		databasePassword: env.GetString("DATABASE_PASSWORD", "password"),
 		databaseHost:     env.GetString("DATABASE_HOST", "localhost"),

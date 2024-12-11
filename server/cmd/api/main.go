@@ -10,16 +10,14 @@ import (
 	"sync"
 
 	"github.com/lmittmann/tint"
-	"github.com/nullsploit01/iosync/ent"
 	"github.com/nullsploit01/iosync/internal/database"
 	"github.com/nullsploit01/iosync/internal/version"
 )
 
 type application struct {
-	config   appConfig
-	logger   *slog.Logger
-	wg       sync.WaitGroup
-	dbClient *ent.Client
+	config appConfig
+	logger *slog.Logger
+	wg     sync.WaitGroup
 }
 
 func main() {
