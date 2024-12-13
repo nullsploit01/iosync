@@ -24,3 +24,10 @@ func (n NodeRepository) GetNodes(ctx context.Context) ([]*ent.Node, error) {
 func (n NodeRepository) GetNode(ctx context.Context, id int) (*ent.Node, error) {
 	return n.db.Node.Query().Where(node.IDEQ(id)).Only(ctx)
 }
+
+func (n NodeRepository) CreateNode(ctx context.Context, name, description string) (*ent.Node, error) {
+	return n.db.Node.Create().
+		SetName(name).
+		SetDescription(description).
+		Save(ctx)
+}

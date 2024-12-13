@@ -33,6 +33,7 @@ func (app *application) routes() http.Handler {
 		mux.Get("/status", app.status)
 		mux.Route("/nodes", func(mux chi.Router) {
 			mux.Get("/", app.GetNodes)
+			mux.Post("/a", app.CreateNode)
 			mux.Get("/{id}", app.GetNode)
 		})
 	})

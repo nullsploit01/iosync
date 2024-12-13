@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/nullsploit01/iosync/internal/request"
 	"github.com/nullsploit01/iosync/internal/response"
+	"github.com/nullsploit01/iosync/internal/service"
 )
 
 func (app *application) GetNodes(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +47,29 @@ func (app *application) GetNode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = response.JSON(w, http.StatusOK, data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+}
+
+func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
+	var body service.CreateNodeRequest
+	if err := request.DecodeJSON(w, r, &body); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	node, err := app.services.nodeService.CreateNode(r.Context(), body)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := map[string]any{
+		"Data": node,
+	}
+
+	err = response.JSON(w, http.StatusCreated, data)
 	if err != nil {
 		app.serverError(w, r, err)
 	}

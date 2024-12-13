@@ -11,6 +11,11 @@ type NodeService struct {
 	repo repository.NodeRepository
 }
 
+type CreateNodeRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 func NewNodeService(db *ent.Client) NodeService {
 	return NodeService{
 		repo: repository.NewNodeRepository(db),
@@ -23,4 +28,8 @@ func (n NodeService) GetNodes(ctx context.Context) ([]*ent.Node, error) {
 
 func (n NodeService) GetNode(ctx context.Context, id int) (*ent.Node, error) {
 	return n.repo.GetNode(ctx, id)
+}
+
+func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (*ent.Node, error) {
+	return n.repo.CreateNode(ctx, request.Name, request.Description)
 }
