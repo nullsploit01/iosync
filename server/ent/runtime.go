@@ -2,8 +2,31 @@
 
 package ent
 
+import (
+	"time"
+
+	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/schema"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	nodeFields := schema.Node{}.Fields()
+	_ = nodeFields
+	// nodeDescIsActive is the schema descriptor for is_active field.
+	nodeDescIsActive := nodeFields[2].Descriptor()
+	// node.DefaultIsActive holds the default value on creation for the is_active field.
+	node.DefaultIsActive = nodeDescIsActive.Default.(bool)
+	// nodeDescCreatedAt is the schema descriptor for created_at field.
+	nodeDescCreatedAt := nodeFields[3].Descriptor()
+	// node.DefaultCreatedAt holds the default value on creation for the created_at field.
+	node.DefaultCreatedAt = nodeDescCreatedAt.Default.(func() time.Time)
+	// nodeDescUpdatedAt is the schema descriptor for updated_at field.
+	nodeDescUpdatedAt := nodeFields[4].Descriptor()
+	// node.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	node.DefaultUpdatedAt = nodeDescUpdatedAt.Default.(func() time.Time)
+	// node.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	node.UpdateDefaultUpdatedAt = nodeDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

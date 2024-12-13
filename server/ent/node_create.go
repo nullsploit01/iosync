@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -32,8 +33,44 @@ func (nc *NodeCreate) SetDescription(s string) *NodeCreate {
 }
 
 // SetIsActive sets the "is_active" field.
-func (nc *NodeCreate) SetIsActive(s string) *NodeCreate {
-	nc.mutation.SetIsActive(s)
+func (nc *NodeCreate) SetIsActive(b bool) *NodeCreate {
+	nc.mutation.SetIsActive(b)
+	return nc
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (nc *NodeCreate) SetNillableIsActive(b *bool) *NodeCreate {
+	if b != nil {
+		nc.SetIsActive(*b)
+	}
+	return nc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (nc *NodeCreate) SetCreatedAt(t time.Time) *NodeCreate {
+	nc.mutation.SetCreatedAt(t)
+	return nc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (nc *NodeCreate) SetNillableCreatedAt(t *time.Time) *NodeCreate {
+	if t != nil {
+		nc.SetCreatedAt(*t)
+	}
+	return nc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (nc *NodeCreate) SetUpdatedAt(t time.Time) *NodeCreate {
+	nc.mutation.SetUpdatedAt(t)
+	return nc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (nc *NodeCreate) SetNillableUpdatedAt(t *time.Time) *NodeCreate {
+	if t != nil {
+		nc.SetUpdatedAt(*t)
+	}
 	return nc
 }
 
@@ -44,6 +81,7 @@ func (nc *NodeCreate) Mutation() *NodeMutation {
 
 // Save creates the Node in the database.
 func (nc *NodeCreate) Save(ctx context.Context) (*Node, error) {
+	nc.defaults()
 	return withHooks(ctx, nc.sqlSave, nc.mutation, nc.hooks)
 }
 
@@ -69,6 +107,22 @@ func (nc *NodeCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (nc *NodeCreate) defaults() {
+	if _, ok := nc.mutation.IsActive(); !ok {
+		v := node.DefaultIsActive
+		nc.mutation.SetIsActive(v)
+	}
+	if _, ok := nc.mutation.CreatedAt(); !ok {
+		v := node.DefaultCreatedAt()
+		nc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := nc.mutation.UpdatedAt(); !ok {
+		v := node.DefaultUpdatedAt()
+		nc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (nc *NodeCreate) check() error {
 	if _, ok := nc.mutation.Name(); !ok {
@@ -79,6 +133,12 @@ func (nc *NodeCreate) check() error {
 	}
 	if _, ok := nc.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Node.is_active"`)}
+	}
+	if _, ok := nc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Node.created_at"`)}
+	}
+	if _, ok := nc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Node.updated_at"`)}
 	}
 	return nil
 }
@@ -115,8 +175,16 @@ func (nc *NodeCreate) createSpec() (*Node, *sqlgraph.CreateSpec) {
 		_node.Description = value
 	}
 	if value, ok := nc.mutation.IsActive(); ok {
-		_spec.SetField(node.FieldIsActive, field.TypeString, value)
+		_spec.SetField(node.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
+	}
+	if value, ok := nc.mutation.CreatedAt(); ok {
+		_spec.SetField(node.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := nc.mutation.UpdatedAt(); ok {
+		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }
@@ -139,6 +207,7 @@ func (ncb *NodeCreateBulk) Save(ctx context.Context) ([]*Node, error) {
 	for i := range ncb.builders {
 		func(i int, root context.Context) {
 			builder := ncb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*NodeMutation)
 				if !ok {

@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -21,7 +22,11 @@ type Node struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// IsActive holds the value of the "is_active" field.
-	IsActive     string `json:"is_active,omitempty"`
+	IsActive bool `json:"is_active,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -30,10 +35,14 @@ func (*Node) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case node.FieldIsActive:
+			values[i] = new(sql.NullBool)
 		case node.FieldID:
 			values[i] = new(sql.NullInt64)
-		case node.FieldName, node.FieldDescription, node.FieldIsActive:
+		case node.FieldName, node.FieldDescription:
 			values[i] = new(sql.NullString)
+		case node.FieldCreatedAt, node.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -68,10 +77,22 @@ func (n *Node) assignValues(columns []string, values []any) error {
 				n.Description = value.String
 			}
 		case node.FieldIsActive:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_active", values[i])
 			} else if value.Valid {
-				n.IsActive = value.String
+				n.IsActive = value.Bool
+			}
+		case node.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				n.CreatedAt = value.Time
+			}
+		case node.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				n.UpdatedAt = value.Time
 			}
 		default:
 			n.selectValues.Set(columns[i], values[i])
@@ -116,7 +137,13 @@ func (n *Node) String() string {
 	builder.WriteString(n.Description)
 	builder.WriteString(", ")
 	builder.WriteString("is_active=")
-	builder.WriteString(n.IsActive)
+	builder.WriteString(fmt.Sprintf("%v", n.IsActive))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(n.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(n.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

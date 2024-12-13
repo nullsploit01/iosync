@@ -3,6 +3,8 @@
 package node
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
@@ -63,8 +65,18 @@ func Description(v string) predicate.Node {
 }
 
 // IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
-func IsActive(v string) predicate.Node {
+func IsActive(v bool) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -198,68 +210,93 @@ func DescriptionContainsFold(v string) predicate.Node {
 }
 
 // IsActiveEQ applies the EQ predicate on the "is_active" field.
-func IsActiveEQ(v string) predicate.Node {
+func IsActiveEQ(v bool) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
 }
 
 // IsActiveNEQ applies the NEQ predicate on the "is_active" field.
-func IsActiveNEQ(v string) predicate.Node {
+func IsActiveNEQ(v bool) predicate.Node {
 	return predicate.Node(sql.FieldNEQ(FieldIsActive, v))
 }
 
-// IsActiveIn applies the In predicate on the "is_active" field.
-func IsActiveIn(vs ...string) predicate.Node {
-	return predicate.Node(sql.FieldIn(FieldIsActive, vs...))
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// IsActiveNotIn applies the NotIn predicate on the "is_active" field.
-func IsActiveNotIn(vs ...string) predicate.Node {
-	return predicate.Node(sql.FieldNotIn(FieldIsActive, vs...))
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldCreatedAt, v))
 }
 
-// IsActiveGT applies the GT predicate on the "is_active" field.
-func IsActiveGT(v string) predicate.Node {
-	return predicate.Node(sql.FieldGT(FieldIsActive, v))
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldCreatedAt, vs...))
 }
 
-// IsActiveGTE applies the GTE predicate on the "is_active" field.
-func IsActiveGTE(v string) predicate.Node {
-	return predicate.Node(sql.FieldGTE(FieldIsActive, v))
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldCreatedAt, vs...))
 }
 
-// IsActiveLT applies the LT predicate on the "is_active" field.
-func IsActiveLT(v string) predicate.Node {
-	return predicate.Node(sql.FieldLT(FieldIsActive, v))
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldCreatedAt, v))
 }
 
-// IsActiveLTE applies the LTE predicate on the "is_active" field.
-func IsActiveLTE(v string) predicate.Node {
-	return predicate.Node(sql.FieldLTE(FieldIsActive, v))
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldCreatedAt, v))
 }
 
-// IsActiveContains applies the Contains predicate on the "is_active" field.
-func IsActiveContains(v string) predicate.Node {
-	return predicate.Node(sql.FieldContains(FieldIsActive, v))
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldCreatedAt, v))
 }
 
-// IsActiveHasPrefix applies the HasPrefix predicate on the "is_active" field.
-func IsActiveHasPrefix(v string) predicate.Node {
-	return predicate.Node(sql.FieldHasPrefix(FieldIsActive, v))
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// IsActiveHasSuffix applies the HasSuffix predicate on the "is_active" field.
-func IsActiveHasSuffix(v string) predicate.Node {
-	return predicate.Node(sql.FieldHasSuffix(FieldIsActive, v))
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// IsActiveEqualFold applies the EqualFold predicate on the "is_active" field.
-func IsActiveEqualFold(v string) predicate.Node {
-	return predicate.Node(sql.FieldEqualFold(FieldIsActive, v))
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldUpdatedAt, v))
 }
 
-// IsActiveContainsFold applies the ContainsFold predicate on the "is_active" field.
-func IsActiveContainsFold(v string) predicate.Node {
-	return predicate.Node(sql.FieldContainsFold(FieldIsActive, v))
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // And groups predicates with the AND operator between them.

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -34,7 +35,9 @@ type NodeMutation struct {
 	id            *int
 	name          *string
 	description   *string
-	is_active     *string
+	is_active     *bool
+	created_at    *time.Time
+	updated_at    *time.Time
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Node, error)
@@ -212,12 +215,12 @@ func (m *NodeMutation) ResetDescription() {
 }
 
 // SetIsActive sets the "is_active" field.
-func (m *NodeMutation) SetIsActive(s string) {
-	m.is_active = &s
+func (m *NodeMutation) SetIsActive(b bool) {
+	m.is_active = &b
 }
 
 // IsActive returns the value of the "is_active" field in the mutation.
-func (m *NodeMutation) IsActive() (r string, exists bool) {
+func (m *NodeMutation) IsActive() (r bool, exists bool) {
 	v := m.is_active
 	if v == nil {
 		return
@@ -228,7 +231,7 @@ func (m *NodeMutation) IsActive() (r string, exists bool) {
 // OldIsActive returns the old "is_active" field's value of the Node entity.
 // If the Node object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NodeMutation) OldIsActive(ctx context.Context) (v string, err error) {
+func (m *NodeMutation) OldIsActive(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
 	}
@@ -245,6 +248,78 @@ func (m *NodeMutation) OldIsActive(ctx context.Context) (v string, err error) {
 // ResetIsActive resets all changes to the "is_active" field.
 func (m *NodeMutation) ResetIsActive() {
 	m.is_active = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NodeMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NodeMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NodeMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NodeMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NodeMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NodeMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // Where appends a list predicates to the NodeMutation builder.
@@ -281,7 +356,7 @@ func (m *NodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NodeMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, node.FieldName)
 	}
@@ -290,6 +365,12 @@ func (m *NodeMutation) Fields() []string {
 	}
 	if m.is_active != nil {
 		fields = append(fields, node.FieldIsActive)
+	}
+	if m.created_at != nil {
+		fields = append(fields, node.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, node.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -305,6 +386,10 @@ func (m *NodeMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case node.FieldIsActive:
 		return m.IsActive()
+	case node.FieldCreatedAt:
+		return m.CreatedAt()
+	case node.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -320,6 +405,10 @@ func (m *NodeMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDescription(ctx)
 	case node.FieldIsActive:
 		return m.OldIsActive(ctx)
+	case node.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case node.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Node field %s", name)
 }
@@ -344,11 +433,25 @@ func (m *NodeMutation) SetField(name string, value ent.Value) error {
 		m.SetDescription(v)
 		return nil
 	case node.FieldIsActive:
-		v, ok := value.(string)
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsActive(v)
+		return nil
+	case node.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case node.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Node field %s", name)
@@ -407,6 +510,12 @@ func (m *NodeMutation) ResetField(name string) error {
 		return nil
 	case node.FieldIsActive:
 		m.ResetIsActive()
+		return nil
+	case node.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case node.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Node field %s", name)

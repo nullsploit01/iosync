@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 )
@@ -15,7 +17,9 @@ func (Node) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
 		field.String("description"),
-		field.String("is_active"),
+		field.Bool("is_active").Default(true),
+		field.Time("created_at").Immutable().Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
