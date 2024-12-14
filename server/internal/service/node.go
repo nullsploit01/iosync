@@ -12,8 +12,8 @@ type NodeService struct {
 }
 
 type CreateNodeRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description" validate:"required"`
 }
 
 func NewNodeService(db *ent.Client) NodeService {

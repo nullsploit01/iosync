@@ -59,6 +59,11 @@ func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := request.ValidateRequest(&body); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
 	node, err := app.services.nodeService.CreateNode(r.Context(), body)
 	if err != nil {
 		app.serverError(w, r, err)
