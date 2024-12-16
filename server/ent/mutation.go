@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -24,7 +25,8 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeNode = "Node"
+	TypeNode       = "Node"
+	TypeNodeValues = "NodeValues"
 )
 
 // NodeMutation represents an operation that mutates the Node nodes in the graph.
@@ -39,6 +41,9 @@ type NodeMutation struct {
 	created_at    *time.Time
 	updated_at    *time.Time
 	clearedFields map[string]struct{}
+	values        map[int]struct{}
+	removedvalues map[int]struct{}
+	clearedvalues bool
 	done          bool
 	oldValue      func(context.Context) (*Node, error)
 	predicates    []predicate.Node
@@ -322,6 +327,60 @@ func (m *NodeMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// AddValueIDs adds the "values" edge to the NodeValues entity by ids.
+func (m *NodeMutation) AddValueIDs(ids ...int) {
+	if m.values == nil {
+		m.values = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.values[ids[i]] = struct{}{}
+	}
+}
+
+// ClearValues clears the "values" edge to the NodeValues entity.
+func (m *NodeMutation) ClearValues() {
+	m.clearedvalues = true
+}
+
+// ValuesCleared reports if the "values" edge to the NodeValues entity was cleared.
+func (m *NodeMutation) ValuesCleared() bool {
+	return m.clearedvalues
+}
+
+// RemoveValueIDs removes the "values" edge to the NodeValues entity by IDs.
+func (m *NodeMutation) RemoveValueIDs(ids ...int) {
+	if m.removedvalues == nil {
+		m.removedvalues = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.values, ids[i])
+		m.removedvalues[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedValues returns the removed IDs of the "values" edge to the NodeValues entity.
+func (m *NodeMutation) RemovedValuesIDs() (ids []int) {
+	for id := range m.removedvalues {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ValuesIDs returns the "values" edge IDs in the mutation.
+func (m *NodeMutation) ValuesIDs() (ids []int) {
+	for id := range m.values {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetValues resets all changes to the "values" edge.
+func (m *NodeMutation) ResetValues() {
+	m.values = nil
+	m.clearedvalues = false
+	m.removedvalues = nil
+}
+
 // Where appends a list predicates to the NodeMutation builder.
 func (m *NodeMutation) Where(ps ...predicate.Node) {
 	m.predicates = append(m.predicates, ps...)
@@ -523,48 +582,585 @@ func (m *NodeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.values != nil {
+		edges = append(edges, node.EdgeValues)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *NodeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case node.EdgeValues:
+		ids := make([]ent.Value, 0, len(m.values))
+		for id := range m.values {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedvalues != nil {
+		edges = append(edges, node.EdgeValues)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *NodeMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case node.EdgeValues:
+		ids := make([]ent.Value, 0, len(m.removedvalues))
+		for id := range m.removedvalues {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedvalues {
+		edges = append(edges, node.EdgeValues)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *NodeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case node.EdgeValues:
+		return m.clearedvalues
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *NodeMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Node unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *NodeMutation) ResetEdge(name string) error {
+	switch name {
+	case node.EdgeValues:
+		m.ResetValues()
+		return nil
+	}
 	return fmt.Errorf("unknown Node edge %s", name)
+}
+
+// NodeValuesMutation represents an operation that mutates the NodeValues nodes in the graph.
+type NodeValuesMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	value         *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	node          *int
+	clearednode   bool
+	done          bool
+	oldValue      func(context.Context) (*NodeValues, error)
+	predicates    []predicate.NodeValues
+}
+
+var _ ent.Mutation = (*NodeValuesMutation)(nil)
+
+// nodevaluesOption allows management of the mutation configuration using functional options.
+type nodevaluesOption func(*NodeValuesMutation)
+
+// newNodeValuesMutation creates new mutation for the NodeValues entity.
+func newNodeValuesMutation(c config, op Op, opts ...nodevaluesOption) *NodeValuesMutation {
+	m := &NodeValuesMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNodeValues,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNodeValuesID sets the ID field of the mutation.
+func withNodeValuesID(id int) nodevaluesOption {
+	return func(m *NodeValuesMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NodeValues
+		)
+		m.oldValue = func(ctx context.Context) (*NodeValues, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NodeValues.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNodeValues sets the old NodeValues of the mutation.
+func withNodeValues(node *NodeValues) nodevaluesOption {
+	return func(m *NodeValuesMutation) {
+		m.oldValue = func(context.Context) (*NodeValues, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NodeValuesMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NodeValuesMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NodeValuesMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NodeValuesMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NodeValues.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetValue sets the "value" field.
+func (m *NodeValuesMutation) SetValue(s string) {
+	m.value = &s
+}
+
+// Value returns the value of the "value" field in the mutation.
+func (m *NodeValuesMutation) Value() (r string, exists bool) {
+	v := m.value
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldValue returns the old "value" field's value of the NodeValues entity.
+// If the NodeValues object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeValuesMutation) OldValue(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldValue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldValue: %w", err)
+	}
+	return oldValue.Value, nil
+}
+
+// ResetValue resets all changes to the "value" field.
+func (m *NodeValuesMutation) ResetValue() {
+	m.value = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NodeValuesMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NodeValuesMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NodeValues entity.
+// If the NodeValues object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeValuesMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NodeValuesMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NodeValuesMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NodeValuesMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the NodeValues entity.
+// If the NodeValues object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeValuesMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NodeValuesMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetNodeID sets the "node" edge to the Node entity by id.
+func (m *NodeValuesMutation) SetNodeID(id int) {
+	m.node = &id
+}
+
+// ClearNode clears the "node" edge to the Node entity.
+func (m *NodeValuesMutation) ClearNode() {
+	m.clearednode = true
+}
+
+// NodeCleared reports if the "node" edge to the Node entity was cleared.
+func (m *NodeValuesMutation) NodeCleared() bool {
+	return m.clearednode
+}
+
+// NodeID returns the "node" edge ID in the mutation.
+func (m *NodeValuesMutation) NodeID() (id int, exists bool) {
+	if m.node != nil {
+		return *m.node, true
+	}
+	return
+}
+
+// NodeIDs returns the "node" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NodeID instead. It exists only for internal usage by the builders.
+func (m *NodeValuesMutation) NodeIDs() (ids []int) {
+	if id := m.node; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNode resets all changes to the "node" edge.
+func (m *NodeValuesMutation) ResetNode() {
+	m.node = nil
+	m.clearednode = false
+}
+
+// Where appends a list predicates to the NodeValuesMutation builder.
+func (m *NodeValuesMutation) Where(ps ...predicate.NodeValues) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NodeValuesMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NodeValuesMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NodeValues, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NodeValuesMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NodeValuesMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NodeValues).
+func (m *NodeValuesMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NodeValuesMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.value != nil {
+		fields = append(fields, nodevalues.FieldValue)
+	}
+	if m.created_at != nil {
+		fields = append(fields, nodevalues.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, nodevalues.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NodeValuesMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nodevalues.FieldValue:
+		return m.Value()
+	case nodevalues.FieldCreatedAt:
+		return m.CreatedAt()
+	case nodevalues.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NodeValuesMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nodevalues.FieldValue:
+		return m.OldValue(ctx)
+	case nodevalues.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case nodevalues.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NodeValues field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NodeValuesMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nodevalues.FieldValue:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetValue(v)
+		return nil
+	case nodevalues.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case nodevalues.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NodeValues field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NodeValuesMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NodeValuesMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NodeValuesMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NodeValues numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NodeValuesMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NodeValuesMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NodeValuesMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NodeValues nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NodeValuesMutation) ResetField(name string) error {
+	switch name {
+	case nodevalues.FieldValue:
+		m.ResetValue()
+		return nil
+	case nodevalues.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case nodevalues.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NodeValues field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NodeValuesMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.node != nil {
+		edges = append(edges, nodevalues.EdgeNode)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NodeValuesMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case nodevalues.EdgeNode:
+		if id := m.node; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NodeValuesMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NodeValuesMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NodeValuesMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearednode {
+		edges = append(edges, nodevalues.EdgeNode)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NodeValuesMutation) EdgeCleared(name string) bool {
+	switch name {
+	case nodevalues.EdgeNode:
+		return m.clearednode
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NodeValuesMutation) ClearEdge(name string) error {
+	switch name {
+	case nodevalues.EdgeNode:
+		m.ClearNode()
+		return nil
+	}
+	return fmt.Errorf("unknown NodeValues unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NodeValuesMutation) ResetEdge(name string) error {
+	switch name {
+	case nodevalues.EdgeNode:
+		m.ResetNode()
+		return nil
+	}
+	return fmt.Errorf("unknown NodeValues edge %s", name)
 }

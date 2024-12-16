@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/schema"
 )
 
@@ -29,4 +30,16 @@ func init() {
 	node.DefaultUpdatedAt = nodeDescUpdatedAt.Default.(func() time.Time)
 	// node.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	node.UpdateDefaultUpdatedAt = nodeDescUpdatedAt.UpdateDefault.(func() time.Time)
+	nodevaluesFields := schema.NodeValues{}.Fields()
+	_ = nodevaluesFields
+	// nodevaluesDescCreatedAt is the schema descriptor for created_at field.
+	nodevaluesDescCreatedAt := nodevaluesFields[1].Descriptor()
+	// nodevalues.DefaultCreatedAt holds the default value on creation for the created_at field.
+	nodevalues.DefaultCreatedAt = nodevaluesDescCreatedAt.Default.(func() time.Time)
+	// nodevaluesDescUpdatedAt is the schema descriptor for updated_at field.
+	nodevaluesDescUpdatedAt := nodevaluesFields[2].Descriptor()
+	// nodevalues.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	nodevalues.DefaultUpdatedAt = nodevaluesDescUpdatedAt.Default.(func() time.Time)
+	// nodevalues.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	nodevalues.UpdateDefaultUpdatedAt = nodevaluesDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

@@ -8,13 +8,13 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// NodeUpdate holds the schema definition for the NodeUpdate entity.
-type NodeUpdate struct {
+// NodeValues holds the schema definition for the NodeValues entity.
+type NodeValues struct {
 	ent.Schema
 }
 
-// Fields of the NodeUpdate.
-func (NodeUpdate) Fields() []ent.Field {
+// Fields of the NodeValues.
+func (NodeValues) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("value"),
 		field.Time("created_at").Immutable().Default(time.Now),
@@ -22,11 +22,11 @@ func (NodeUpdate) Fields() []ent.Field {
 	}
 }
 
-// Edges of the NodeUpdate.
-func (NodeUpdate) Edges() []ent.Edge {
+// Edges of the NodeValues.
+func (NodeValues) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("node", Node.Type).
-			Ref("node_updates").
+			Ref("values").
 			Unique(),
 	}
 }

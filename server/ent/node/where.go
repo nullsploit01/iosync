@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -297,6 +298,29 @@ func UpdatedAtLT(v time.Time) predicate.Node {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Node {
 	return predicate.Node(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasValues applies the HasEdge predicate on the "values" edge.
+func HasValues() predicate.Node {
+	return predicate.Node(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ValuesTable, ValuesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasValuesWith applies the HasEdge predicate on the "values" edge with a given conditions (other predicates).
+func HasValuesWith(preds ...predicate.NodeValues) predicate.Node {
+	return predicate.Node(func(s *sql.Selector) {
+		step := newValuesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

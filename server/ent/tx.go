@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Node is the client for interacting with the Node builders.
 	Node *NodeClient
+	// NodeValues is the client for interacting with the NodeValues builders.
+	NodeValues *NodeValuesClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +148,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Node = NewNodeClient(tx.config)
+	tx.NodeValues = NewNodeValuesClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

@@ -23,11 +23,35 @@ var (
 		Columns:    NodesColumns,
 		PrimaryKey: []*schema.Column{NodesColumns[0]},
 	}
+	// NodeValuesColumns holds the columns for the "node_values" table.
+	NodeValuesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "value", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "node_values", Type: field.TypeInt, Nullable: true},
+	}
+	// NodeValuesTable holds the schema information for the "node_values" table.
+	NodeValuesTable = &schema.Table{
+		Name:       "node_values",
+		Columns:    NodeValuesColumns,
+		PrimaryKey: []*schema.Column{NodeValuesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "node_values_nodes_values",
+				Columns:    []*schema.Column{NodeValuesColumns[4]},
+				RefColumns: []*schema.Column{NodesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		NodesTable,
+		NodeValuesTable,
 	}
 )
 
 func init() {
+	NodeValuesTable.ForeignKeys[0].RefTable = NodesTable
 }

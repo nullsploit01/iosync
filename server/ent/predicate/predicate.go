@@ -8,3 +8,6 @@ import (
 
 // Node is the predicate function for node builders.
 type Node func(*sql.Selector)
+
+// NodeValues is the predicate function for nodevalues builders.
+type NodeValues func(*sql.Selector)

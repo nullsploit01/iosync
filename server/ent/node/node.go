@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -23,8 +24,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeValues holds the string denoting the values edge name in mutations.
+	EdgeValues = "values"
 	// Table holds the table name of the node in the database.
 	Table = "nodes"
+	// ValuesTable is the table that holds the values relation/edge.
+	ValuesTable = "node_values"
+	// ValuesInverseTable is the table name for the NodeValues entity.
+	// It exists in this package in order to avoid circular dependency with the "nodevalues" package.
+	ValuesInverseTable = "node_values"
+	// ValuesColumn is the table column denoting the values relation/edge.
+	ValuesColumn = "node_values"
 )
 
 // Columns holds all SQL columns for node fields.
@@ -89,4 +99,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByValuesCount orders the results by values count.
+func ByValuesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newValuesStep(), opts...)
+	}
+}
+
+// ByValues orders the results by values terms.
+func ByValues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newValuesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newValuesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ValuesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ValuesTable, ValuesColumn),
+	)
 }

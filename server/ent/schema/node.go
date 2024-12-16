@@ -27,6 +27,6 @@ func (Node) Fields() []ent.Field {
 // Edges of the Node.
 func (Node) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("node_updates", NodeUpdate.Type),
+		edge.To("values", NodeValues.Type),
 	}
 }
