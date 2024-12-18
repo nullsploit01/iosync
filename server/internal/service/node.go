@@ -33,3 +33,7 @@ func (n NodeService) GetNode(ctx context.Context, id int) (*ent.Node, error) {
 func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (*ent.Node, error) {
 	return n.repo.CreateNode(ctx, request.Name, request.Description)
 }
+
+func (n NodeService) AddNodeValue(ctx context.Context, nodeId int, value string) (*ent.NodeValues, error) {
+	return n.repo.AddNodeValue(ctx, nodeId, value)
+}

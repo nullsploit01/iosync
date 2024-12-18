@@ -79,3 +79,7 @@ func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 	}
 }
+
+func (app *application) AddNodeValue(w http.ResponseWriter, r *http.Request) {
+
+}

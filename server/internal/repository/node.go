@@ -31,3 +31,10 @@ func (n NodeRepository) CreateNode(ctx context.Context, name, description string
 		SetDescription(description).
 		Save(ctx)
 }
+
+func (n NodeRepository) AddNodeValue(ctx context.Context, nodeId int, value string) (*ent.NodeValues, error) {
+	return n.db.NodeValues.Create().
+		SetNodeID(nodeId).
+		SetValue(value).
+		Save(ctx)
+}
