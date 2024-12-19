@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
@@ -26,27 +27,31 @@ const (
 
 	// Node types.
 	TypeNode       = "Node"
+	TypeNodeApiKey = "NodeApiKey"
 	TypeNodeValues = "NodeValues"
 )
 
 // NodeMutation represents an operation that mutates the Node nodes in the graph.
 type NodeMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	description   *string
-	is_active     *bool
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	values        map[int]struct{}
-	removedvalues map[int]struct{}
-	clearedvalues bool
-	done          bool
-	oldValue      func(context.Context) (*Node, error)
-	predicates    []predicate.Node
+	op              Op
+	typ             string
+	id              *int
+	name            *string
+	description     *string
+	is_active       *bool
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	values          map[int]struct{}
+	removedvalues   map[int]struct{}
+	clearedvalues   bool
+	api_keys        map[int]struct{}
+	removedapi_keys map[int]struct{}
+	clearedapi_keys bool
+	done            bool
+	oldValue        func(context.Context) (*Node, error)
+	predicates      []predicate.Node
 }
 
 var _ ent.Mutation = (*NodeMutation)(nil)
@@ -381,6 +386,60 @@ func (m *NodeMutation) ResetValues() {
 	m.removedvalues = nil
 }
 
+// AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by ids.
+func (m *NodeMutation) AddAPIKeyIDs(ids ...int) {
+	if m.api_keys == nil {
+		m.api_keys = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.api_keys[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAPIKeys clears the "api_keys" edge to the NodeApiKey entity.
+func (m *NodeMutation) ClearAPIKeys() {
+	m.clearedapi_keys = true
+}
+
+// APIKeysCleared reports if the "api_keys" edge to the NodeApiKey entity was cleared.
+func (m *NodeMutation) APIKeysCleared() bool {
+	return m.clearedapi_keys
+}
+
+// RemoveAPIKeyIDs removes the "api_keys" edge to the NodeApiKey entity by IDs.
+func (m *NodeMutation) RemoveAPIKeyIDs(ids ...int) {
+	if m.removedapi_keys == nil {
+		m.removedapi_keys = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.api_keys, ids[i])
+		m.removedapi_keys[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAPIKeys returns the removed IDs of the "api_keys" edge to the NodeApiKey entity.
+func (m *NodeMutation) RemovedAPIKeysIDs() (ids []int) {
+	for id := range m.removedapi_keys {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// APIKeysIDs returns the "api_keys" edge IDs in the mutation.
+func (m *NodeMutation) APIKeysIDs() (ids []int) {
+	for id := range m.api_keys {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAPIKeys resets all changes to the "api_keys" edge.
+func (m *NodeMutation) ResetAPIKeys() {
+	m.api_keys = nil
+	m.clearedapi_keys = false
+	m.removedapi_keys = nil
+}
+
 // Where appends a list predicates to the NodeMutation builder.
 func (m *NodeMutation) Where(ps ...predicate.Node) {
 	m.predicates = append(m.predicates, ps...)
@@ -582,9 +641,12 @@ func (m *NodeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.values != nil {
 		edges = append(edges, node.EdgeValues)
+	}
+	if m.api_keys != nil {
+		edges = append(edges, node.EdgeAPIKeys)
 	}
 	return edges
 }
@@ -599,15 +661,24 @@ func (m *NodeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case node.EdgeAPIKeys:
+		ids := make([]ent.Value, 0, len(m.api_keys))
+		for id := range m.api_keys {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedvalues != nil {
 		edges = append(edges, node.EdgeValues)
+	}
+	if m.removedapi_keys != nil {
+		edges = append(edges, node.EdgeAPIKeys)
 	}
 	return edges
 }
@@ -622,15 +693,24 @@ func (m *NodeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case node.EdgeAPIKeys:
+		ids := make([]ent.Value, 0, len(m.removedapi_keys))
+		for id := range m.removedapi_keys {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedvalues {
 		edges = append(edges, node.EdgeValues)
+	}
+	if m.clearedapi_keys {
+		edges = append(edges, node.EdgeAPIKeys)
 	}
 	return edges
 }
@@ -641,6 +721,8 @@ func (m *NodeMutation) EdgeCleared(name string) bool {
 	switch name {
 	case node.EdgeValues:
 		return m.clearedvalues
+	case node.EdgeAPIKeys:
+		return m.clearedapi_keys
 	}
 	return false
 }
@@ -660,8 +742,620 @@ func (m *NodeMutation) ResetEdge(name string) error {
 	case node.EdgeValues:
 		m.ResetValues()
 		return nil
+	case node.EdgeAPIKeys:
+		m.ResetAPIKeys()
+		return nil
 	}
 	return fmt.Errorf("unknown Node edge %s", name)
+}
+
+// NodeApiKeyMutation represents an operation that mutates the NodeApiKey nodes in the graph.
+type NodeApiKeyMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	api_key       *string
+	description   *string
+	is_revoked    *bool
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	node          *int
+	clearednode   bool
+	done          bool
+	oldValue      func(context.Context) (*NodeApiKey, error)
+	predicates    []predicate.NodeApiKey
+}
+
+var _ ent.Mutation = (*NodeApiKeyMutation)(nil)
+
+// nodeapikeyOption allows management of the mutation configuration using functional options.
+type nodeapikeyOption func(*NodeApiKeyMutation)
+
+// newNodeApiKeyMutation creates new mutation for the NodeApiKey entity.
+func newNodeApiKeyMutation(c config, op Op, opts ...nodeapikeyOption) *NodeApiKeyMutation {
+	m := &NodeApiKeyMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNodeApiKey,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNodeApiKeyID sets the ID field of the mutation.
+func withNodeApiKeyID(id int) nodeapikeyOption {
+	return func(m *NodeApiKeyMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NodeApiKey
+		)
+		m.oldValue = func(ctx context.Context) (*NodeApiKey, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NodeApiKey.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNodeApiKey sets the old NodeApiKey of the mutation.
+func withNodeApiKey(node *NodeApiKey) nodeapikeyOption {
+	return func(m *NodeApiKeyMutation) {
+		m.oldValue = func(context.Context) (*NodeApiKey, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NodeApiKeyMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NodeApiKeyMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NodeApiKeyMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NodeApiKeyMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NodeApiKey.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAPIKey sets the "api_key" field.
+func (m *NodeApiKeyMutation) SetAPIKey(s string) {
+	m.api_key = &s
+}
+
+// APIKey returns the value of the "api_key" field in the mutation.
+func (m *NodeApiKeyMutation) APIKey() (r string, exists bool) {
+	v := m.api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIKey returns the old "api_key" field's value of the NodeApiKey entity.
+// If the NodeApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeApiKeyMutation) OldAPIKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIKey: %w", err)
+	}
+	return oldValue.APIKey, nil
+}
+
+// ResetAPIKey resets all changes to the "api_key" field.
+func (m *NodeApiKeyMutation) ResetAPIKey() {
+	m.api_key = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *NodeApiKeyMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *NodeApiKeyMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the NodeApiKey entity.
+// If the NodeApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeApiKeyMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *NodeApiKeyMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetIsRevoked sets the "is_revoked" field.
+func (m *NodeApiKeyMutation) SetIsRevoked(b bool) {
+	m.is_revoked = &b
+}
+
+// IsRevoked returns the value of the "is_revoked" field in the mutation.
+func (m *NodeApiKeyMutation) IsRevoked() (r bool, exists bool) {
+	v := m.is_revoked
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsRevoked returns the old "is_revoked" field's value of the NodeApiKey entity.
+// If the NodeApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeApiKeyMutation) OldIsRevoked(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsRevoked is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsRevoked requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsRevoked: %w", err)
+	}
+	return oldValue.IsRevoked, nil
+}
+
+// ResetIsRevoked resets all changes to the "is_revoked" field.
+func (m *NodeApiKeyMutation) ResetIsRevoked() {
+	m.is_revoked = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NodeApiKeyMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NodeApiKeyMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NodeApiKey entity.
+// If the NodeApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeApiKeyMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NodeApiKeyMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NodeApiKeyMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NodeApiKeyMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the NodeApiKey entity.
+// If the NodeApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeApiKeyMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NodeApiKeyMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetNodeID sets the "node" edge to the Node entity by id.
+func (m *NodeApiKeyMutation) SetNodeID(id int) {
+	m.node = &id
+}
+
+// ClearNode clears the "node" edge to the Node entity.
+func (m *NodeApiKeyMutation) ClearNode() {
+	m.clearednode = true
+}
+
+// NodeCleared reports if the "node" edge to the Node entity was cleared.
+func (m *NodeApiKeyMutation) NodeCleared() bool {
+	return m.clearednode
+}
+
+// NodeID returns the "node" edge ID in the mutation.
+func (m *NodeApiKeyMutation) NodeID() (id int, exists bool) {
+	if m.node != nil {
+		return *m.node, true
+	}
+	return
+}
+
+// NodeIDs returns the "node" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NodeID instead. It exists only for internal usage by the builders.
+func (m *NodeApiKeyMutation) NodeIDs() (ids []int) {
+	if id := m.node; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNode resets all changes to the "node" edge.
+func (m *NodeApiKeyMutation) ResetNode() {
+	m.node = nil
+	m.clearednode = false
+}
+
+// Where appends a list predicates to the NodeApiKeyMutation builder.
+func (m *NodeApiKeyMutation) Where(ps ...predicate.NodeApiKey) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NodeApiKeyMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NodeApiKeyMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NodeApiKey, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NodeApiKeyMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NodeApiKeyMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NodeApiKey).
+func (m *NodeApiKeyMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NodeApiKeyMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.api_key != nil {
+		fields = append(fields, nodeapikey.FieldAPIKey)
+	}
+	if m.description != nil {
+		fields = append(fields, nodeapikey.FieldDescription)
+	}
+	if m.is_revoked != nil {
+		fields = append(fields, nodeapikey.FieldIsRevoked)
+	}
+	if m.created_at != nil {
+		fields = append(fields, nodeapikey.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, nodeapikey.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NodeApiKeyMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nodeapikey.FieldAPIKey:
+		return m.APIKey()
+	case nodeapikey.FieldDescription:
+		return m.Description()
+	case nodeapikey.FieldIsRevoked:
+		return m.IsRevoked()
+	case nodeapikey.FieldCreatedAt:
+		return m.CreatedAt()
+	case nodeapikey.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NodeApiKeyMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nodeapikey.FieldAPIKey:
+		return m.OldAPIKey(ctx)
+	case nodeapikey.FieldDescription:
+		return m.OldDescription(ctx)
+	case nodeapikey.FieldIsRevoked:
+		return m.OldIsRevoked(ctx)
+	case nodeapikey.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case nodeapikey.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NodeApiKey field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NodeApiKeyMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nodeapikey.FieldAPIKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIKey(v)
+		return nil
+	case nodeapikey.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case nodeapikey.FieldIsRevoked:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsRevoked(v)
+		return nil
+	case nodeapikey.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case nodeapikey.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NodeApiKey field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NodeApiKeyMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NodeApiKeyMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NodeApiKeyMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NodeApiKey numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NodeApiKeyMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NodeApiKeyMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NodeApiKeyMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NodeApiKey nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NodeApiKeyMutation) ResetField(name string) error {
+	switch name {
+	case nodeapikey.FieldAPIKey:
+		m.ResetAPIKey()
+		return nil
+	case nodeapikey.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case nodeapikey.FieldIsRevoked:
+		m.ResetIsRevoked()
+		return nil
+	case nodeapikey.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case nodeapikey.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NodeApiKey field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NodeApiKeyMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.node != nil {
+		edges = append(edges, nodeapikey.EdgeNode)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NodeApiKeyMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case nodeapikey.EdgeNode:
+		if id := m.node; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NodeApiKeyMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NodeApiKeyMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NodeApiKeyMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearednode {
+		edges = append(edges, nodeapikey.EdgeNode)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NodeApiKeyMutation) EdgeCleared(name string) bool {
+	switch name {
+	case nodeapikey.EdgeNode:
+		return m.clearednode
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NodeApiKeyMutation) ClearEdge(name string) error {
+	switch name {
+	case nodeapikey.EdgeNode:
+		m.ClearNode()
+		return nil
+	}
+	return fmt.Errorf("unknown NodeApiKey unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NodeApiKeyMutation) ResetEdge(name string) error {
+	switch name {
+	case nodeapikey.EdgeNode:
+		m.ResetNode()
+		return nil
+	}
+	return fmt.Errorf("unknown NodeApiKey edge %s", name)
 }
 
 // NodeValuesMutation represents an operation that mutates the NodeValues nodes in the graph.

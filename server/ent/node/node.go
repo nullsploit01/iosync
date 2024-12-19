@@ -26,6 +26,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeValues holds the string denoting the values edge name in mutations.
 	EdgeValues = "values"
+	// EdgeAPIKeys holds the string denoting the api_keys edge name in mutations.
+	EdgeAPIKeys = "api_keys"
 	// Table holds the table name of the node in the database.
 	Table = "nodes"
 	// ValuesTable is the table that holds the values relation/edge.
@@ -35,6 +37,13 @@ const (
 	ValuesInverseTable = "node_values"
 	// ValuesColumn is the table column denoting the values relation/edge.
 	ValuesColumn = "node_values"
+	// APIKeysTable is the table that holds the api_keys relation/edge.
+	APIKeysTable = "node_api_keys"
+	// APIKeysInverseTable is the table name for the NodeApiKey entity.
+	// It exists in this package in order to avoid circular dependency with the "nodeapikey" package.
+	APIKeysInverseTable = "node_api_keys"
+	// APIKeysColumn is the table column denoting the api_keys relation/edge.
+	APIKeysColumn = "node_api_keys"
 )
 
 // Columns holds all SQL columns for node fields.
@@ -114,10 +123,31 @@ func ByValues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newValuesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAPIKeysCount orders the results by api_keys count.
+func ByAPIKeysCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAPIKeysStep(), opts...)
+	}
+}
+
+// ByAPIKeys orders the results by api_keys terms.
+func ByAPIKeys(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAPIKeysStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newValuesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ValuesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ValuesTable, ValuesColumn),
+	)
+}
+func newAPIKeysStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(APIKeysInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, APIKeysTable, APIKeysColumn),
 	)
 }

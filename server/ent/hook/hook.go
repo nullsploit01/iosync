@@ -21,6 +21,18 @@ func (f NodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NodeMutation", m)
 }
 
+// The NodeApiKeyFunc type is an adapter to allow the use of ordinary
+// function as NodeApiKey mutator.
+type NodeApiKeyFunc func(context.Context, *ent.NodeApiKeyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NodeApiKeyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NodeApiKeyMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NodeApiKeyMutation", m)
+}
+
 // The NodeValuesFunc type is an adapter to allow the use of ordinary
 // function as NodeValues mutator.
 type NodeValuesFunc func(context.Context, *ent.NodeValuesMutation) (ent.Value, error)

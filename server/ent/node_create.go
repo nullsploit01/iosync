@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 )
 
@@ -88,6 +89,21 @@ func (nc *NodeCreate) AddValues(n ...*NodeValues) *NodeCreate {
 		ids[i] = n[i].ID
 	}
 	return nc.AddValueIDs(ids...)
+}
+
+// AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by IDs.
+func (nc *NodeCreate) AddAPIKeyIDs(ids ...int) *NodeCreate {
+	nc.mutation.AddAPIKeyIDs(ids...)
+	return nc
+}
+
+// AddAPIKeys adds the "api_keys" edges to the NodeApiKey entity.
+func (nc *NodeCreate) AddAPIKeys(n ...*NodeApiKey) *NodeCreate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nc.AddAPIKeyIDs(ids...)
 }
 
 // Mutation returns the NodeMutation object of the builder.
@@ -211,6 +227,22 @@ func (nc *NodeCreate) createSpec() (*Node, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.APIKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

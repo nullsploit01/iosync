@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
@@ -92,6 +93,21 @@ func (nu *NodeUpdate) AddValues(n ...*NodeValues) *NodeUpdate {
 	return nu.AddValueIDs(ids...)
 }
 
+// AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by IDs.
+func (nu *NodeUpdate) AddAPIKeyIDs(ids ...int) *NodeUpdate {
+	nu.mutation.AddAPIKeyIDs(ids...)
+	return nu
+}
+
+// AddAPIKeys adds the "api_keys" edges to the NodeApiKey entity.
+func (nu *NodeUpdate) AddAPIKeys(n ...*NodeApiKey) *NodeUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nu.AddAPIKeyIDs(ids...)
+}
+
 // Mutation returns the NodeMutation object of the builder.
 func (nu *NodeUpdate) Mutation() *NodeMutation {
 	return nu.mutation
@@ -116,6 +132,27 @@ func (nu *NodeUpdate) RemoveValues(n ...*NodeValues) *NodeUpdate {
 		ids[i] = n[i].ID
 	}
 	return nu.RemoveValueIDs(ids...)
+}
+
+// ClearAPIKeys clears all "api_keys" edges to the NodeApiKey entity.
+func (nu *NodeUpdate) ClearAPIKeys() *NodeUpdate {
+	nu.mutation.ClearAPIKeys()
+	return nu
+}
+
+// RemoveAPIKeyIDs removes the "api_keys" edge to NodeApiKey entities by IDs.
+func (nu *NodeUpdate) RemoveAPIKeyIDs(ids ...int) *NodeUpdate {
+	nu.mutation.RemoveAPIKeyIDs(ids...)
+	return nu
+}
+
+// RemoveAPIKeys removes "api_keys" edges to NodeApiKey entities.
+func (nu *NodeUpdate) RemoveAPIKeys(n ...*NodeApiKey) *NodeUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nu.RemoveAPIKeyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -220,6 +257,51 @@ func (nu *NodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if nu.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedAPIKeysIDs(); len(nodes) > 0 && !nu.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.APIKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{node.Label}
@@ -303,6 +385,21 @@ func (nuo *NodeUpdateOne) AddValues(n ...*NodeValues) *NodeUpdateOne {
 	return nuo.AddValueIDs(ids...)
 }
 
+// AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by IDs.
+func (nuo *NodeUpdateOne) AddAPIKeyIDs(ids ...int) *NodeUpdateOne {
+	nuo.mutation.AddAPIKeyIDs(ids...)
+	return nuo
+}
+
+// AddAPIKeys adds the "api_keys" edges to the NodeApiKey entity.
+func (nuo *NodeUpdateOne) AddAPIKeys(n ...*NodeApiKey) *NodeUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nuo.AddAPIKeyIDs(ids...)
+}
+
 // Mutation returns the NodeMutation object of the builder.
 func (nuo *NodeUpdateOne) Mutation() *NodeMutation {
 	return nuo.mutation
@@ -327,6 +424,27 @@ func (nuo *NodeUpdateOne) RemoveValues(n ...*NodeValues) *NodeUpdateOne {
 		ids[i] = n[i].ID
 	}
 	return nuo.RemoveValueIDs(ids...)
+}
+
+// ClearAPIKeys clears all "api_keys" edges to the NodeApiKey entity.
+func (nuo *NodeUpdateOne) ClearAPIKeys() *NodeUpdateOne {
+	nuo.mutation.ClearAPIKeys()
+	return nuo
+}
+
+// RemoveAPIKeyIDs removes the "api_keys" edge to NodeApiKey entities by IDs.
+func (nuo *NodeUpdateOne) RemoveAPIKeyIDs(ids ...int) *NodeUpdateOne {
+	nuo.mutation.RemoveAPIKeyIDs(ids...)
+	return nuo
+}
+
+// RemoveAPIKeys removes "api_keys" edges to NodeApiKey entities.
+func (nuo *NodeUpdateOne) RemoveAPIKeys(n ...*NodeApiKey) *NodeUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nuo.RemoveAPIKeyIDs(ids...)
 }
 
 // Where appends a list predicates to the NodeUpdate builder.
@@ -454,6 +572,51 @@ func (nuo *NodeUpdateOne) sqlSave(ctx context.Context) (_node *Node, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedAPIKeysIDs(); len(nodes) > 0 && !nuo.mutation.APIKeysCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.APIKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   node.APIKeysTable,
+			Columns: []string{node.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

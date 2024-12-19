@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 )
 
@@ -26,6 +27,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Node is the client for interacting with the Node builders.
 	Node *NodeClient
+	// NodeApiKey is the client for interacting with the NodeApiKey builders.
+	NodeApiKey *NodeApiKeyClient
 	// NodeValues is the client for interacting with the NodeValues builders.
 	NodeValues *NodeValuesClient
 }
@@ -40,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Node = NewNodeClient(c.config)
+	c.NodeApiKey = NewNodeApiKeyClient(c.config)
 	c.NodeValues = NewNodeValuesClient(c.config)
 }
 
@@ -134,6 +138,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		Node:       NewNodeClient(cfg),
+		NodeApiKey: NewNodeApiKeyClient(cfg),
 		NodeValues: NewNodeValuesClient(cfg),
 	}, nil
 }
@@ -155,6 +160,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		Node:       NewNodeClient(cfg),
+		NodeApiKey: NewNodeApiKeyClient(cfg),
 		NodeValues: NewNodeValuesClient(cfg),
 	}, nil
 }
@@ -185,6 +191,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Node.Use(hooks...)
+	c.NodeApiKey.Use(hooks...)
 	c.NodeValues.Use(hooks...)
 }
 
@@ -192,6 +199,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Node.Intercept(interceptors...)
+	c.NodeApiKey.Intercept(interceptors...)
 	c.NodeValues.Intercept(interceptors...)
 }
 
@@ -200,6 +208,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *NodeMutation:
 		return c.Node.mutate(ctx, m)
+	case *NodeApiKeyMutation:
+		return c.NodeApiKey.mutate(ctx, m)
 	case *NodeValuesMutation:
 		return c.NodeValues.mutate(ctx, m)
 	default:
@@ -331,6 +341,22 @@ func (c *NodeClient) QueryValues(n *Node) *NodeValuesQuery {
 	return query
 }
 
+// QueryAPIKeys queries the api_keys edge of a Node.
+func (c *NodeClient) QueryAPIKeys(n *Node) *NodeApiKeyQuery {
+	query := (&NodeApiKeyClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(node.Table, node.FieldID, id),
+			sqlgraph.To(nodeapikey.Table, nodeapikey.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, node.APIKeysTable, node.APIKeysColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *NodeClient) Hooks() []Hook {
 	return c.hooks.Node
@@ -353,6 +379,155 @@ func (c *NodeClient) mutate(ctx context.Context, m *NodeMutation) (Value, error)
 		return (&NodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Node mutation op: %q", m.Op())
+	}
+}
+
+// NodeApiKeyClient is a client for the NodeApiKey schema.
+type NodeApiKeyClient struct {
+	config
+}
+
+// NewNodeApiKeyClient returns a client for the NodeApiKey from the given config.
+func NewNodeApiKeyClient(c config) *NodeApiKeyClient {
+	return &NodeApiKeyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `nodeapikey.Hooks(f(g(h())))`.
+func (c *NodeApiKeyClient) Use(hooks ...Hook) {
+	c.hooks.NodeApiKey = append(c.hooks.NodeApiKey, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `nodeapikey.Intercept(f(g(h())))`.
+func (c *NodeApiKeyClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NodeApiKey = append(c.inters.NodeApiKey, interceptors...)
+}
+
+// Create returns a builder for creating a NodeApiKey entity.
+func (c *NodeApiKeyClient) Create() *NodeApiKeyCreate {
+	mutation := newNodeApiKeyMutation(c.config, OpCreate)
+	return &NodeApiKeyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NodeApiKey entities.
+func (c *NodeApiKeyClient) CreateBulk(builders ...*NodeApiKeyCreate) *NodeApiKeyCreateBulk {
+	return &NodeApiKeyCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NodeApiKeyClient) MapCreateBulk(slice any, setFunc func(*NodeApiKeyCreate, int)) *NodeApiKeyCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NodeApiKeyCreateBulk{err: fmt.Errorf("calling to NodeApiKeyClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NodeApiKeyCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NodeApiKeyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NodeApiKey.
+func (c *NodeApiKeyClient) Update() *NodeApiKeyUpdate {
+	mutation := newNodeApiKeyMutation(c.config, OpUpdate)
+	return &NodeApiKeyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NodeApiKeyClient) UpdateOne(nak *NodeApiKey) *NodeApiKeyUpdateOne {
+	mutation := newNodeApiKeyMutation(c.config, OpUpdateOne, withNodeApiKey(nak))
+	return &NodeApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NodeApiKeyClient) UpdateOneID(id int) *NodeApiKeyUpdateOne {
+	mutation := newNodeApiKeyMutation(c.config, OpUpdateOne, withNodeApiKeyID(id))
+	return &NodeApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NodeApiKey.
+func (c *NodeApiKeyClient) Delete() *NodeApiKeyDelete {
+	mutation := newNodeApiKeyMutation(c.config, OpDelete)
+	return &NodeApiKeyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NodeApiKeyClient) DeleteOne(nak *NodeApiKey) *NodeApiKeyDeleteOne {
+	return c.DeleteOneID(nak.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NodeApiKeyClient) DeleteOneID(id int) *NodeApiKeyDeleteOne {
+	builder := c.Delete().Where(nodeapikey.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NodeApiKeyDeleteOne{builder}
+}
+
+// Query returns a query builder for NodeApiKey.
+func (c *NodeApiKeyClient) Query() *NodeApiKeyQuery {
+	return &NodeApiKeyQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNodeApiKey},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NodeApiKey entity by its id.
+func (c *NodeApiKeyClient) Get(ctx context.Context, id int) (*NodeApiKey, error) {
+	return c.Query().Where(nodeapikey.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NodeApiKeyClient) GetX(ctx context.Context, id int) *NodeApiKey {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNode queries the node edge of a NodeApiKey.
+func (c *NodeApiKeyClient) QueryNode(nak *NodeApiKey) *NodeQuery {
+	query := (&NodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := nak.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nodeapikey.Table, nodeapikey.FieldID, id),
+			sqlgraph.To(node.Table, node.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, nodeapikey.NodeTable, nodeapikey.NodeColumn),
+		)
+		fromV = sqlgraph.Neighbors(nak.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NodeApiKeyClient) Hooks() []Hook {
+	return c.hooks.NodeApiKey
+}
+
+// Interceptors returns the client interceptors.
+func (c *NodeApiKeyClient) Interceptors() []Interceptor {
+	return c.inters.NodeApiKey
+}
+
+func (c *NodeApiKeyClient) mutate(ctx context.Context, m *NodeApiKeyMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NodeApiKeyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NodeApiKeyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NodeApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NodeApiKeyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NodeApiKey mutation op: %q", m.Op())
 	}
 }
 
@@ -508,9 +683,9 @@ func (c *NodeValuesClient) mutate(ctx context.Context, m *NodeValuesMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Node, NodeValues []ent.Hook
+		Node, NodeApiKey, NodeValues []ent.Hook
 	}
 	inters struct {
-		Node, NodeValues []ent.Interceptor
+		Node, NodeApiKey, NodeValues []ent.Interceptor
 	}
 )

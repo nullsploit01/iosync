@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Node is the client for interacting with the Node builders.
 	Node *NodeClient
+	// NodeApiKey is the client for interacting with the NodeApiKey builders.
+	NodeApiKey *NodeApiKeyClient
 	// NodeValues is the client for interacting with the NodeValues builders.
 	NodeValues *NodeValuesClient
 
@@ -148,6 +150,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Node = NewNodeClient(tx.config)
+	tx.NodeApiKey = NewNodeApiKeyClient(tx.config)
 	tx.NodeValues = NewNodeValuesClient(tx.config)
 }
 

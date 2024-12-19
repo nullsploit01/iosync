@@ -23,6 +23,30 @@ var (
 		Columns:    NodesColumns,
 		PrimaryKey: []*schema.Column{NodesColumns[0]},
 	}
+	// NodeAPIKeysColumns holds the columns for the "node_api_keys" table.
+	NodeAPIKeysColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "api_key", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "is_revoked", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "node_api_keys", Type: field.TypeInt, Nullable: true},
+	}
+	// NodeAPIKeysTable holds the schema information for the "node_api_keys" table.
+	NodeAPIKeysTable = &schema.Table{
+		Name:       "node_api_keys",
+		Columns:    NodeAPIKeysColumns,
+		PrimaryKey: []*schema.Column{NodeAPIKeysColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "node_api_keys_nodes_api_keys",
+				Columns:    []*schema.Column{NodeAPIKeysColumns[6]},
+				RefColumns: []*schema.Column{NodesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// NodeValuesColumns holds the columns for the "node_values" table.
 	NodeValuesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -48,10 +72,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		NodesTable,
+		NodeAPIKeysTable,
 		NodeValuesTable,
 	}
 )
 
 func init() {
+	NodeAPIKeysTable.ForeignKeys[0].RefTable = NodesTable
 	NodeValuesTable.ForeignKeys[0].RefTable = NodesTable
 }

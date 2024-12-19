@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 )
 
@@ -75,6 +76,7 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			node.Table:       node.ValidColumn,
+			nodeapikey.Table: nodeapikey.ValidColumn,
 			nodevalues.Table: nodevalues.ValidColumn,
 		})
 	})

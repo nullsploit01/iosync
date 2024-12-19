@@ -37,9 +37,11 @@ type Node struct {
 type NodeEdges struct {
 	// Values holds the value of the values edge.
 	Values []*NodeValues `json:"values,omitempty"`
+	// APIKeys holds the value of the api_keys edge.
+	APIKeys []*NodeApiKey `json:"api_keys,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ValuesOrErr returns the Values value or an error if the edge
@@ -49,6 +51,15 @@ func (e NodeEdges) ValuesOrErr() ([]*NodeValues, error) {
 		return e.Values, nil
 	}
 	return nil, &NotLoadedError{edge: "values"}
+}
+
+// APIKeysOrErr returns the APIKeys value or an error if the edge
+// was not loaded in eager-loading.
+func (e NodeEdges) APIKeysOrErr() ([]*NodeApiKey, error) {
+	if e.loadedTypes[1] {
+		return e.APIKeys, nil
+	}
+	return nil, &NotLoadedError{edge: "api_keys"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -131,6 +142,11 @@ func (n *Node) Value(name string) (ent.Value, error) {
 // QueryValues queries the "values" edge of the Node entity.
 func (n *Node) QueryValues() *NodeValuesQuery {
 	return NewNodeClient(n.config).QueryValues(n)
+}
+
+// QueryAPIKeys queries the "api_keys" edge of the Node entity.
+func (n *Node) QueryAPIKeys() *NodeApiKeyQuery {
+	return NewNodeClient(n.config).QueryAPIKeys(n)
 }
 
 // Update returns a builder for updating this Node.

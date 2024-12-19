@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/schema"
 )
@@ -30,6 +31,22 @@ func init() {
 	node.DefaultUpdatedAt = nodeDescUpdatedAt.Default.(func() time.Time)
 	// node.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	node.UpdateDefaultUpdatedAt = nodeDescUpdatedAt.UpdateDefault.(func() time.Time)
+	nodeapikeyFields := schema.NodeApiKey{}.Fields()
+	_ = nodeapikeyFields
+	// nodeapikeyDescIsRevoked is the schema descriptor for is_revoked field.
+	nodeapikeyDescIsRevoked := nodeapikeyFields[2].Descriptor()
+	// nodeapikey.DefaultIsRevoked holds the default value on creation for the is_revoked field.
+	nodeapikey.DefaultIsRevoked = nodeapikeyDescIsRevoked.Default.(bool)
+	// nodeapikeyDescCreatedAt is the schema descriptor for created_at field.
+	nodeapikeyDescCreatedAt := nodeapikeyFields[3].Descriptor()
+	// nodeapikey.DefaultCreatedAt holds the default value on creation for the created_at field.
+	nodeapikey.DefaultCreatedAt = nodeapikeyDescCreatedAt.Default.(func() time.Time)
+	// nodeapikeyDescUpdatedAt is the schema descriptor for updated_at field.
+	nodeapikeyDescUpdatedAt := nodeapikeyFields[4].Descriptor()
+	// nodeapikey.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	nodeapikey.DefaultUpdatedAt = nodeapikeyDescUpdatedAt.Default.(func() time.Time)
+	// nodeapikey.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	nodeapikey.UpdateDefaultUpdatedAt = nodeapikeyDescUpdatedAt.UpdateDefault.(func() time.Time)
 	nodevaluesFields := schema.NodeValues{}.Fields()
 	_ = nodevaluesFields
 	// nodevaluesDescCreatedAt is the schema descriptor for created_at field.
