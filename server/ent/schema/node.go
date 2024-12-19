@@ -28,5 +28,6 @@ func (Node) Fields() []ent.Field {
 func (Node) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("values", NodeValues.Type),
+		edge.To("api_keys", NodeApiKey.Type),
 	}
 }
