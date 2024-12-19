@@ -16,6 +16,11 @@ type CreateNodeRequest struct {
 	Description string `json:"description" validate:"required"`
 }
 
+type AddNodeValueRequest struct {
+	NodeId int    `json:"node_id" validate:"required"`
+	Value  string `json:"value" validate:"required"`
+}
+
 func NewNodeService(db *ent.Client) NodeService {
 	return NodeService{
 		repo: repository.NewNodeRepository(db),
@@ -34,6 +39,6 @@ func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) 
 	return n.repo.CreateNode(ctx, request.Name, request.Description)
 }
 
-func (n NodeService) AddNodeValue(ctx context.Context, nodeId int, value string) (*ent.NodeValues, error) {
-	return n.repo.AddNodeValue(ctx, nodeId, value)
+func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueRequest) (*ent.NodeValues, error) {
+	return n.repo.AddNodeValue(ctx, request.NodeId, request.Value)
 }

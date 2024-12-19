@@ -81,5 +81,29 @@ func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) AddNodeValue(w http.ResponseWriter, r *http.Request) {
+	var body service.AddNodeValueRequest
+	if err := request.DecodeJSON(w, r, &body); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
 
+	if err := request.ValidateRequest(&body); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	nodeValue, err := app.services.nodeService.AddNodeValue(r.Context(), body)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := map[string]any{
+		"Data": nodeValue,
+	}
+
+	err = response.JSON(w, http.StatusCreated, data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }
