@@ -5,6 +5,7 @@ import (
 
 	"github.com/nullsploit01/iosync/ent"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/internal/util"
 )
 
 type NodeRepository struct {
@@ -36,5 +37,13 @@ func (n NodeRepository) AddNodeValue(ctx context.Context, nodeId int, value stri
 	return n.db.NodeValues.Create().
 		SetNodeID(nodeId).
 		SetValue(value).
+		Save(ctx)
+}
+
+func (n NodeRepository) GenerateNodeAPIKey(ctx context.Context, nodeId int, apiKeyDescription string) (*ent.NodeApiKey, error) {
+	return n.db.NodeApiKey.Create().
+		SetNodeID(nodeId).
+		SetAPIKey(util.GenerateUUID()).
+		SetDescription(apiKeyDescription).
 		Save(ctx)
 }

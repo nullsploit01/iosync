@@ -16,6 +16,10 @@ type CreateNodeRequest struct {
 	Description string `json:"description" validate:"required"`
 }
 
+type GenerateNodeAPIKeyRequest struct {
+	Description string `json:"description" validate:"required"`
+}
+
 type AddNodeValueRequest struct {
 	NodeId int    `json:"node_id" validate:"required"`
 	Value  string `json:"value" validate:"required"`
@@ -37,6 +41,10 @@ func (n NodeService) GetNode(ctx context.Context, id int) (*ent.Node, error) {
 
 func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (*ent.Node, error) {
 	return n.repo.CreateNode(ctx, request.Name, request.Description)
+}
+
+func (n NodeService) GenerateNodeAPIKey(ctx context.Context, nodeId int, request GenerateNodeAPIKeyRequest) (*ent.NodeApiKey, error) {
+	return n.repo.GenerateNodeAPIKey(ctx, nodeId, request.Description)
 }
 
 func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueRequest) (*ent.NodeValues, error) {
