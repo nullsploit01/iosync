@@ -21,7 +21,7 @@ type GenerateNodeAPIKeyRequest struct {
 }
 
 type AddNodeValueRequest struct {
-	NodeId int    `json:"node_id" validate:"required"`
+	ApiKey string `json:"api_key" validate:"required"`
 	Value  string `json:"value" validate:"required"`
 }
 
@@ -48,5 +48,10 @@ func (n NodeService) GenerateNodeAPIKey(ctx context.Context, nodeId int, request
 }
 
 func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueRequest) (*ent.NodeValues, error) {
-	return n.repo.AddNodeValue(ctx, request.NodeId, request.Value)
+	node, err := n.repo.GetNodeByAPIKey(ctx, request.ApiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return n.repo.AddNodeValue(ctx, node, request.Value)
 }

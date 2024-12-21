@@ -5,6 +5,7 @@ import (
 
 	"github.com/nullsploit01/iosync/ent"
 	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/internal/util"
 )
 
@@ -33,9 +34,9 @@ func (n NodeRepository) CreateNode(ctx context.Context, name, description string
 		Save(ctx)
 }
 
-func (n NodeRepository) AddNodeValue(ctx context.Context, nodeId int, value string) (*ent.NodeValues, error) {
+func (n NodeRepository) AddNodeValue(ctx context.Context, node *ent.Node, value string) (*ent.NodeValues, error) {
 	return n.db.NodeValues.Create().
-		SetNodeID(nodeId).
+		SetNode(node).
 		SetValue(value).
 		Save(ctx)
 }
@@ -46,4 +47,8 @@ func (n NodeRepository) GenerateNodeAPIKey(ctx context.Context, nodeId int, apiK
 		SetAPIKey(util.GenerateUUID()).
 		SetDescription(apiKeyDescription).
 		Save(ctx)
+}
+
+func (n NodeRepository) GetNodeByAPIKey(ctx context.Context, apiKey string) (*ent.Node, error) {
+	return n.db.Node.Query().Where(node.HasAPIKeysWith(nodeapikey.APIKey(apiKey))).Only(ctx)
 }
