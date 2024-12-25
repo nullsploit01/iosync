@@ -20,11 +20,17 @@ func NewNodeRepository(db *ent.Client) NodeRepository {
 }
 
 func (n NodeRepository) GetNodes(ctx context.Context) ([]*ent.Node, error) {
-	return n.db.Node.Query().WithAPIKeys().All(ctx)
+	return n.db.Node.Query().
+		WithAPIKeys(func(nakq *ent.NodeApiKeyQuery) {
+			nakq.Where(nodeapikey.IsRevokedEQ(false))
+		}).All(ctx)
 }
 
 func (n NodeRepository) GetNode(ctx context.Context, id int) (*ent.Node, error) {
-	return n.db.Node.Query().Where(node.IDEQ(id)).WithAPIKeys().Only(ctx)
+	return n.db.Node.Query().Where(node.IDEQ(id)).
+		WithAPIKeys(func(nakq *ent.NodeApiKeyQuery) {
+			nakq.Where(nodeapikey.IsRevokedEQ(false))
+		}).Only(ctx)
 }
 
 func (n NodeRepository) CreateNode(ctx context.Context, name, description string) (*ent.Node, error) {
