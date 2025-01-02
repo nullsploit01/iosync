@@ -6,6 +6,7 @@ import (
 	"github.com/nullsploit01/iosync/ent"
 	"github.com/nullsploit01/iosync/ent/node"
 	"github.com/nullsploit01/iosync/ent/nodeapikey"
+	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/internal/util"
 )
 
@@ -31,6 +32,10 @@ func (n NodeRepository) GetNode(ctx context.Context, id int) (*ent.Node, error) 
 		WithAPIKeys(func(nakq *ent.NodeApiKeyQuery) {
 			nakq.Where(nodeapikey.IsRevokedEQ(false))
 		}).Only(ctx)
+}
+
+func (n NodeRepository) GetNodeValues(ctx context.Context, id int) ([]*ent.NodeValues, error) {
+	return n.db.NodeValues.Query().Where(nodevalues.HasNodeWith(node.IDEQ(id))).All(ctx)
 }
 
 func (n NodeRepository) CreateNode(ctx context.Context, name, description string) (*ent.Node, error) {

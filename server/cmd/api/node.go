@@ -53,6 +53,31 @@ func (app *application) GetNode(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) GetNodeValues(w http.ResponseWriter, r *http.Request) {
+	nodeIdStr := chi.URLParam(r, "id")
+
+	if nodeIdStr == "" {
+		app.badRequest(w, r, fmt.Errorf("node id is required"))
+		return
+	}
+
+	nodeId, err := strconv.Atoi(nodeIdStr)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	nodeValues, err := app.services.nodeService.GetNodeValuesByAPIKey(r.Context(), nodeId)
+	data := map[string]any{
+		"Data": nodeValues,
+	}
+
+	err = response.JSON(w, http.StatusOK, data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+}
+
 func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 	var body service.CreateNodeRequest
 	if err := request.DecodeJSON(w, r, &body); err != nil {

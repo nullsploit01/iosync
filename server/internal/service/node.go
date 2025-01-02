@@ -39,6 +39,10 @@ func (n NodeService) GetNode(ctx context.Context, id int) (*ent.Node, error) {
 	return n.repo.GetNode(ctx, id)
 }
 
+func (n NodeService) GetNodeValuesByAPIKey(ctx context.Context, id int) ([]*ent.NodeValues, error) {
+	return n.repo.GetNodeValues(ctx, id)
+}
+
 func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (*ent.Node, error) {
 	return n.repo.CreateNode(ctx, request.Name, request.Description)
 }
