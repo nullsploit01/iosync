@@ -34,8 +34,8 @@ func (n NodeRepository) GetNode(ctx context.Context, id int) (*ent.Node, error) 
 		}).Only(ctx)
 }
 
-func (n NodeRepository) GetNodeValues(ctx context.Context, id int) ([]*ent.NodeValues, error) {
-	return n.db.NodeValues.Query().Where(nodevalues.HasNodeWith(node.IDEQ(id))).All(ctx)
+func (n NodeRepository) GetNodeValuesByAPIKey(ctx context.Context, nodeApiKey *ent.NodeApiKey) ([]*ent.NodeValues, error) {
+	return n.db.NodeValues.Query().Where(nodevalues.HasNodeAPIKeyWith(nodeapikey.IDEQ(nodeApiKey.ID))).All(ctx)
 }
 
 func (n NodeRepository) CreateNode(ctx context.Context, name, description string) (*ent.Node, error) {
@@ -45,9 +45,9 @@ func (n NodeRepository) CreateNode(ctx context.Context, name, description string
 		Save(ctx)
 }
 
-func (n NodeRepository) AddNodeValue(ctx context.Context, node *ent.Node, value string) (*ent.NodeValues, error) {
+func (n NodeRepository) AddNodeValue(ctx context.Context, nodeApiKey *ent.NodeApiKey, value string) (*ent.NodeValues, error) {
 	return n.db.NodeValues.Create().
-		SetNode(node).
+		SetNodeAPIKey(nodeApiKey).
 		SetValue(value).
 		Save(ctx)
 }
@@ -62,4 +62,8 @@ func (n NodeRepository) GenerateNodeAPIKey(ctx context.Context, nodeId int, apiK
 
 func (n NodeRepository) GetNodeByAPIKey(ctx context.Context, apiKey string) (*ent.Node, error) {
 	return n.db.Node.Query().Where(node.HasAPIKeysWith(nodeapikey.APIKey(apiKey))).Only(ctx)
+}
+
+func (n NodeRepository) GetNodeAPIByAPIKey(ctx context.Context, apiKey string) (*ent.NodeApiKey, error) {
+	return n.db.NodeApiKey.Query().Where(nodeapikey.APIKey(apiKey)).Only(ctx)
 }

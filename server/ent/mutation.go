@@ -43,9 +43,6 @@ type NodeMutation struct {
 	created_at      *time.Time
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
-	values          map[int]struct{}
-	removedvalues   map[int]struct{}
-	clearedvalues   bool
 	api_keys        map[int]struct{}
 	removedapi_keys map[int]struct{}
 	clearedapi_keys bool
@@ -332,60 +329,6 @@ func (m *NodeMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddValueIDs adds the "values" edge to the NodeValues entity by ids.
-func (m *NodeMutation) AddValueIDs(ids ...int) {
-	if m.values == nil {
-		m.values = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.values[ids[i]] = struct{}{}
-	}
-}
-
-// ClearValues clears the "values" edge to the NodeValues entity.
-func (m *NodeMutation) ClearValues() {
-	m.clearedvalues = true
-}
-
-// ValuesCleared reports if the "values" edge to the NodeValues entity was cleared.
-func (m *NodeMutation) ValuesCleared() bool {
-	return m.clearedvalues
-}
-
-// RemoveValueIDs removes the "values" edge to the NodeValues entity by IDs.
-func (m *NodeMutation) RemoveValueIDs(ids ...int) {
-	if m.removedvalues == nil {
-		m.removedvalues = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.values, ids[i])
-		m.removedvalues[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedValues returns the removed IDs of the "values" edge to the NodeValues entity.
-func (m *NodeMutation) RemovedValuesIDs() (ids []int) {
-	for id := range m.removedvalues {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ValuesIDs returns the "values" edge IDs in the mutation.
-func (m *NodeMutation) ValuesIDs() (ids []int) {
-	for id := range m.values {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetValues resets all changes to the "values" edge.
-func (m *NodeMutation) ResetValues() {
-	m.values = nil
-	m.clearedvalues = false
-	m.removedvalues = nil
-}
-
 // AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by ids.
 func (m *NodeMutation) AddAPIKeyIDs(ids ...int) {
 	if m.api_keys == nil {
@@ -641,10 +584,7 @@ func (m *NodeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.values != nil {
-		edges = append(edges, node.EdgeValues)
-	}
+	edges := make([]string, 0, 1)
 	if m.api_keys != nil {
 		edges = append(edges, node.EdgeAPIKeys)
 	}
@@ -655,12 +595,6 @@ func (m *NodeMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *NodeMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case node.EdgeValues:
-		ids := make([]ent.Value, 0, len(m.values))
-		for id := range m.values {
-			ids = append(ids, id)
-		}
-		return ids
 	case node.EdgeAPIKeys:
 		ids := make([]ent.Value, 0, len(m.api_keys))
 		for id := range m.api_keys {
@@ -673,10 +607,7 @@ func (m *NodeMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedvalues != nil {
-		edges = append(edges, node.EdgeValues)
-	}
+	edges := make([]string, 0, 1)
 	if m.removedapi_keys != nil {
 		edges = append(edges, node.EdgeAPIKeys)
 	}
@@ -687,12 +618,6 @@ func (m *NodeMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *NodeMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case node.EdgeValues:
-		ids := make([]ent.Value, 0, len(m.removedvalues))
-		for id := range m.removedvalues {
-			ids = append(ids, id)
-		}
-		return ids
 	case node.EdgeAPIKeys:
 		ids := make([]ent.Value, 0, len(m.removedapi_keys))
 		for id := range m.removedapi_keys {
@@ -705,10 +630,7 @@ func (m *NodeMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedvalues {
-		edges = append(edges, node.EdgeValues)
-	}
+	edges := make([]string, 0, 1)
 	if m.clearedapi_keys {
 		edges = append(edges, node.EdgeAPIKeys)
 	}
@@ -719,8 +641,6 @@ func (m *NodeMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *NodeMutation) EdgeCleared(name string) bool {
 	switch name {
-	case node.EdgeValues:
-		return m.clearedvalues
 	case node.EdgeAPIKeys:
 		return m.clearedapi_keys
 	}
@@ -739,9 +659,6 @@ func (m *NodeMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NodeMutation) ResetEdge(name string) error {
 	switch name {
-	case node.EdgeValues:
-		m.ResetValues()
-		return nil
 	case node.EdgeAPIKeys:
 		m.ResetAPIKeys()
 		return nil
@@ -763,6 +680,9 @@ type NodeApiKeyMutation struct {
 	clearedFields map[string]struct{}
 	node          *int
 	clearednode   bool
+	values        map[int]struct{}
+	removedvalues map[int]struct{}
+	clearedvalues bool
 	done          bool
 	oldValue      func(context.Context) (*NodeApiKey, error)
 	predicates    []predicate.NodeApiKey
@@ -1085,6 +1005,60 @@ func (m *NodeApiKeyMutation) ResetNode() {
 	m.clearednode = false
 }
 
+// AddValueIDs adds the "values" edge to the NodeValues entity by ids.
+func (m *NodeApiKeyMutation) AddValueIDs(ids ...int) {
+	if m.values == nil {
+		m.values = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.values[ids[i]] = struct{}{}
+	}
+}
+
+// ClearValues clears the "values" edge to the NodeValues entity.
+func (m *NodeApiKeyMutation) ClearValues() {
+	m.clearedvalues = true
+}
+
+// ValuesCleared reports if the "values" edge to the NodeValues entity was cleared.
+func (m *NodeApiKeyMutation) ValuesCleared() bool {
+	return m.clearedvalues
+}
+
+// RemoveValueIDs removes the "values" edge to the NodeValues entity by IDs.
+func (m *NodeApiKeyMutation) RemoveValueIDs(ids ...int) {
+	if m.removedvalues == nil {
+		m.removedvalues = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.values, ids[i])
+		m.removedvalues[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedValues returns the removed IDs of the "values" edge to the NodeValues entity.
+func (m *NodeApiKeyMutation) RemovedValuesIDs() (ids []int) {
+	for id := range m.removedvalues {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ValuesIDs returns the "values" edge IDs in the mutation.
+func (m *NodeApiKeyMutation) ValuesIDs() (ids []int) {
+	for id := range m.values {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetValues resets all changes to the "values" edge.
+func (m *NodeApiKeyMutation) ResetValues() {
+	m.values = nil
+	m.clearedvalues = false
+	m.removedvalues = nil
+}
+
 // Where appends a list predicates to the NodeApiKeyMutation builder.
 func (m *NodeApiKeyMutation) Where(ps ...predicate.NodeApiKey) {
 	m.predicates = append(m.predicates, ps...)
@@ -1286,9 +1260,12 @@ func (m *NodeApiKeyMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NodeApiKeyMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.node != nil {
 		edges = append(edges, nodeapikey.EdgeNode)
+	}
+	if m.values != nil {
+		edges = append(edges, nodeapikey.EdgeValues)
 	}
 	return edges
 }
@@ -1301,27 +1278,47 @@ func (m *NodeApiKeyMutation) AddedIDs(name string) []ent.Value {
 		if id := m.node; id != nil {
 			return []ent.Value{*id}
 		}
+	case nodeapikey.EdgeValues:
+		ids := make([]ent.Value, 0, len(m.values))
+		for id := range m.values {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NodeApiKeyMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedvalues != nil {
+		edges = append(edges, nodeapikey.EdgeValues)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *NodeApiKeyMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case nodeapikey.EdgeValues:
+		ids := make([]ent.Value, 0, len(m.removedvalues))
+		for id := range m.removedvalues {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NodeApiKeyMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearednode {
 		edges = append(edges, nodeapikey.EdgeNode)
+	}
+	if m.clearedvalues {
+		edges = append(edges, nodeapikey.EdgeValues)
 	}
 	return edges
 }
@@ -1332,6 +1329,8 @@ func (m *NodeApiKeyMutation) EdgeCleared(name string) bool {
 	switch name {
 	case nodeapikey.EdgeNode:
 		return m.clearednode
+	case nodeapikey.EdgeValues:
+		return m.clearedvalues
 	}
 	return false
 }
@@ -1354,6 +1353,9 @@ func (m *NodeApiKeyMutation) ResetEdge(name string) error {
 	case nodeapikey.EdgeNode:
 		m.ResetNode()
 		return nil
+	case nodeapikey.EdgeValues:
+		m.ResetValues()
+		return nil
 	}
 	return fmt.Errorf("unknown NodeApiKey edge %s", name)
 }
@@ -1361,18 +1363,18 @@ func (m *NodeApiKeyMutation) ResetEdge(name string) error {
 // NodeValuesMutation represents an operation that mutates the NodeValues nodes in the graph.
 type NodeValuesMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	value         *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	node          *int
-	clearednode   bool
-	done          bool
-	oldValue      func(context.Context) (*NodeValues, error)
-	predicates    []predicate.NodeValues
+	op                  Op
+	typ                 string
+	id                  *int
+	value               *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	node_api_key        *int
+	clearednode_api_key bool
+	done                bool
+	oldValue            func(context.Context) (*NodeValues, error)
+	predicates          []predicate.NodeValues
 }
 
 var _ ent.Mutation = (*NodeValuesMutation)(nil)
@@ -1581,43 +1583,43 @@ func (m *NodeValuesMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetNodeID sets the "node" edge to the Node entity by id.
-func (m *NodeValuesMutation) SetNodeID(id int) {
-	m.node = &id
+// SetNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by id.
+func (m *NodeValuesMutation) SetNodeAPIKeyID(id int) {
+	m.node_api_key = &id
 }
 
-// ClearNode clears the "node" edge to the Node entity.
-func (m *NodeValuesMutation) ClearNode() {
-	m.clearednode = true
+// ClearNodeAPIKey clears the "node_api_key" edge to the NodeApiKey entity.
+func (m *NodeValuesMutation) ClearNodeAPIKey() {
+	m.clearednode_api_key = true
 }
 
-// NodeCleared reports if the "node" edge to the Node entity was cleared.
-func (m *NodeValuesMutation) NodeCleared() bool {
-	return m.clearednode
+// NodeAPIKeyCleared reports if the "node_api_key" edge to the NodeApiKey entity was cleared.
+func (m *NodeValuesMutation) NodeAPIKeyCleared() bool {
+	return m.clearednode_api_key
 }
 
-// NodeID returns the "node" edge ID in the mutation.
-func (m *NodeValuesMutation) NodeID() (id int, exists bool) {
-	if m.node != nil {
-		return *m.node, true
+// NodeAPIKeyID returns the "node_api_key" edge ID in the mutation.
+func (m *NodeValuesMutation) NodeAPIKeyID() (id int, exists bool) {
+	if m.node_api_key != nil {
+		return *m.node_api_key, true
 	}
 	return
 }
 
-// NodeIDs returns the "node" edge IDs in the mutation.
+// NodeAPIKeyIDs returns the "node_api_key" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NodeID instead. It exists only for internal usage by the builders.
-func (m *NodeValuesMutation) NodeIDs() (ids []int) {
-	if id := m.node; id != nil {
+// NodeAPIKeyID instead. It exists only for internal usage by the builders.
+func (m *NodeValuesMutation) NodeAPIKeyIDs() (ids []int) {
+	if id := m.node_api_key; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetNode resets all changes to the "node" edge.
-func (m *NodeValuesMutation) ResetNode() {
-	m.node = nil
-	m.clearednode = false
+// ResetNodeAPIKey resets all changes to the "node_api_key" edge.
+func (m *NodeValuesMutation) ResetNodeAPIKey() {
+	m.node_api_key = nil
+	m.clearednode_api_key = false
 }
 
 // Where appends a list predicates to the NodeValuesMutation builder.
@@ -1788,8 +1790,8 @@ func (m *NodeValuesMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NodeValuesMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.node != nil {
-		edges = append(edges, nodevalues.EdgeNode)
+	if m.node_api_key != nil {
+		edges = append(edges, nodevalues.EdgeNodeAPIKey)
 	}
 	return edges
 }
@@ -1798,8 +1800,8 @@ func (m *NodeValuesMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *NodeValuesMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case nodevalues.EdgeNode:
-		if id := m.node; id != nil {
+	case nodevalues.EdgeNodeAPIKey:
+		if id := m.node_api_key; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -1821,8 +1823,8 @@ func (m *NodeValuesMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NodeValuesMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearednode {
-		edges = append(edges, nodevalues.EdgeNode)
+	if m.clearednode_api_key {
+		edges = append(edges, nodevalues.EdgeNodeAPIKey)
 	}
 	return edges
 }
@@ -1831,8 +1833,8 @@ func (m *NodeValuesMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *NodeValuesMutation) EdgeCleared(name string) bool {
 	switch name {
-	case nodevalues.EdgeNode:
-		return m.clearednode
+	case nodevalues.EdgeNodeAPIKey:
+		return m.clearednode_api_key
 	}
 	return false
 }
@@ -1841,8 +1843,8 @@ func (m *NodeValuesMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *NodeValuesMutation) ClearEdge(name string) error {
 	switch name {
-	case nodevalues.EdgeNode:
-		m.ClearNode()
+	case nodevalues.EdgeNodeAPIKey:
+		m.ClearNodeAPIKey()
 		return nil
 	}
 	return fmt.Errorf("unknown NodeValues unique edge %s", name)
@@ -1852,8 +1854,8 @@ func (m *NodeValuesMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NodeValuesMutation) ResetEdge(name string) error {
 	switch name {
-	case nodevalues.EdgeNode:
-		m.ResetNode()
+	case nodevalues.EdgeNodeAPIKey:
+		m.ResetNodeAPIKey()
 		return nil
 	}
 	return fmt.Errorf("unknown NodeValues edge %s", name)

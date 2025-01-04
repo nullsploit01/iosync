@@ -25,7 +25,7 @@ func (NodeValues) Fields() []ent.Field {
 // Edges of the NodeValues.
 func (NodeValues) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("node", Node.Type).
+		edge.From("node_api_key", NodeApiKey.Type).
 			Ref("values").
 			Unique(),
 	}

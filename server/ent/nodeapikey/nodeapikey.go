@@ -26,6 +26,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeNode holds the string denoting the node edge name in mutations.
 	EdgeNode = "node"
+	// EdgeValues holds the string denoting the values edge name in mutations.
+	EdgeValues = "values"
 	// Table holds the table name of the nodeapikey in the database.
 	Table = "node_api_keys"
 	// NodeTable is the table that holds the node relation/edge.
@@ -35,6 +37,13 @@ const (
 	NodeInverseTable = "nodes"
 	// NodeColumn is the table column denoting the node relation/edge.
 	NodeColumn = "node_api_keys"
+	// ValuesTable is the table that holds the values relation/edge.
+	ValuesTable = "node_values"
+	// ValuesInverseTable is the table name for the NodeValues entity.
+	// It exists in this package in order to avoid circular dependency with the "nodevalues" package.
+	ValuesInverseTable = "node_values"
+	// ValuesColumn is the table column denoting the values relation/edge.
+	ValuesColumn = "node_api_key_values"
 )
 
 // Columns holds all SQL columns for nodeapikey fields.
@@ -118,10 +127,31 @@ func ByNodeField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newNodeStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByValuesCount orders the results by values count.
+func ByValuesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newValuesStep(), opts...)
+	}
+}
+
+// ByValues orders the results by values terms.
+func ByValues(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newValuesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newNodeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NodeInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, NodeTable, NodeColumn),
+	)
+}
+func newValuesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ValuesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ValuesTable, ValuesColumn),
 	)
 }

@@ -20,17 +20,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeNode holds the string denoting the node edge name in mutations.
-	EdgeNode = "node"
+	// EdgeNodeAPIKey holds the string denoting the node_api_key edge name in mutations.
+	EdgeNodeAPIKey = "node_api_key"
 	// Table holds the table name of the nodevalues in the database.
 	Table = "node_values"
-	// NodeTable is the table that holds the node relation/edge.
-	NodeTable = "node_values"
-	// NodeInverseTable is the table name for the Node entity.
-	// It exists in this package in order to avoid circular dependency with the "node" package.
-	NodeInverseTable = "nodes"
-	// NodeColumn is the table column denoting the node relation/edge.
-	NodeColumn = "node_values"
+	// NodeAPIKeyTable is the table that holds the node_api_key relation/edge.
+	NodeAPIKeyTable = "node_values"
+	// NodeAPIKeyInverseTable is the table name for the NodeApiKey entity.
+	// It exists in this package in order to avoid circular dependency with the "nodeapikey" package.
+	NodeAPIKeyInverseTable = "node_api_keys"
+	// NodeAPIKeyColumn is the table column denoting the node_api_key relation/edge.
+	NodeAPIKeyColumn = "node_api_key_values"
 )
 
 // Columns holds all SQL columns for nodevalues fields.
@@ -44,7 +44,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "node_values"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"node_values",
+	"node_api_key_values",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -94,16 +94,16 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByNodeField orders the results by node field.
-func ByNodeField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByNodeAPIKeyField orders the results by node_api_key field.
+func ByNodeAPIKeyField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newNodeStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newNodeAPIKeyStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newNodeStep() *sqlgraph.Step {
+func newNodeAPIKeyStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(NodeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, NodeTable, NodeColumn),
+		sqlgraph.To(NodeAPIKeyInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, NodeAPIKeyTable, NodeAPIKeyColumn),
 	)
 }

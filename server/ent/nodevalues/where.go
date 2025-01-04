@@ -215,21 +215,21 @@ func UpdatedAtLTE(v time.Time) predicate.NodeValues {
 	return predicate.NodeValues(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasNode applies the HasEdge predicate on the "node" edge.
-func HasNode() predicate.NodeValues {
+// HasNodeAPIKey applies the HasEdge predicate on the "node_api_key" edge.
+func HasNodeAPIKey() predicate.NodeValues {
 	return predicate.NodeValues(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, NodeTable, NodeColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, NodeAPIKeyTable, NodeAPIKeyColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasNodeWith applies the HasEdge predicate on the "node" edge with a given conditions (other predicates).
-func HasNodeWith(preds ...predicate.Node) predicate.NodeValues {
+// HasNodeAPIKeyWith applies the HasEdge predicate on the "node_api_key" edge with a given conditions (other predicates).
+func HasNodeAPIKeyWith(preds ...predicate.NodeApiKey) predicate.NodeValues {
 	return predicate.NodeValues(func(s *sql.Selector) {
-		step := newNodeStep()
+		step := newNodeAPIKeyStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

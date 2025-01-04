@@ -30,5 +30,7 @@ func (NodeApiKey) Edges() []ent.Edge {
 		edge.From("node", Node.Type).
 			Ref("api_keys").
 			Unique(),
+
+		edge.To("values", NodeValues.Type),
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/nullsploit01/iosync/ent/node"
 	"github.com/nullsploit01/iosync/ent/nodeapikey"
+	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -96,6 +97,21 @@ func (naku *NodeApiKeyUpdate) SetNode(n *Node) *NodeApiKeyUpdate {
 	return naku.SetNodeID(n.ID)
 }
 
+// AddValueIDs adds the "values" edge to the NodeValues entity by IDs.
+func (naku *NodeApiKeyUpdate) AddValueIDs(ids ...int) *NodeApiKeyUpdate {
+	naku.mutation.AddValueIDs(ids...)
+	return naku
+}
+
+// AddValues adds the "values" edges to the NodeValues entity.
+func (naku *NodeApiKeyUpdate) AddValues(n ...*NodeValues) *NodeApiKeyUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return naku.AddValueIDs(ids...)
+}
+
 // Mutation returns the NodeApiKeyMutation object of the builder.
 func (naku *NodeApiKeyUpdate) Mutation() *NodeApiKeyMutation {
 	return naku.mutation
@@ -105,6 +121,27 @@ func (naku *NodeApiKeyUpdate) Mutation() *NodeApiKeyMutation {
 func (naku *NodeApiKeyUpdate) ClearNode() *NodeApiKeyUpdate {
 	naku.mutation.ClearNode()
 	return naku
+}
+
+// ClearValues clears all "values" edges to the NodeValues entity.
+func (naku *NodeApiKeyUpdate) ClearValues() *NodeApiKeyUpdate {
+	naku.mutation.ClearValues()
+	return naku
+}
+
+// RemoveValueIDs removes the "values" edge to NodeValues entities by IDs.
+func (naku *NodeApiKeyUpdate) RemoveValueIDs(ids ...int) *NodeApiKeyUpdate {
+	naku.mutation.RemoveValueIDs(ids...)
+	return naku
+}
+
+// RemoveValues removes "values" edges to NodeValues entities.
+func (naku *NodeApiKeyUpdate) RemoveValues(n ...*NodeValues) *NodeApiKeyUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return naku.RemoveValueIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -186,6 +223,51 @@ func (naku *NodeApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if naku.mutation.ValuesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   nodeapikey.ValuesTable,
+			Columns: []string{nodeapikey.ValuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := naku.mutation.RemovedValuesIDs(); len(nodes) > 0 && !naku.mutation.ValuesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   nodeapikey.ValuesTable,
+			Columns: []string{nodeapikey.ValuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := naku.mutation.ValuesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   nodeapikey.ValuesTable,
+			Columns: []string{nodeapikey.ValuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -280,6 +362,21 @@ func (nakuo *NodeApiKeyUpdateOne) SetNode(n *Node) *NodeApiKeyUpdateOne {
 	return nakuo.SetNodeID(n.ID)
 }
 
+// AddValueIDs adds the "values" edge to the NodeValues entity by IDs.
+func (nakuo *NodeApiKeyUpdateOne) AddValueIDs(ids ...int) *NodeApiKeyUpdateOne {
+	nakuo.mutation.AddValueIDs(ids...)
+	return nakuo
+}
+
+// AddValues adds the "values" edges to the NodeValues entity.
+func (nakuo *NodeApiKeyUpdateOne) AddValues(n ...*NodeValues) *NodeApiKeyUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nakuo.AddValueIDs(ids...)
+}
+
 // Mutation returns the NodeApiKeyMutation object of the builder.
 func (nakuo *NodeApiKeyUpdateOne) Mutation() *NodeApiKeyMutation {
 	return nakuo.mutation
@@ -289,6 +386,27 @@ func (nakuo *NodeApiKeyUpdateOne) Mutation() *NodeApiKeyMutation {
 func (nakuo *NodeApiKeyUpdateOne) ClearNode() *NodeApiKeyUpdateOne {
 	nakuo.mutation.ClearNode()
 	return nakuo
+}
+
+// ClearValues clears all "values" edges to the NodeValues entity.
+func (nakuo *NodeApiKeyUpdateOne) ClearValues() *NodeApiKeyUpdateOne {
+	nakuo.mutation.ClearValues()
+	return nakuo
+}
+
+// RemoveValueIDs removes the "values" edge to NodeValues entities by IDs.
+func (nakuo *NodeApiKeyUpdateOne) RemoveValueIDs(ids ...int) *NodeApiKeyUpdateOne {
+	nakuo.mutation.RemoveValueIDs(ids...)
+	return nakuo
+}
+
+// RemoveValues removes "values" edges to NodeValues entities.
+func (nakuo *NodeApiKeyUpdateOne) RemoveValues(n ...*NodeValues) *NodeApiKeyUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return nakuo.RemoveValueIDs(ids...)
 }
 
 // Where appends a list predicates to the NodeApiKeyUpdate builder.
@@ -400,6 +518,51 @@ func (nakuo *NodeApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *NodeApiKe
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nakuo.mutation.ValuesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   nodeapikey.ValuesTable,
+			Columns: []string{nodeapikey.ValuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nakuo.mutation.RemovedValuesIDs(); len(nodes) > 0 && !nakuo.mutation.ValuesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   nodeapikey.ValuesTable,
+			Columns: []string{nodeapikey.ValuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nakuo.mutation.ValuesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   nodeapikey.ValuesTable,
+			Columns: []string{nodeapikey.ValuesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
@@ -49,23 +49,23 @@ func (nvu *NodeValuesUpdate) SetUpdatedAt(t time.Time) *NodeValuesUpdate {
 	return nvu
 }
 
-// SetNodeID sets the "node" edge to the Node entity by ID.
-func (nvu *NodeValuesUpdate) SetNodeID(id int) *NodeValuesUpdate {
-	nvu.mutation.SetNodeID(id)
+// SetNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by ID.
+func (nvu *NodeValuesUpdate) SetNodeAPIKeyID(id int) *NodeValuesUpdate {
+	nvu.mutation.SetNodeAPIKeyID(id)
 	return nvu
 }
 
-// SetNillableNodeID sets the "node" edge to the Node entity by ID if the given value is not nil.
-func (nvu *NodeValuesUpdate) SetNillableNodeID(id *int) *NodeValuesUpdate {
+// SetNillableNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by ID if the given value is not nil.
+func (nvu *NodeValuesUpdate) SetNillableNodeAPIKeyID(id *int) *NodeValuesUpdate {
 	if id != nil {
-		nvu = nvu.SetNodeID(*id)
+		nvu = nvu.SetNodeAPIKeyID(*id)
 	}
 	return nvu
 }
 
-// SetNode sets the "node" edge to the Node entity.
-func (nvu *NodeValuesUpdate) SetNode(n *Node) *NodeValuesUpdate {
-	return nvu.SetNodeID(n.ID)
+// SetNodeAPIKey sets the "node_api_key" edge to the NodeApiKey entity.
+func (nvu *NodeValuesUpdate) SetNodeAPIKey(n *NodeApiKey) *NodeValuesUpdate {
+	return nvu.SetNodeAPIKeyID(n.ID)
 }
 
 // Mutation returns the NodeValuesMutation object of the builder.
@@ -73,9 +73,9 @@ func (nvu *NodeValuesUpdate) Mutation() *NodeValuesMutation {
 	return nvu.mutation
 }
 
-// ClearNode clears the "node" edge to the Node entity.
-func (nvu *NodeValuesUpdate) ClearNode() *NodeValuesUpdate {
-	nvu.mutation.ClearNode()
+// ClearNodeAPIKey clears the "node_api_key" edge to the NodeApiKey entity.
+func (nvu *NodeValuesUpdate) ClearNodeAPIKey() *NodeValuesUpdate {
+	nvu.mutation.ClearNodeAPIKey()
 	return nvu
 }
 
@@ -130,28 +130,28 @@ func (nvu *NodeValuesUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := nvu.mutation.UpdatedAt(); ok {
 		_spec.SetField(nodevalues.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if nvu.mutation.NodeCleared() {
+	if nvu.mutation.NodeAPIKeyCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   nodevalues.NodeTable,
-			Columns: []string{nodevalues.NodeColumn},
+			Table:   nodevalues.NodeAPIKeyTable,
+			Columns: []string{nodevalues.NodeAPIKeyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nvu.mutation.NodeIDs(); len(nodes) > 0 {
+	if nodes := nvu.mutation.NodeAPIKeyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   nodevalues.NodeTable,
-			Columns: []string{nodevalues.NodeColumn},
+			Table:   nodevalues.NodeAPIKeyTable,
+			Columns: []string{nodevalues.NodeAPIKeyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -199,23 +199,23 @@ func (nvuo *NodeValuesUpdateOne) SetUpdatedAt(t time.Time) *NodeValuesUpdateOne 
 	return nvuo
 }
 
-// SetNodeID sets the "node" edge to the Node entity by ID.
-func (nvuo *NodeValuesUpdateOne) SetNodeID(id int) *NodeValuesUpdateOne {
-	nvuo.mutation.SetNodeID(id)
+// SetNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by ID.
+func (nvuo *NodeValuesUpdateOne) SetNodeAPIKeyID(id int) *NodeValuesUpdateOne {
+	nvuo.mutation.SetNodeAPIKeyID(id)
 	return nvuo
 }
 
-// SetNillableNodeID sets the "node" edge to the Node entity by ID if the given value is not nil.
-func (nvuo *NodeValuesUpdateOne) SetNillableNodeID(id *int) *NodeValuesUpdateOne {
+// SetNillableNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by ID if the given value is not nil.
+func (nvuo *NodeValuesUpdateOne) SetNillableNodeAPIKeyID(id *int) *NodeValuesUpdateOne {
 	if id != nil {
-		nvuo = nvuo.SetNodeID(*id)
+		nvuo = nvuo.SetNodeAPIKeyID(*id)
 	}
 	return nvuo
 }
 
-// SetNode sets the "node" edge to the Node entity.
-func (nvuo *NodeValuesUpdateOne) SetNode(n *Node) *NodeValuesUpdateOne {
-	return nvuo.SetNodeID(n.ID)
+// SetNodeAPIKey sets the "node_api_key" edge to the NodeApiKey entity.
+func (nvuo *NodeValuesUpdateOne) SetNodeAPIKey(n *NodeApiKey) *NodeValuesUpdateOne {
+	return nvuo.SetNodeAPIKeyID(n.ID)
 }
 
 // Mutation returns the NodeValuesMutation object of the builder.
@@ -223,9 +223,9 @@ func (nvuo *NodeValuesUpdateOne) Mutation() *NodeValuesMutation {
 	return nvuo.mutation
 }
 
-// ClearNode clears the "node" edge to the Node entity.
-func (nvuo *NodeValuesUpdateOne) ClearNode() *NodeValuesUpdateOne {
-	nvuo.mutation.ClearNode()
+// ClearNodeAPIKey clears the "node_api_key" edge to the NodeApiKey entity.
+func (nvuo *NodeValuesUpdateOne) ClearNodeAPIKey() *NodeValuesUpdateOne {
+	nvuo.mutation.ClearNodeAPIKey()
 	return nvuo
 }
 
@@ -310,28 +310,28 @@ func (nvuo *NodeValuesUpdateOne) sqlSave(ctx context.Context) (_node *NodeValues
 	if value, ok := nvuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(nodevalues.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if nvuo.mutation.NodeCleared() {
+	if nvuo.mutation.NodeAPIKeyCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   nodevalues.NodeTable,
-			Columns: []string{nodevalues.NodeColumn},
+			Table:   nodevalues.NodeAPIKeyTable,
+			Columns: []string{nodevalues.NodeAPIKeyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nvuo.mutation.NodeIDs(); len(nodes) > 0 {
+	if nodes := nvuo.mutation.NodeAPIKeyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   nodevalues.NodeTable,
-			Columns: []string{nodevalues.NodeColumn},
+			Table:   nodevalues.NodeAPIKeyTable,
+			Columns: []string{nodevalues.NodeAPIKeyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

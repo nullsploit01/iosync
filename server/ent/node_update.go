@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/nullsploit01/iosync/ent/node"
 	"github.com/nullsploit01/iosync/ent/nodeapikey"
-	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -78,21 +77,6 @@ func (nu *NodeUpdate) SetUpdatedAt(t time.Time) *NodeUpdate {
 	return nu
 }
 
-// AddValueIDs adds the "values" edge to the NodeValues entity by IDs.
-func (nu *NodeUpdate) AddValueIDs(ids ...int) *NodeUpdate {
-	nu.mutation.AddValueIDs(ids...)
-	return nu
-}
-
-// AddValues adds the "values" edges to the NodeValues entity.
-func (nu *NodeUpdate) AddValues(n ...*NodeValues) *NodeUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return nu.AddValueIDs(ids...)
-}
-
 // AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by IDs.
 func (nu *NodeUpdate) AddAPIKeyIDs(ids ...int) *NodeUpdate {
 	nu.mutation.AddAPIKeyIDs(ids...)
@@ -111,27 +95,6 @@ func (nu *NodeUpdate) AddAPIKeys(n ...*NodeApiKey) *NodeUpdate {
 // Mutation returns the NodeMutation object of the builder.
 func (nu *NodeUpdate) Mutation() *NodeMutation {
 	return nu.mutation
-}
-
-// ClearValues clears all "values" edges to the NodeValues entity.
-func (nu *NodeUpdate) ClearValues() *NodeUpdate {
-	nu.mutation.ClearValues()
-	return nu
-}
-
-// RemoveValueIDs removes the "values" edge to NodeValues entities by IDs.
-func (nu *NodeUpdate) RemoveValueIDs(ids ...int) *NodeUpdate {
-	nu.mutation.RemoveValueIDs(ids...)
-	return nu
-}
-
-// RemoveValues removes "values" edges to NodeValues entities.
-func (nu *NodeUpdate) RemoveValues(n ...*NodeValues) *NodeUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return nu.RemoveValueIDs(ids...)
 }
 
 // ClearAPIKeys clears all "api_keys" edges to the NodeApiKey entity.
@@ -211,51 +174,6 @@ func (nu *NodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := nu.mutation.UpdatedAt(); ok {
 		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if nu.mutation.ValuesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   node.ValuesTable,
-			Columns: []string{node.ValuesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.RemovedValuesIDs(); len(nodes) > 0 && !nu.mutation.ValuesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   node.ValuesTable,
-			Columns: []string{node.ValuesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.ValuesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   node.ValuesTable,
-			Columns: []string{node.ValuesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if nu.mutation.APIKeysCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -370,21 +288,6 @@ func (nuo *NodeUpdateOne) SetUpdatedAt(t time.Time) *NodeUpdateOne {
 	return nuo
 }
 
-// AddValueIDs adds the "values" edge to the NodeValues entity by IDs.
-func (nuo *NodeUpdateOne) AddValueIDs(ids ...int) *NodeUpdateOne {
-	nuo.mutation.AddValueIDs(ids...)
-	return nuo
-}
-
-// AddValues adds the "values" edges to the NodeValues entity.
-func (nuo *NodeUpdateOne) AddValues(n ...*NodeValues) *NodeUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return nuo.AddValueIDs(ids...)
-}
-
 // AddAPIKeyIDs adds the "api_keys" edge to the NodeApiKey entity by IDs.
 func (nuo *NodeUpdateOne) AddAPIKeyIDs(ids ...int) *NodeUpdateOne {
 	nuo.mutation.AddAPIKeyIDs(ids...)
@@ -403,27 +306,6 @@ func (nuo *NodeUpdateOne) AddAPIKeys(n ...*NodeApiKey) *NodeUpdateOne {
 // Mutation returns the NodeMutation object of the builder.
 func (nuo *NodeUpdateOne) Mutation() *NodeMutation {
 	return nuo.mutation
-}
-
-// ClearValues clears all "values" edges to the NodeValues entity.
-func (nuo *NodeUpdateOne) ClearValues() *NodeUpdateOne {
-	nuo.mutation.ClearValues()
-	return nuo
-}
-
-// RemoveValueIDs removes the "values" edge to NodeValues entities by IDs.
-func (nuo *NodeUpdateOne) RemoveValueIDs(ids ...int) *NodeUpdateOne {
-	nuo.mutation.RemoveValueIDs(ids...)
-	return nuo
-}
-
-// RemoveValues removes "values" edges to NodeValues entities.
-func (nuo *NodeUpdateOne) RemoveValues(n ...*NodeValues) *NodeUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return nuo.RemoveValueIDs(ids...)
 }
 
 // ClearAPIKeys clears all "api_keys" edges to the NodeApiKey entity.
@@ -533,51 +415,6 @@ func (nuo *NodeUpdateOne) sqlSave(ctx context.Context) (_node *Node, err error) 
 	}
 	if value, ok := nuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if nuo.mutation.ValuesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   node.ValuesTable,
-			Columns: []string{node.ValuesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.RemovedValuesIDs(); len(nodes) > 0 && !nuo.mutation.ValuesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   node.ValuesTable,
-			Columns: []string{node.ValuesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.ValuesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   node.ValuesTable,
-			Columns: []string{node.ValuesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nodevalues.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if nuo.mutation.APIKeysCleared() {
 		edge := &sqlgraph.EdgeSpec{

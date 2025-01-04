@@ -300,29 +300,6 @@ func UpdatedAtLTE(v time.Time) predicate.Node {
 	return predicate.Node(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasValues applies the HasEdge predicate on the "values" edge.
-func HasValues() predicate.Node {
-	return predicate.Node(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ValuesTable, ValuesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasValuesWith applies the HasEdge predicate on the "values" edge with a given conditions (other predicates).
-func HasValuesWith(preds ...predicate.NodeValues) predicate.Node {
-	return predicate.Node(func(s *sql.Selector) {
-		step := newValuesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasAPIKeys applies the HasEdge predicate on the "api_keys" edge.
 func HasAPIKeys() predicate.Node {
 	return predicate.Node(func(s *sql.Selector) {

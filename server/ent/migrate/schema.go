@@ -53,7 +53,7 @@ var (
 		{Name: "value", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "node_values", Type: field.TypeInt, Nullable: true},
+		{Name: "node_api_key_values", Type: field.TypeInt, Nullable: true},
 	}
 	// NodeValuesTable holds the schema information for the "node_values" table.
 	NodeValuesTable = &schema.Table{
@@ -62,9 +62,9 @@ var (
 		PrimaryKey: []*schema.Column{NodeValuesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "node_values_nodes_values",
+				Symbol:     "node_values_node_api_keys_values",
 				Columns:    []*schema.Column{NodeValuesColumns[4]},
-				RefColumns: []*schema.Column{NodesColumns[0]},
+				RefColumns: []*schema.Column{NodeAPIKeysColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -79,5 +79,5 @@ var (
 
 func init() {
 	NodeAPIKeysTable.ForeignKeys[0].RefTable = NodesTable
-	NodeValuesTable.ForeignKeys[0].RefTable = NodesTable
+	NodeValuesTable.ForeignKeys[0].RefTable = NodeAPIKeysTable
 }

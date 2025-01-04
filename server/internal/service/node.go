@@ -39,8 +39,13 @@ func (n NodeService) GetNode(ctx context.Context, id int) (*ent.Node, error) {
 	return n.repo.GetNode(ctx, id)
 }
 
-func (n NodeService) GetNodeValuesByAPIKey(ctx context.Context, id int) ([]*ent.NodeValues, error) {
-	return n.repo.GetNodeValues(ctx, id)
+func (n NodeService) GetNodeValuesByAPIKey(ctx context.Context, apiKey string) ([]*ent.NodeValues, error) {
+	nodeApiKey, err := n.repo.GetNodeAPIByAPIKey(ctx, apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return n.repo.GetNodeValuesByAPIKey(ctx, nodeApiKey)
 }
 
 func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (*ent.Node, error) {
@@ -52,7 +57,7 @@ func (n NodeService) GenerateNodeAPIKey(ctx context.Context, nodeId int, request
 }
 
 func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueRequest) (*ent.NodeValues, error) {
-	node, err := n.repo.GetNodeByAPIKey(ctx, request.ApiKey)
+	node, err := n.repo.GetNodeAPIByAPIKey(ctx, request.ApiKey)
 	if err != nil {
 		return nil, err
 	}

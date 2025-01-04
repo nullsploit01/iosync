@@ -54,20 +54,14 @@ func (app *application) GetNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) GetNodeValues(w http.ResponseWriter, r *http.Request) {
-	nodeIdStr := chi.URLParam(r, "id")
+	nodeApiKeyStr := chi.URLParam(r, "nodeApiKey")
 
-	if nodeIdStr == "" {
-		app.badRequest(w, r, fmt.Errorf("node id is required"))
+	if nodeApiKeyStr == "" {
+		app.badRequest(w, r, fmt.Errorf("nodeApiKeyStr is required"))
 		return
 	}
 
-	nodeId, err := strconv.Atoi(nodeIdStr)
-	if err != nil {
-		app.badRequest(w, r, err)
-		return
-	}
-
-	nodeValues, err := app.services.nodeService.GetNodeValuesByAPIKey(r.Context(), nodeId)
+	nodeValues, err := app.services.nodeService.GetNodeValuesByAPIKey(r.Context(), nodeApiKeyStr)
 	data := map[string]any{
 		"Data": nodeValues,
 	}

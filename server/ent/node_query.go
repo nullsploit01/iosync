@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/nullsploit01/iosync/ent/node"
 	"github.com/nullsploit01/iosync/ent/nodeapikey"
-	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -25,7 +24,6 @@ type NodeQuery struct {
 	order       []node.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Node
-	withValues  *NodeValuesQuery
 	withAPIKeys *NodeApiKeyQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -61,28 +59,6 @@ func (nq *NodeQuery) Unique(unique bool) *NodeQuery {
 func (nq *NodeQuery) Order(o ...node.OrderOption) *NodeQuery {
 	nq.order = append(nq.order, o...)
 	return nq
-}
-
-// QueryValues chains the current query on the "values" edge.
-func (nq *NodeQuery) QueryValues() *NodeValuesQuery {
-	query := (&NodeValuesClient{config: nq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := nq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := nq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(node.Table, node.FieldID, selector),
-			sqlgraph.To(nodevalues.Table, nodevalues.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, node.ValuesTable, node.ValuesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryAPIKeys chains the current query on the "api_keys" edge.
@@ -299,23 +275,11 @@ func (nq *NodeQuery) Clone() *NodeQuery {
 		order:       append([]node.OrderOption{}, nq.order...),
 		inters:      append([]Interceptor{}, nq.inters...),
 		predicates:  append([]predicate.Node{}, nq.predicates...),
-		withValues:  nq.withValues.Clone(),
 		withAPIKeys: nq.withAPIKeys.Clone(),
 		// clone intermediate query.
 		sql:  nq.sql.Clone(),
 		path: nq.path,
 	}
-}
-
-// WithValues tells the query-builder to eager-load the nodes that are connected to
-// the "values" edge. The optional arguments are used to configure the query builder of the edge.
-func (nq *NodeQuery) WithValues(opts ...func(*NodeValuesQuery)) *NodeQuery {
-	query := (&NodeValuesClient{config: nq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	nq.withValues = query
-	return nq
 }
 
 // WithAPIKeys tells the query-builder to eager-load the nodes that are connected to
@@ -407,8 +371,7 @@ func (nq *NodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Node, e
 	var (
 		nodes       = []*Node{}
 		_spec       = nq.querySpec()
-		loadedTypes = [2]bool{
-			nq.withValues != nil,
+		loadedTypes = [1]bool{
 			nq.withAPIKeys != nil,
 		}
 	)
@@ -430,13 +393,6 @@ func (nq *NodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Node, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := nq.withValues; query != nil {
-		if err := nq.loadValues(ctx, query, nodes,
-			func(n *Node) { n.Edges.Values = []*NodeValues{} },
-			func(n *Node, e *NodeValues) { n.Edges.Values = append(n.Edges.Values, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := nq.withAPIKeys; query != nil {
 		if err := nq.loadAPIKeys(ctx, query, nodes,
 			func(n *Node) { n.Edges.APIKeys = []*NodeApiKey{} },
@@ -447,37 +403,6 @@ func (nq *NodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Node, e
 	return nodes, nil
 }
 
-func (nq *NodeQuery) loadValues(ctx context.Context, query *NodeValuesQuery, nodes []*Node, init func(*Node), assign func(*Node, *NodeValues)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Node)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.NodeValues(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(node.ValuesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.node_values
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "node_values" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "node_values" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (nq *NodeQuery) loadAPIKeys(ctx context.Context, query *NodeApiKeyQuery, nodes []*Node, init func(*Node), assign func(*Node, *NodeApiKey)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Node)

@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 )
 
@@ -55,23 +55,23 @@ func (nvc *NodeValuesCreate) SetNillableUpdatedAt(t *time.Time) *NodeValuesCreat
 	return nvc
 }
 
-// SetNodeID sets the "node" edge to the Node entity by ID.
-func (nvc *NodeValuesCreate) SetNodeID(id int) *NodeValuesCreate {
-	nvc.mutation.SetNodeID(id)
+// SetNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by ID.
+func (nvc *NodeValuesCreate) SetNodeAPIKeyID(id int) *NodeValuesCreate {
+	nvc.mutation.SetNodeAPIKeyID(id)
 	return nvc
 }
 
-// SetNillableNodeID sets the "node" edge to the Node entity by ID if the given value is not nil.
-func (nvc *NodeValuesCreate) SetNillableNodeID(id *int) *NodeValuesCreate {
+// SetNillableNodeAPIKeyID sets the "node_api_key" edge to the NodeApiKey entity by ID if the given value is not nil.
+func (nvc *NodeValuesCreate) SetNillableNodeAPIKeyID(id *int) *NodeValuesCreate {
 	if id != nil {
-		nvc = nvc.SetNodeID(*id)
+		nvc = nvc.SetNodeAPIKeyID(*id)
 	}
 	return nvc
 }
 
-// SetNode sets the "node" edge to the Node entity.
-func (nvc *NodeValuesCreate) SetNode(n *Node) *NodeValuesCreate {
-	return nvc.SetNodeID(n.ID)
+// SetNodeAPIKey sets the "node_api_key" edge to the NodeApiKey entity.
+func (nvc *NodeValuesCreate) SetNodeAPIKey(n *NodeApiKey) *NodeValuesCreate {
+	return nvc.SetNodeAPIKeyID(n.ID)
 }
 
 // Mutation returns the NodeValuesMutation object of the builder.
@@ -168,21 +168,21 @@ func (nvc *NodeValuesCreate) createSpec() (*NodeValues, *sqlgraph.CreateSpec) {
 		_spec.SetField(nodevalues.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := nvc.mutation.NodeIDs(); len(nodes) > 0 {
+	if nodes := nvc.mutation.NodeAPIKeyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   nodevalues.NodeTable,
-			Columns: []string{nodevalues.NodeColumn},
+			Table:   nodevalues.NodeAPIKeyTable,
+			Columns: []string{nodevalues.NodeAPIKeyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(node.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(nodeapikey.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.node_values = &nodes[0]
+		_node.node_api_key_values = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

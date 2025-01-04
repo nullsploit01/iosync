@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
@@ -19,12 +19,12 @@ import (
 // NodeValuesQuery is the builder for querying NodeValues entities.
 type NodeValuesQuery struct {
 	config
-	ctx        *QueryContext
-	order      []nodevalues.OrderOption
-	inters     []Interceptor
-	predicates []predicate.NodeValues
-	withNode   *NodeQuery
-	withFKs    bool
+	ctx            *QueryContext
+	order          []nodevalues.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.NodeValues
+	withNodeAPIKey *NodeApiKeyQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,9 +61,9 @@ func (nvq *NodeValuesQuery) Order(o ...nodevalues.OrderOption) *NodeValuesQuery 
 	return nvq
 }
 
-// QueryNode chains the current query on the "node" edge.
-func (nvq *NodeValuesQuery) QueryNode() *NodeQuery {
-	query := (&NodeClient{config: nvq.config}).Query()
+// QueryNodeAPIKey chains the current query on the "node_api_key" edge.
+func (nvq *NodeValuesQuery) QueryNodeAPIKey() *NodeApiKeyQuery {
+	query := (&NodeApiKeyClient{config: nvq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := nvq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -74,8 +74,8 @@ func (nvq *NodeValuesQuery) QueryNode() *NodeQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(nodevalues.Table, nodevalues.FieldID, selector),
-			sqlgraph.To(node.Table, node.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, nodevalues.NodeTable, nodevalues.NodeColumn),
+			sqlgraph.To(nodeapikey.Table, nodeapikey.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, nodevalues.NodeAPIKeyTable, nodevalues.NodeAPIKeyColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nvq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,26 +270,26 @@ func (nvq *NodeValuesQuery) Clone() *NodeValuesQuery {
 		return nil
 	}
 	return &NodeValuesQuery{
-		config:     nvq.config,
-		ctx:        nvq.ctx.Clone(),
-		order:      append([]nodevalues.OrderOption{}, nvq.order...),
-		inters:     append([]Interceptor{}, nvq.inters...),
-		predicates: append([]predicate.NodeValues{}, nvq.predicates...),
-		withNode:   nvq.withNode.Clone(),
+		config:         nvq.config,
+		ctx:            nvq.ctx.Clone(),
+		order:          append([]nodevalues.OrderOption{}, nvq.order...),
+		inters:         append([]Interceptor{}, nvq.inters...),
+		predicates:     append([]predicate.NodeValues{}, nvq.predicates...),
+		withNodeAPIKey: nvq.withNodeAPIKey.Clone(),
 		// clone intermediate query.
 		sql:  nvq.sql.Clone(),
 		path: nvq.path,
 	}
 }
 
-// WithNode tells the query-builder to eager-load the nodes that are connected to
-// the "node" edge. The optional arguments are used to configure the query builder of the edge.
-func (nvq *NodeValuesQuery) WithNode(opts ...func(*NodeQuery)) *NodeValuesQuery {
-	query := (&NodeClient{config: nvq.config}).Query()
+// WithNodeAPIKey tells the query-builder to eager-load the nodes that are connected to
+// the "node_api_key" edge. The optional arguments are used to configure the query builder of the edge.
+func (nvq *NodeValuesQuery) WithNodeAPIKey(opts ...func(*NodeApiKeyQuery)) *NodeValuesQuery {
+	query := (&NodeApiKeyClient{config: nvq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	nvq.withNode = query
+	nvq.withNodeAPIKey = query
 	return nvq
 }
 
@@ -373,10 +373,10 @@ func (nvq *NodeValuesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		withFKs     = nvq.withFKs
 		_spec       = nvq.querySpec()
 		loadedTypes = [1]bool{
-			nvq.withNode != nil,
+			nvq.withNodeAPIKey != nil,
 		}
 	)
-	if nvq.withNode != nil {
+	if nvq.withNodeAPIKey != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -400,23 +400,23 @@ func (nvq *NodeValuesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := nvq.withNode; query != nil {
-		if err := nvq.loadNode(ctx, query, nodes, nil,
-			func(n *NodeValues, e *Node) { n.Edges.Node = e }); err != nil {
+	if query := nvq.withNodeAPIKey; query != nil {
+		if err := nvq.loadNodeAPIKey(ctx, query, nodes, nil,
+			func(n *NodeValues, e *NodeApiKey) { n.Edges.NodeAPIKey = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (nvq *NodeValuesQuery) loadNode(ctx context.Context, query *NodeQuery, nodes []*NodeValues, init func(*NodeValues), assign func(*NodeValues, *Node)) error {
+func (nvq *NodeValuesQuery) loadNodeAPIKey(ctx context.Context, query *NodeApiKeyQuery, nodes []*NodeValues, init func(*NodeValues), assign func(*NodeValues, *NodeApiKey)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*NodeValues)
 	for i := range nodes {
-		if nodes[i].node_values == nil {
+		if nodes[i].node_api_key_values == nil {
 			continue
 		}
-		fk := *nodes[i].node_values
+		fk := *nodes[i].node_api_key_values
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -425,7 +425,7 @@ func (nvq *NodeValuesQuery) loadNode(ctx context.Context, query *NodeQuery, node
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(node.IDIn(ids...))
+	query.Where(nodeapikey.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -433,7 +433,7 @@ func (nvq *NodeValuesQuery) loadNode(ctx context.Context, query *NodeQuery, node
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "node_values" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "node_api_key_values" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

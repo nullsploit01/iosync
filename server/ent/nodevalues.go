@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/nullsploit01/iosync/ent/node"
+	"github.com/nullsploit01/iosync/ent/nodeapikey"
 	"github.com/nullsploit01/iosync/ent/nodevalues"
 )
 
@@ -26,29 +26,29 @@ type NodeValues struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NodeValuesQuery when eager-loading is set.
-	Edges        NodeValuesEdges `json:"edges"`
-	node_values  *int
-	selectValues sql.SelectValues
+	Edges               NodeValuesEdges `json:"edges"`
+	node_api_key_values *int
+	selectValues        sql.SelectValues
 }
 
 // NodeValuesEdges holds the relations/edges for other nodes in the graph.
 type NodeValuesEdges struct {
-	// Node holds the value of the node edge.
-	Node *Node `json:"node,omitempty"`
+	// NodeAPIKey holds the value of the node_api_key edge.
+	NodeAPIKey *NodeApiKey `json:"node_api_key,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// NodeOrErr returns the Node value or an error if the edge
+// NodeAPIKeyOrErr returns the NodeAPIKey value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e NodeValuesEdges) NodeOrErr() (*Node, error) {
-	if e.Node != nil {
-		return e.Node, nil
+func (e NodeValuesEdges) NodeAPIKeyOrErr() (*NodeApiKey, error) {
+	if e.NodeAPIKey != nil {
+		return e.NodeAPIKey, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: node.Label}
+		return nil, &NotFoundError{label: nodeapikey.Label}
 	}
-	return nil, &NotLoadedError{edge: "node"}
+	return nil, &NotLoadedError{edge: "node_api_key"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -62,7 +62,7 @@ func (*NodeValues) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case nodevalues.FieldCreatedAt, nodevalues.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case nodevalues.ForeignKeys[0]: // node_values
+		case nodevalues.ForeignKeys[0]: // node_api_key_values
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -105,10 +105,10 @@ func (nv *NodeValues) assignValues(columns []string, values []any) error {
 			}
 		case nodevalues.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field node_values", value)
+				return fmt.Errorf("unexpected type %T for edge-field node_api_key_values", value)
 			} else if value.Valid {
-				nv.node_values = new(int)
-				*nv.node_values = int(value.Int64)
+				nv.node_api_key_values = new(int)
+				*nv.node_api_key_values = int(value.Int64)
 			}
 		default:
 			nv.selectValues.Set(columns[i], values[i])
@@ -123,9 +123,9 @@ func (nv *NodeValues) GetValue(name string) (ent.Value, error) {
 	return nv.selectValues.Get(name)
 }
 
-// QueryNode queries the "node" edge of the NodeValues entity.
-func (nv *NodeValues) QueryNode() *NodeQuery {
-	return NewNodeValuesClient(nv.config).QueryNode(nv)
+// QueryNodeAPIKey queries the "node_api_key" edge of the NodeValues entity.
+func (nv *NodeValues) QueryNodeAPIKey() *NodeApiKeyQuery {
+	return NewNodeValuesClient(nv.config).QueryNodeAPIKey(nv)
 }
 
 // Update returns a builder for updating this NodeValues.

@@ -325,22 +325,6 @@ func (c *NodeClient) GetX(ctx context.Context, id int) *Node {
 	return obj
 }
 
-// QueryValues queries the values edge of a Node.
-func (c *NodeClient) QueryValues(n *Node) *NodeValuesQuery {
-	query := (&NodeValuesClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(node.Table, node.FieldID, id),
-			sqlgraph.To(nodevalues.Table, nodevalues.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, node.ValuesTable, node.ValuesColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAPIKeys queries the api_keys edge of a Node.
 func (c *NodeClient) QueryAPIKeys(n *Node) *NodeApiKeyQuery {
 	query := (&NodeApiKeyClient{config: c.config}).Query()
@@ -506,6 +490,22 @@ func (c *NodeApiKeyClient) QueryNode(nak *NodeApiKey) *NodeQuery {
 	return query
 }
 
+// QueryValues queries the values edge of a NodeApiKey.
+func (c *NodeApiKeyClient) QueryValues(nak *NodeApiKey) *NodeValuesQuery {
+	query := (&NodeValuesClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := nak.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nodeapikey.Table, nodeapikey.FieldID, id),
+			sqlgraph.To(nodevalues.Table, nodevalues.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, nodeapikey.ValuesTable, nodeapikey.ValuesColumn),
+		)
+		fromV = sqlgraph.Neighbors(nak.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *NodeApiKeyClient) Hooks() []Hook {
 	return c.hooks.NodeApiKey
@@ -639,15 +639,15 @@ func (c *NodeValuesClient) GetX(ctx context.Context, id int) *NodeValues {
 	return obj
 }
 
-// QueryNode queries the node edge of a NodeValues.
-func (c *NodeValuesClient) QueryNode(nv *NodeValues) *NodeQuery {
-	query := (&NodeClient{config: c.config}).Query()
+// QueryNodeAPIKey queries the node_api_key edge of a NodeValues.
+func (c *NodeValuesClient) QueryNodeAPIKey(nv *NodeValues) *NodeApiKeyQuery {
+	query := (&NodeApiKeyClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := nv.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(nodevalues.Table, nodevalues.FieldID, id),
-			sqlgraph.To(node.Table, node.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, nodevalues.NodeTable, nodevalues.NodeColumn),
+			sqlgraph.To(nodeapikey.Table, nodeapikey.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, nodevalues.NodeAPIKeyTable, nodevalues.NodeAPIKeyColumn),
 		)
 		fromV = sqlgraph.Neighbors(nv.driver.Dialect(), step)
 		return fromV, nil

@@ -323,6 +323,29 @@ func HasNodeWith(preds ...predicate.Node) predicate.NodeApiKey {
 	})
 }
 
+// HasValues applies the HasEdge predicate on the "values" edge.
+func HasValues() predicate.NodeApiKey {
+	return predicate.NodeApiKey(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ValuesTable, ValuesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasValuesWith applies the HasEdge predicate on the "values" edge with a given conditions (other predicates).
+func HasValuesWith(preds ...predicate.NodeValues) predicate.NodeApiKey {
+	return predicate.NodeApiKey(func(s *sql.Selector) {
+		step := newValuesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.NodeApiKey) predicate.NodeApiKey {
 	return predicate.NodeApiKey(sql.AndPredicates(predicates...))

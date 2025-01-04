@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/nullsploit01/iosync/ent/node"
 	"github.com/nullsploit01/iosync/ent/nodeapikey"
+	"github.com/nullsploit01/iosync/ent/nodevalues"
 	"github.com/nullsploit01/iosync/ent/predicate"
 )
 
@@ -24,6 +26,7 @@ type NodeApiKeyQuery struct {
 	inters     []Interceptor
 	predicates []predicate.NodeApiKey
 	withNode   *NodeQuery
+	withValues *NodeValuesQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -76,6 +79,28 @@ func (nakq *NodeApiKeyQuery) QueryNode() *NodeQuery {
 			sqlgraph.From(nodeapikey.Table, nodeapikey.FieldID, selector),
 			sqlgraph.To(node.Table, node.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, nodeapikey.NodeTable, nodeapikey.NodeColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(nakq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryValues chains the current query on the "values" edge.
+func (nakq *NodeApiKeyQuery) QueryValues() *NodeValuesQuery {
+	query := (&NodeValuesClient{config: nakq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nakq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nakq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nodeapikey.Table, nodeapikey.FieldID, selector),
+			sqlgraph.To(nodevalues.Table, nodevalues.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, nodeapikey.ValuesTable, nodeapikey.ValuesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nakq.driver.Dialect(), step)
 		return fromU, nil
@@ -276,6 +301,7 @@ func (nakq *NodeApiKeyQuery) Clone() *NodeApiKeyQuery {
 		inters:     append([]Interceptor{}, nakq.inters...),
 		predicates: append([]predicate.NodeApiKey{}, nakq.predicates...),
 		withNode:   nakq.withNode.Clone(),
+		withValues: nakq.withValues.Clone(),
 		// clone intermediate query.
 		sql:  nakq.sql.Clone(),
 		path: nakq.path,
@@ -290,6 +316,17 @@ func (nakq *NodeApiKeyQuery) WithNode(opts ...func(*NodeQuery)) *NodeApiKeyQuery
 		opt(query)
 	}
 	nakq.withNode = query
+	return nakq
+}
+
+// WithValues tells the query-builder to eager-load the nodes that are connected to
+// the "values" edge. The optional arguments are used to configure the query builder of the edge.
+func (nakq *NodeApiKeyQuery) WithValues(opts ...func(*NodeValuesQuery)) *NodeApiKeyQuery {
+	query := (&NodeValuesClient{config: nakq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	nakq.withValues = query
 	return nakq
 }
 
@@ -372,8 +409,9 @@ func (nakq *NodeApiKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		nodes       = []*NodeApiKey{}
 		withFKs     = nakq.withFKs
 		_spec       = nakq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			nakq.withNode != nil,
+			nakq.withValues != nil,
 		}
 	)
 	if nakq.withNode != nil {
@@ -403,6 +441,13 @@ func (nakq *NodeApiKeyQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := nakq.withNode; query != nil {
 		if err := nakq.loadNode(ctx, query, nodes, nil,
 			func(n *NodeApiKey, e *Node) { n.Edges.Node = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := nakq.withValues; query != nil {
+		if err := nakq.loadValues(ctx, query, nodes,
+			func(n *NodeApiKey) { n.Edges.Values = []*NodeValues{} },
+			func(n *NodeApiKey, e *NodeValues) { n.Edges.Values = append(n.Edges.Values, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -438,6 +483,37 @@ func (nakq *NodeApiKeyQuery) loadNode(ctx context.Context, query *NodeQuery, nod
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (nakq *NodeApiKeyQuery) loadValues(ctx context.Context, query *NodeValuesQuery, nodes []*NodeApiKey, init func(*NodeApiKey), assign func(*NodeApiKey, *NodeValues)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*NodeApiKey)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.NodeValues(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(nodeapikey.ValuesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.node_api_key_values
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "node_api_key_values" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "node_api_key_values" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
