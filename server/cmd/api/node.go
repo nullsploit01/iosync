@@ -18,11 +18,11 @@ func (app *application) GetNodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Data": nodes,
+	responsePayload := response.Response{
+		Data: nodes,
 	}
 
-	err = response.JSON(w, http.StatusOK, data)
+	err = response.JSON(w, http.StatusOK, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -43,11 +43,16 @@ func (app *application) GetNode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	node, err := app.services.nodeService.GetNode(r.Context(), nodeId)
-	data := map[string]any{
-		"Data": node,
+	if err != nil {
+		app.serverError(w, r, err)
+		return
 	}
 
-	err = response.JSON(w, http.StatusOK, data)
+	responsePayload := response.Response{
+		Data: node,
+	}
+
+	err = response.JSON(w, http.StatusOK, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -67,11 +72,11 @@ func (app *application) GetNodeValuesByAPIKey(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	data := map[string]any{
-		"Data": nodeValues,
+	responsePayload := response.Response{
+		Data: nodeValues,
 	}
 
-	err = response.JSON(w, http.StatusOK, data)
+	err = response.JSON(w, http.StatusOK, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -95,11 +100,11 @@ func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Data": node,
+	responsePayload := response.Response{
+		Data: node,
 	}
 
-	err = response.JSON(w, http.StatusCreated, data)
+	err = response.JSON(w, http.StatusCreated, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -123,11 +128,11 @@ func (app *application) AddNodeValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Data": nodeValue,
+	responsePayload := response.Response{
+		Data: nodeValue,
 	}
 
-	err = response.JSON(w, http.StatusCreated, data)
+	err = response.JSON(w, http.StatusCreated, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -164,11 +169,11 @@ func (app *application) GenerateNodeAPIKey(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	data := map[string]any{
-		"Data": nodeApiKey,
+	responsePayload := response.Response{
+		Data: nodeApiKey,
 	}
 
-	err = response.JSON(w, http.StatusCreated, data)
+	err = response.JSON(w, http.StatusCreated, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}

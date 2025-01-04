@@ -7,11 +7,11 @@ import (
 )
 
 func (app *application) status(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"Status": "OK",
+	responsePayload := response.Response{
+		Data: "sup",
 	}
 
-	err := response.JSON(w, http.StatusOK, data)
+	err := response.JSON(w, http.StatusOK, responsePayload)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
