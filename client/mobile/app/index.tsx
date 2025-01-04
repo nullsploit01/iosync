@@ -1,15 +1,12 @@
-import { Text, View } from "react-native";
+import { Button, Text, View } from 'tamagui'
 
-export default function Index() {
+const HomeScreen = () => {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+    <View>
+      <Button color="red">asas</Button>
+      <Text>HomeScreeenn</Text>
     </View>
-  );
+  )
 }
+
+export default HomeScreen
