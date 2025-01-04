@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/nullsploit01/iosync/ent"
 	"github.com/nullsploit01/iosync/internal/request"
 	"github.com/nullsploit01/iosync/internal/response"
 	"github.com/nullsploit01/iosync/internal/service"
@@ -38,12 +40,18 @@ func (app *application) GetNode(w http.ResponseWriter, r *http.Request) {
 
 	nodeId, err := strconv.Atoi(nodeIdStr)
 	if err != nil {
-		app.badRequest(w, r, err)
+		app.badRequest(w, r, fmt.Errorf("node id must be a number"))
 		return
 	}
 
 	node, err := app.services.nodeService.GetNode(r.Context(), nodeId)
 	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			app.notFound(w, r)
+			return
+		}
+
 		app.serverError(w, r, err)
 		return
 	}
@@ -62,12 +70,18 @@ func (app *application) GetNodeValuesByAPIKey(w http.ResponseWriter, r *http.Req
 	nodeApiKeyStr := chi.URLParam(r, "nodeApiKey")
 
 	if nodeApiKeyStr == "" {
-		app.badRequest(w, r, fmt.Errorf("nodeApiKeyStr is required"))
+		app.badRequest(w, r, fmt.Errorf("node api key is required"))
 		return
 	}
 
 	nodeValues, err := app.services.nodeService.GetNodeValuesByAPIKey(r.Context(), nodeApiKeyStr)
 	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			app.notFound(w, r)
+			return
+		}
+
 		app.serverError(w, r, err)
 		return
 	}
@@ -85,7 +99,7 @@ func (app *application) GetNodeValuesByAPIKey(w http.ResponseWriter, r *http.Req
 func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 	var body service.CreateNodeRequest
 	if err := request.DecodeJSON(w, r, &body); err != nil {
-		app.badRequest(w, r, err)
+		app.badRequest(w, r, fmt.Errorf("invalid request body"))
 		return
 	}
 
@@ -96,6 +110,12 @@ func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 
 	node, err := app.services.nodeService.CreateNode(r.Context(), body)
 	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			app.notFound(w, r)
+			return
+		}
+
 		app.serverError(w, r, err)
 		return
 	}
@@ -113,7 +133,7 @@ func (app *application) CreateNode(w http.ResponseWriter, r *http.Request) {
 func (app *application) AddNodeValue(w http.ResponseWriter, r *http.Request) {
 	var body service.AddNodeValueRequest
 	if err := request.DecodeJSON(w, r, &body); err != nil {
-		app.badRequest(w, r, err)
+		app.badRequest(w, r, fmt.Errorf("invalid request body"))
 		return
 	}
 
@@ -124,6 +144,12 @@ func (app *application) AddNodeValue(w http.ResponseWriter, r *http.Request) {
 
 	nodeValue, err := app.services.nodeService.AddNodeValue(r.Context(), body)
 	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			app.notFound(w, r)
+			return
+		}
+
 		app.serverError(w, r, err)
 		return
 	}
@@ -159,12 +185,18 @@ func (app *application) GenerateNodeAPIKey(w http.ResponseWriter, r *http.Reques
 
 	nodeId, err := strconv.Atoi(nodeIdStr)
 	if err != nil {
-		app.badRequest(w, r, err)
+		app.badRequest(w, r, fmt.Errorf("node id must be a number"))
 		return
 	}
 
 	nodeApiKey, err := app.services.nodeService.GenerateNodeAPIKey(r.Context(), nodeId, body)
 	if err != nil {
+		var notFoundError *ent.NotFoundError
+		if errors.As(err, &notFoundError) {
+			app.notFound(w, r)
+			return
+		}
+
 		app.serverError(w, r, err)
 		return
 	}
