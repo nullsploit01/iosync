@@ -53,7 +53,7 @@ func (app *application) GetNode(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) GetNodeValues(w http.ResponseWriter, r *http.Request) {
+func (app *application) GetNodeValuesByAPIKey(w http.ResponseWriter, r *http.Request) {
 	nodeApiKeyStr := chi.URLParam(r, "nodeApiKey")
 
 	if nodeApiKeyStr == "" {
@@ -62,6 +62,11 @@ func (app *application) GetNodeValues(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nodeValues, err := app.services.nodeService.GetNodeValuesByAPIKey(r.Context(), nodeApiKeyStr)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
 	data := map[string]any{
 		"Data": nodeValues,
 	}
