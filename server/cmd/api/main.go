@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"sync"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/lmittmann/tint"
 	"github.com/nullsploit01/iosync/internal/database"
 	"github.com/nullsploit01/iosync/internal/service"
