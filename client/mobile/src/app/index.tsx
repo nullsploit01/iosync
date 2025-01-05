@@ -1,9 +1,8 @@
-import { Button, Text, View } from 'tamagui'
+import { Text, View } from 'tamagui'
 
 const HomeScreen = () => {
   return (
     <View>
-      <Button color="red">asas</Button>
       <Text>HomeScreeenn</Text>
     </View>
   )
