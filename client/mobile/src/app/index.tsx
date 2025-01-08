@@ -34,7 +34,10 @@ const NodeCard = ({ node }: { node: INode }) => {
       </Card.Header>
       <Card.Footer padded>
         <XStack flex={1} />
-        <Button borderRadius="$10">Purchase</Button>
+        <Button
+          borderRadius="$10"
+          backgroundColor={`${node.is_active ? '$green9' : '$gray8'}`}
+        ></Button>
       </Card.Footer>
     </Card>
   )
