@@ -21,12 +21,16 @@ func init() {
 	nodeDescIsActive := nodeFields[2].Descriptor()
 	// node.DefaultIsActive holds the default value on creation for the is_active field.
 	node.DefaultIsActive = nodeDescIsActive.Default.(bool)
+	// nodeDescIsOnline is the schema descriptor for is_online field.
+	nodeDescIsOnline := nodeFields[3].Descriptor()
+	// node.DefaultIsOnline holds the default value on creation for the is_online field.
+	node.DefaultIsOnline = nodeDescIsOnline.Default.(bool)
 	// nodeDescCreatedAt is the schema descriptor for created_at field.
-	nodeDescCreatedAt := nodeFields[3].Descriptor()
+	nodeDescCreatedAt := nodeFields[4].Descriptor()
 	// node.DefaultCreatedAt holds the default value on creation for the created_at field.
 	node.DefaultCreatedAt = nodeDescCreatedAt.Default.(func() time.Time)
 	// nodeDescUpdatedAt is the schema descriptor for updated_at field.
-	nodeDescUpdatedAt := nodeFields[4].Descriptor()
+	nodeDescUpdatedAt := nodeFields[5].Descriptor()
 	// node.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	node.DefaultUpdatedAt = nodeDescUpdatedAt.Default.(func() time.Time)
 	// node.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

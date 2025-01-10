@@ -20,6 +20,8 @@ const (
 	FieldDescription = "description"
 	// FieldIsActive holds the string denoting the is_active field in the database.
 	FieldIsActive = "is_active"
+	// FieldIsOnline holds the string denoting the is_online field in the database.
+	FieldIsOnline = "is_online"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -43,6 +45,7 @@ var Columns = []string{
 	FieldName,
 	FieldDescription,
 	FieldIsActive,
+	FieldIsOnline,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -60,6 +63,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIsActive holds the default value on creation for the "is_active" field.
 	DefaultIsActive bool
+	// DefaultIsOnline holds the default value on creation for the "is_online" field.
+	DefaultIsOnline bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -89,6 +94,11 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // ByIsActive orders the results by the is_active field.
 func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
+}
+
+// ByIsOnline orders the results by the is_online field.
+func ByIsOnline(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsOnline, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

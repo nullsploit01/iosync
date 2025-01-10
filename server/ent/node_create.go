@@ -47,6 +47,20 @@ func (nc *NodeCreate) SetNillableIsActive(b *bool) *NodeCreate {
 	return nc
 }
 
+// SetIsOnline sets the "is_online" field.
+func (nc *NodeCreate) SetIsOnline(b bool) *NodeCreate {
+	nc.mutation.SetIsOnline(b)
+	return nc
+}
+
+// SetNillableIsOnline sets the "is_online" field if the given value is not nil.
+func (nc *NodeCreate) SetNillableIsOnline(b *bool) *NodeCreate {
+	if b != nil {
+		nc.SetIsOnline(*b)
+	}
+	return nc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (nc *NodeCreate) SetCreatedAt(t time.Time) *NodeCreate {
 	nc.mutation.SetCreatedAt(t)
@@ -129,6 +143,10 @@ func (nc *NodeCreate) defaults() {
 		v := node.DefaultIsActive
 		nc.mutation.SetIsActive(v)
 	}
+	if _, ok := nc.mutation.IsOnline(); !ok {
+		v := node.DefaultIsOnline
+		nc.mutation.SetIsOnline(v)
+	}
 	if _, ok := nc.mutation.CreatedAt(); !ok {
 		v := node.DefaultCreatedAt()
 		nc.mutation.SetCreatedAt(v)
@@ -149,6 +167,9 @@ func (nc *NodeCreate) check() error {
 	}
 	if _, ok := nc.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Node.is_active"`)}
+	}
+	if _, ok := nc.mutation.IsOnline(); !ok {
+		return &ValidationError{Name: "is_online", err: errors.New(`ent: missing required field "Node.is_online"`)}
 	}
 	if _, ok := nc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Node.created_at"`)}
@@ -193,6 +214,10 @@ func (nc *NodeCreate) createSpec() (*Node, *sqlgraph.CreateSpec) {
 	if value, ok := nc.mutation.IsActive(); ok {
 		_spec.SetField(node.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
+	}
+	if value, ok := nc.mutation.IsOnline(); ok {
+		_spec.SetField(node.FieldIsOnline, field.TypeBool, value)
+		_node.IsOnline = value
 	}
 	if value, ok := nc.mutation.CreatedAt(); ok {
 		_spec.SetField(node.FieldCreatedAt, field.TypeTime, value)

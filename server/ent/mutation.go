@@ -40,6 +40,7 @@ type NodeMutation struct {
 	name            *string
 	description     *string
 	is_active       *bool
+	is_online       *bool
 	created_at      *time.Time
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
@@ -257,6 +258,42 @@ func (m *NodeMutation) ResetIsActive() {
 	m.is_active = nil
 }
 
+// SetIsOnline sets the "is_online" field.
+func (m *NodeMutation) SetIsOnline(b bool) {
+	m.is_online = &b
+}
+
+// IsOnline returns the value of the "is_online" field in the mutation.
+func (m *NodeMutation) IsOnline() (r bool, exists bool) {
+	v := m.is_online
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsOnline returns the old "is_online" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldIsOnline(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsOnline is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsOnline requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsOnline: %w", err)
+	}
+	return oldValue.IsOnline, nil
+}
+
+// ResetIsOnline resets all changes to the "is_online" field.
+func (m *NodeMutation) ResetIsOnline() {
+	m.is_online = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *NodeMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -417,7 +454,7 @@ func (m *NodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NodeMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, node.FieldName)
 	}
@@ -426,6 +463,9 @@ func (m *NodeMutation) Fields() []string {
 	}
 	if m.is_active != nil {
 		fields = append(fields, node.FieldIsActive)
+	}
+	if m.is_online != nil {
+		fields = append(fields, node.FieldIsOnline)
 	}
 	if m.created_at != nil {
 		fields = append(fields, node.FieldCreatedAt)
@@ -447,6 +487,8 @@ func (m *NodeMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case node.FieldIsActive:
 		return m.IsActive()
+	case node.FieldIsOnline:
+		return m.IsOnline()
 	case node.FieldCreatedAt:
 		return m.CreatedAt()
 	case node.FieldUpdatedAt:
@@ -466,6 +508,8 @@ func (m *NodeMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDescription(ctx)
 	case node.FieldIsActive:
 		return m.OldIsActive(ctx)
+	case node.FieldIsOnline:
+		return m.OldIsOnline(ctx)
 	case node.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case node.FieldUpdatedAt:
@@ -499,6 +543,13 @@ func (m *NodeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsActive(v)
+		return nil
+	case node.FieldIsOnline:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsOnline(v)
 		return nil
 	case node.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -571,6 +622,9 @@ func (m *NodeMutation) ResetField(name string) error {
 		return nil
 	case node.FieldIsActive:
 		m.ResetIsActive()
+		return nil
+	case node.FieldIsOnline:
+		m.ResetIsOnline()
 		return nil
 	case node.FieldCreatedAt:
 		m.ResetCreatedAt()

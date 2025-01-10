@@ -23,6 +23,8 @@ type Node struct {
 	Description string `json:"description,omitempty"`
 	// IsActive holds the value of the "is_active" field.
 	IsActive bool `json:"is_active,omitempty"`
+	// IsOnline holds the value of the "is_online" field.
+	IsOnline bool `json:"is_online,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -56,7 +58,7 @@ func (*Node) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case node.FieldIsActive:
+		case node.FieldIsActive, node.FieldIsOnline:
 			values[i] = new(sql.NullBool)
 		case node.FieldID:
 			values[i] = new(sql.NullInt64)
@@ -102,6 +104,12 @@ func (n *Node) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_active", values[i])
 			} else if value.Valid {
 				n.IsActive = value.Bool
+			}
+		case node.FieldIsOnline:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_online", values[i])
+			} else if value.Valid {
+				n.IsOnline = value.Bool
 			}
 		case node.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -164,6 +172,9 @@ func (n *Node) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", n.IsActive))
+	builder.WriteString(", ")
+	builder.WriteString("is_online=")
+	builder.WriteString(fmt.Sprintf("%v", n.IsOnline))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(n.CreatedAt.Format(time.ANSIC))

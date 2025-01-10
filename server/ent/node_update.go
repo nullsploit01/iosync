@@ -71,6 +71,20 @@ func (nu *NodeUpdate) SetNillableIsActive(b *bool) *NodeUpdate {
 	return nu
 }
 
+// SetIsOnline sets the "is_online" field.
+func (nu *NodeUpdate) SetIsOnline(b bool) *NodeUpdate {
+	nu.mutation.SetIsOnline(b)
+	return nu
+}
+
+// SetNillableIsOnline sets the "is_online" field if the given value is not nil.
+func (nu *NodeUpdate) SetNillableIsOnline(b *bool) *NodeUpdate {
+	if b != nil {
+		nu.SetIsOnline(*b)
+	}
+	return nu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (nu *NodeUpdate) SetUpdatedAt(t time.Time) *NodeUpdate {
 	nu.mutation.SetUpdatedAt(t)
@@ -171,6 +185,9 @@ func (nu *NodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := nu.mutation.IsActive(); ok {
 		_spec.SetField(node.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := nu.mutation.IsOnline(); ok {
+		_spec.SetField(node.FieldIsOnline, field.TypeBool, value)
 	}
 	if value, ok := nu.mutation.UpdatedAt(); ok {
 		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)
@@ -278,6 +295,20 @@ func (nuo *NodeUpdateOne) SetIsActive(b bool) *NodeUpdateOne {
 func (nuo *NodeUpdateOne) SetNillableIsActive(b *bool) *NodeUpdateOne {
 	if b != nil {
 		nuo.SetIsActive(*b)
+	}
+	return nuo
+}
+
+// SetIsOnline sets the "is_online" field.
+func (nuo *NodeUpdateOne) SetIsOnline(b bool) *NodeUpdateOne {
+	nuo.mutation.SetIsOnline(b)
+	return nuo
+}
+
+// SetNillableIsOnline sets the "is_online" field if the given value is not nil.
+func (nuo *NodeUpdateOne) SetNillableIsOnline(b *bool) *NodeUpdateOne {
+	if b != nil {
+		nuo.SetIsOnline(*b)
 	}
 	return nuo
 }
@@ -412,6 +443,9 @@ func (nuo *NodeUpdateOne) sqlSave(ctx context.Context) (_node *Node, err error) 
 	}
 	if value, ok := nuo.mutation.IsActive(); ok {
 		_spec.SetField(node.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := nuo.mutation.IsOnline(); ok {
+		_spec.SetField(node.FieldIsOnline, field.TypeBool, value)
 	}
 	if value, ok := nuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)

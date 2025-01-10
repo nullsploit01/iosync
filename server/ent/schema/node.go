@@ -19,6 +19,7 @@ func (Node) Fields() []ent.Field {
 		field.String("name"),
 		field.String("description"),
 		field.Bool("is_active").Default(true),
+		field.Bool("is_online").Default(false),
 		field.Time("created_at").Immutable().Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

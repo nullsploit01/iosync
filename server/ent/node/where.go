@@ -70,6 +70,11 @@ func IsActive(v bool) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
 }
 
+// IsOnline applies equality check predicate on the "is_online" field. It's identical to IsOnlineEQ.
+func IsOnline(v bool) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldIsOnline, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldCreatedAt, v))
@@ -218,6 +223,16 @@ func IsActiveEQ(v bool) predicate.Node {
 // IsActiveNEQ applies the NEQ predicate on the "is_active" field.
 func IsActiveNEQ(v bool) predicate.Node {
 	return predicate.Node(sql.FieldNEQ(FieldIsActive, v))
+}
+
+// IsOnlineEQ applies the EQ predicate on the "is_online" field.
+func IsOnlineEQ(v bool) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldIsOnline, v))
+}
+
+// IsOnlineNEQ applies the NEQ predicate on the "is_online" field.
+func IsOnlineNEQ(v bool) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldIsOnline, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
