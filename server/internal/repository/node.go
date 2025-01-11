@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/nullsploit01/iosync/ent"
 	"github.com/nullsploit01/iosync/ent/node"
@@ -66,4 +67,15 @@ func (n NodeRepository) GetNodeByAPIKey(ctx context.Context, apiKey string) (*en
 
 func (n NodeRepository) GetNodeAPIByAPIKey(ctx context.Context, apiKey string) (*ent.NodeApiKey, error) {
 	return n.db.NodeApiKey.Query().Where(nodeapikey.APIKey(apiKey)).Only(ctx)
+}
+
+func (n NodeRepository) UpdateNodeOnlineStatus(ctx context.Context, nodeIdentifier string, isOnline bool) error {
+	query := n.db.Node.Update().Where(node.IdentifierEQ(nodeIdentifier)).SetIsOnline(isOnline)
+
+	if isOnline {
+		query.SetLastOnlineAt(time.Now())
+	}
+
+	_, err := query.Save(ctx)
+	return err
 }

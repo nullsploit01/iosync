@@ -2,13 +2,21 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"strings"
+	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/nullsploit01/iosync/ent"
+	"github.com/nullsploit01/iosync/internal/mqtt_broker"
 	"github.com/nullsploit01/iosync/internal/repository"
 )
 
 type NodeService struct {
-	repo repository.NodeRepository
+	logger     *slog.Logger
+	repo       repository.NodeRepository
+	mqttBroker *mqtt_broker.MqttBroker
 }
 
 type CreateNodeRequest struct {
@@ -25,10 +33,22 @@ type AddNodeValueRequest struct {
 	Value  string `json:"value" validate:"required"`
 }
 
-func NewNodeService(db *ent.Client) NodeService {
+func NewNodeService(db *ent.Client, mqttBroker *mqtt_broker.MqttBroker, logger *slog.Logger) NodeService {
 	return NodeService{
-		repo: repository.NewNodeRepository(db),
+		logger:     logger,
+		repo:       repository.NewNodeRepository(db),
+		mqttBroker: mqttBroker,
 	}
+}
+
+func (n NodeService) InitNodeService() error {
+	err := n.MonitorNodeOnlineStatus()
+	if err != nil {
+		slog.Error(fmt.Sprintf("failed to monitor node online status: %v", err))
+		return err
+	}
+
+	return nil
 }
 
 func (n NodeService) GetNodes(ctx context.Context) ([]*ent.Node, error) {
@@ -63,4 +83,68 @@ func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueReque
 	}
 
 	return n.repo.AddNodeValue(ctx, node, request.Value)
+}
+
+func (n NodeService) MonitorNodeOnlineStatus() error {
+	slog.Info("monitoring node online status")
+	err := n.mqttBroker.Subscribe("nodes/+/status", 1, func(client mqtt.Client, msg mqtt.Message) {
+		go func() {
+			nodeIdentifier := parseDeviceIdentifier(msg.Topic())
+			payload := string(msg.Payload())
+			n.UpdateNodeOnlineStatus(context.Background(), nodeIdentifier, payload == "online")
+		}()
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to nodes/+/status: %w", err)
+	}
+
+	err = n.mqttBroker.Subscribe("nodes/+/lwt", 1, func(client mqtt.Client, msg mqtt.Message) {
+		go func() {
+			nodeIdentifier := parseDeviceIdentifier(msg.Topic())
+			n.UpdateNodeOnlineStatus(context.Background(), nodeIdentifier, false)
+		}()
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to nodes/+/lwt: %w", err)
+	}
+
+	go n.CheckNodeTimeouts()
+
+	return nil
+}
+
+func (n NodeService) CheckNodeTimeouts() {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	timeout := 60 * time.Second // 1 minute
+
+	for range ticker.C {
+		nodes, err := n.repo.GetNodes(context.Background())
+		if err != nil {
+			slog.Error(fmt.Sprintf("failed to get nodes: %v", err))
+			continue
+		}
+
+		now := time.Now()
+
+		for _, node := range nodes {
+			lastSeen := node.LastOnlineAt
+			if now.Sub(lastSeen) > timeout && node.IsOnline {
+				n.UpdateNodeOnlineStatus(context.Background(), node.Identifier, false)
+			}
+		}
+	}
+
+}
+
+func (n NodeService) UpdateNodeOnlineStatus(ctx context.Context, nodeIdentifier string, isOnline bool) error {
+	return n.repo.UpdateNodeOnlineStatus(ctx, nodeIdentifier, isOnline)
+}
+
+func parseDeviceIdentifier(topic string) string {
+	parts := strings.Split(topic, "/")
+	return parts[1]
 }

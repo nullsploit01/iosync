@@ -68,7 +68,11 @@ func run(logger *slog.Logger) error {
 		return nil
 	}
 
-	nodeService := service.NewNodeService(dbClient)
+	nodeService := service.NewNodeService(dbClient, mqttBroker, logger)
+	err = nodeService.InitNodeService()
+	if err != nil {
+		return err
+	}
 
 	appServices := appServices{
 		nodeService: nodeService,
