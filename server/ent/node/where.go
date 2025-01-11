@@ -65,6 +65,11 @@ func Description(v string) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldDescription, v))
 }
 
+// Identifier applies equality check predicate on the "identifier" field. It's identical to IdentifierEQ.
+func Identifier(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldIdentifier, v))
+}
+
 // IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
 func IsActive(v bool) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
@@ -73,6 +78,11 @@ func IsActive(v bool) predicate.Node {
 // IsOnline applies equality check predicate on the "is_online" field. It's identical to IsOnlineEQ.
 func IsOnline(v bool) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldIsOnline, v))
+}
+
+// LastOnlineAt applies equality check predicate on the "last_online_at" field. It's identical to LastOnlineAtEQ.
+func LastOnlineAt(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldLastOnlineAt, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -215,6 +225,71 @@ func DescriptionContainsFold(v string) predicate.Node {
 	return predicate.Node(sql.FieldContainsFold(FieldDescription, v))
 }
 
+// IdentifierEQ applies the EQ predicate on the "identifier" field.
+func IdentifierEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldIdentifier, v))
+}
+
+// IdentifierNEQ applies the NEQ predicate on the "identifier" field.
+func IdentifierNEQ(v string) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldIdentifier, v))
+}
+
+// IdentifierIn applies the In predicate on the "identifier" field.
+func IdentifierIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldIdentifier, vs...))
+}
+
+// IdentifierNotIn applies the NotIn predicate on the "identifier" field.
+func IdentifierNotIn(vs ...string) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldIdentifier, vs...))
+}
+
+// IdentifierGT applies the GT predicate on the "identifier" field.
+func IdentifierGT(v string) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldIdentifier, v))
+}
+
+// IdentifierGTE applies the GTE predicate on the "identifier" field.
+func IdentifierGTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldIdentifier, v))
+}
+
+// IdentifierLT applies the LT predicate on the "identifier" field.
+func IdentifierLT(v string) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldIdentifier, v))
+}
+
+// IdentifierLTE applies the LTE predicate on the "identifier" field.
+func IdentifierLTE(v string) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldIdentifier, v))
+}
+
+// IdentifierContains applies the Contains predicate on the "identifier" field.
+func IdentifierContains(v string) predicate.Node {
+	return predicate.Node(sql.FieldContains(FieldIdentifier, v))
+}
+
+// IdentifierHasPrefix applies the HasPrefix predicate on the "identifier" field.
+func IdentifierHasPrefix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasPrefix(FieldIdentifier, v))
+}
+
+// IdentifierHasSuffix applies the HasSuffix predicate on the "identifier" field.
+func IdentifierHasSuffix(v string) predicate.Node {
+	return predicate.Node(sql.FieldHasSuffix(FieldIdentifier, v))
+}
+
+// IdentifierEqualFold applies the EqualFold predicate on the "identifier" field.
+func IdentifierEqualFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldEqualFold(FieldIdentifier, v))
+}
+
+// IdentifierContainsFold applies the ContainsFold predicate on the "identifier" field.
+func IdentifierContainsFold(v string) predicate.Node {
+	return predicate.Node(sql.FieldContainsFold(FieldIdentifier, v))
+}
+
 // IsActiveEQ applies the EQ predicate on the "is_active" field.
 func IsActiveEQ(v bool) predicate.Node {
 	return predicate.Node(sql.FieldEQ(FieldIsActive, v))
@@ -233,6 +308,56 @@ func IsOnlineEQ(v bool) predicate.Node {
 // IsOnlineNEQ applies the NEQ predicate on the "is_online" field.
 func IsOnlineNEQ(v bool) predicate.Node {
 	return predicate.Node(sql.FieldNEQ(FieldIsOnline, v))
+}
+
+// LastOnlineAtEQ applies the EQ predicate on the "last_online_at" field.
+func LastOnlineAtEQ(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldEQ(FieldLastOnlineAt, v))
+}
+
+// LastOnlineAtNEQ applies the NEQ predicate on the "last_online_at" field.
+func LastOnlineAtNEQ(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldNEQ(FieldLastOnlineAt, v))
+}
+
+// LastOnlineAtIn applies the In predicate on the "last_online_at" field.
+func LastOnlineAtIn(vs ...time.Time) predicate.Node {
+	return predicate.Node(sql.FieldIn(FieldLastOnlineAt, vs...))
+}
+
+// LastOnlineAtNotIn applies the NotIn predicate on the "last_online_at" field.
+func LastOnlineAtNotIn(vs ...time.Time) predicate.Node {
+	return predicate.Node(sql.FieldNotIn(FieldLastOnlineAt, vs...))
+}
+
+// LastOnlineAtGT applies the GT predicate on the "last_online_at" field.
+func LastOnlineAtGT(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldGT(FieldLastOnlineAt, v))
+}
+
+// LastOnlineAtGTE applies the GTE predicate on the "last_online_at" field.
+func LastOnlineAtGTE(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldGTE(FieldLastOnlineAt, v))
+}
+
+// LastOnlineAtLT applies the LT predicate on the "last_online_at" field.
+func LastOnlineAtLT(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldLT(FieldLastOnlineAt, v))
+}
+
+// LastOnlineAtLTE applies the LTE predicate on the "last_online_at" field.
+func LastOnlineAtLTE(v time.Time) predicate.Node {
+	return predicate.Node(sql.FieldLTE(FieldLastOnlineAt, v))
+}
+
+// LastOnlineAtIsNil applies the IsNil predicate on the "last_online_at" field.
+func LastOnlineAtIsNil() predicate.Node {
+	return predicate.Node(sql.FieldIsNull(FieldLastOnlineAt))
+}
+
+// LastOnlineAtNotNil applies the NotNil predicate on the "last_online_at" field.
+func LastOnlineAtNotNil() predicate.Node {
+	return predicate.Node(sql.FieldNotNull(FieldLastOnlineAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

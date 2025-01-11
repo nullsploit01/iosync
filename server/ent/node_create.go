@@ -33,6 +33,20 @@ func (nc *NodeCreate) SetDescription(s string) *NodeCreate {
 	return nc
 }
 
+// SetIdentifier sets the "identifier" field.
+func (nc *NodeCreate) SetIdentifier(s string) *NodeCreate {
+	nc.mutation.SetIdentifier(s)
+	return nc
+}
+
+// SetNillableIdentifier sets the "identifier" field if the given value is not nil.
+func (nc *NodeCreate) SetNillableIdentifier(s *string) *NodeCreate {
+	if s != nil {
+		nc.SetIdentifier(*s)
+	}
+	return nc
+}
+
 // SetIsActive sets the "is_active" field.
 func (nc *NodeCreate) SetIsActive(b bool) *NodeCreate {
 	nc.mutation.SetIsActive(b)
@@ -57,6 +71,20 @@ func (nc *NodeCreate) SetIsOnline(b bool) *NodeCreate {
 func (nc *NodeCreate) SetNillableIsOnline(b *bool) *NodeCreate {
 	if b != nil {
 		nc.SetIsOnline(*b)
+	}
+	return nc
+}
+
+// SetLastOnlineAt sets the "last_online_at" field.
+func (nc *NodeCreate) SetLastOnlineAt(t time.Time) *NodeCreate {
+	nc.mutation.SetLastOnlineAt(t)
+	return nc
+}
+
+// SetNillableLastOnlineAt sets the "last_online_at" field if the given value is not nil.
+func (nc *NodeCreate) SetNillableLastOnlineAt(t *time.Time) *NodeCreate {
+	if t != nil {
+		nc.SetLastOnlineAt(*t)
 	}
 	return nc
 }
@@ -139,6 +167,10 @@ func (nc *NodeCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (nc *NodeCreate) defaults() {
+	if _, ok := nc.mutation.Identifier(); !ok {
+		v := node.DefaultIdentifier()
+		nc.mutation.SetIdentifier(v)
+	}
 	if _, ok := nc.mutation.IsActive(); !ok {
 		v := node.DefaultIsActive
 		nc.mutation.SetIsActive(v)
@@ -164,6 +196,9 @@ func (nc *NodeCreate) check() error {
 	}
 	if _, ok := nc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Node.description"`)}
+	}
+	if _, ok := nc.mutation.Identifier(); !ok {
+		return &ValidationError{Name: "identifier", err: errors.New(`ent: missing required field "Node.identifier"`)}
 	}
 	if _, ok := nc.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Node.is_active"`)}
@@ -211,6 +246,10 @@ func (nc *NodeCreate) createSpec() (*Node, *sqlgraph.CreateSpec) {
 		_spec.SetField(node.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
+	if value, ok := nc.mutation.Identifier(); ok {
+		_spec.SetField(node.FieldIdentifier, field.TypeString, value)
+		_node.Identifier = value
+	}
 	if value, ok := nc.mutation.IsActive(); ok {
 		_spec.SetField(node.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
@@ -218,6 +257,10 @@ func (nc *NodeCreate) createSpec() (*Node, *sqlgraph.CreateSpec) {
 	if value, ok := nc.mutation.IsOnline(); ok {
 		_spec.SetField(node.FieldIsOnline, field.TypeBool, value)
 		_node.IsOnline = value
+	}
+	if value, ok := nc.mutation.LastOnlineAt(); ok {
+		_spec.SetField(node.FieldLastOnlineAt, field.TypeTime, value)
+		_node.LastOnlineAt = value
 	}
 	if value, ok := nc.mutation.CreatedAt(); ok {
 		_spec.SetField(node.FieldCreatedAt, field.TypeTime, value)

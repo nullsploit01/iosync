@@ -39,8 +39,10 @@ type NodeMutation struct {
 	id              *int
 	name            *string
 	description     *string
+	identifier      *string
 	is_active       *bool
 	is_online       *bool
+	last_online_at  *time.Time
 	created_at      *time.Time
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
@@ -222,6 +224,42 @@ func (m *NodeMutation) ResetDescription() {
 	m.description = nil
 }
 
+// SetIdentifier sets the "identifier" field.
+func (m *NodeMutation) SetIdentifier(s string) {
+	m.identifier = &s
+}
+
+// Identifier returns the value of the "identifier" field in the mutation.
+func (m *NodeMutation) Identifier() (r string, exists bool) {
+	v := m.identifier
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIdentifier returns the old "identifier" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldIdentifier(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIdentifier is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIdentifier requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIdentifier: %w", err)
+	}
+	return oldValue.Identifier, nil
+}
+
+// ResetIdentifier resets all changes to the "identifier" field.
+func (m *NodeMutation) ResetIdentifier() {
+	m.identifier = nil
+}
+
 // SetIsActive sets the "is_active" field.
 func (m *NodeMutation) SetIsActive(b bool) {
 	m.is_active = &b
@@ -292,6 +330,55 @@ func (m *NodeMutation) OldIsOnline(ctx context.Context) (v bool, err error) {
 // ResetIsOnline resets all changes to the "is_online" field.
 func (m *NodeMutation) ResetIsOnline() {
 	m.is_online = nil
+}
+
+// SetLastOnlineAt sets the "last_online_at" field.
+func (m *NodeMutation) SetLastOnlineAt(t time.Time) {
+	m.last_online_at = &t
+}
+
+// LastOnlineAt returns the value of the "last_online_at" field in the mutation.
+func (m *NodeMutation) LastOnlineAt() (r time.Time, exists bool) {
+	v := m.last_online_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastOnlineAt returns the old "last_online_at" field's value of the Node entity.
+// If the Node object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NodeMutation) OldLastOnlineAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastOnlineAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastOnlineAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastOnlineAt: %w", err)
+	}
+	return oldValue.LastOnlineAt, nil
+}
+
+// ClearLastOnlineAt clears the value of the "last_online_at" field.
+func (m *NodeMutation) ClearLastOnlineAt() {
+	m.last_online_at = nil
+	m.clearedFields[node.FieldLastOnlineAt] = struct{}{}
+}
+
+// LastOnlineAtCleared returns if the "last_online_at" field was cleared in this mutation.
+func (m *NodeMutation) LastOnlineAtCleared() bool {
+	_, ok := m.clearedFields[node.FieldLastOnlineAt]
+	return ok
+}
+
+// ResetLastOnlineAt resets all changes to the "last_online_at" field.
+func (m *NodeMutation) ResetLastOnlineAt() {
+	m.last_online_at = nil
+	delete(m.clearedFields, node.FieldLastOnlineAt)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -454,18 +541,24 @@ func (m *NodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NodeMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, node.FieldName)
 	}
 	if m.description != nil {
 		fields = append(fields, node.FieldDescription)
 	}
+	if m.identifier != nil {
+		fields = append(fields, node.FieldIdentifier)
+	}
 	if m.is_active != nil {
 		fields = append(fields, node.FieldIsActive)
 	}
 	if m.is_online != nil {
 		fields = append(fields, node.FieldIsOnline)
+	}
+	if m.last_online_at != nil {
+		fields = append(fields, node.FieldLastOnlineAt)
 	}
 	if m.created_at != nil {
 		fields = append(fields, node.FieldCreatedAt)
@@ -485,10 +578,14 @@ func (m *NodeMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case node.FieldDescription:
 		return m.Description()
+	case node.FieldIdentifier:
+		return m.Identifier()
 	case node.FieldIsActive:
 		return m.IsActive()
 	case node.FieldIsOnline:
 		return m.IsOnline()
+	case node.FieldLastOnlineAt:
+		return m.LastOnlineAt()
 	case node.FieldCreatedAt:
 		return m.CreatedAt()
 	case node.FieldUpdatedAt:
@@ -506,10 +603,14 @@ func (m *NodeMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldName(ctx)
 	case node.FieldDescription:
 		return m.OldDescription(ctx)
+	case node.FieldIdentifier:
+		return m.OldIdentifier(ctx)
 	case node.FieldIsActive:
 		return m.OldIsActive(ctx)
 	case node.FieldIsOnline:
 		return m.OldIsOnline(ctx)
+	case node.FieldLastOnlineAt:
+		return m.OldLastOnlineAt(ctx)
 	case node.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case node.FieldUpdatedAt:
@@ -537,6 +638,13 @@ func (m *NodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
+	case node.FieldIdentifier:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIdentifier(v)
+		return nil
 	case node.FieldIsActive:
 		v, ok := value.(bool)
 		if !ok {
@@ -550,6 +658,13 @@ func (m *NodeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsOnline(v)
+		return nil
+	case node.FieldLastOnlineAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastOnlineAt(v)
 		return nil
 	case node.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -594,7 +709,11 @@ func (m *NodeMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *NodeMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(node.FieldLastOnlineAt) {
+		fields = append(fields, node.FieldLastOnlineAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -607,6 +726,11 @@ func (m *NodeMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *NodeMutation) ClearField(name string) error {
+	switch name {
+	case node.FieldLastOnlineAt:
+		m.ClearLastOnlineAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Node nullable field %s", name)
 }
 
@@ -620,11 +744,17 @@ func (m *NodeMutation) ResetField(name string) error {
 	case node.FieldDescription:
 		m.ResetDescription()
 		return nil
+	case node.FieldIdentifier:
+		m.ResetIdentifier()
+		return nil
 	case node.FieldIsActive:
 		m.ResetIsActive()
 		return nil
 	case node.FieldIsOnline:
 		m.ResetIsOnline()
+		return nil
+	case node.FieldLastOnlineAt:
+		m.ResetLastOnlineAt()
 		return nil
 	case node.FieldCreatedAt:
 		m.ResetCreatedAt()

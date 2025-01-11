@@ -21,10 +21,14 @@ type Node struct {
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// Identifier holds the value of the "identifier" field.
+	Identifier string `json:"identifier,omitempty"`
 	// IsActive holds the value of the "is_active" field.
 	IsActive bool `json:"is_active,omitempty"`
 	// IsOnline holds the value of the "is_online" field.
 	IsOnline bool `json:"is_online,omitempty"`
+	// LastOnlineAt holds the value of the "last_online_at" field.
+	LastOnlineAt time.Time `json:"last_online_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -62,9 +66,9 @@ func (*Node) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case node.FieldID:
 			values[i] = new(sql.NullInt64)
-		case node.FieldName, node.FieldDescription:
+		case node.FieldName, node.FieldDescription, node.FieldIdentifier:
 			values[i] = new(sql.NullString)
-		case node.FieldCreatedAt, node.FieldUpdatedAt:
+		case node.FieldLastOnlineAt, node.FieldCreatedAt, node.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -99,6 +103,12 @@ func (n *Node) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				n.Description = value.String
 			}
+		case node.FieldIdentifier:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field identifier", values[i])
+			} else if value.Valid {
+				n.Identifier = value.String
+			}
 		case node.FieldIsActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_active", values[i])
@@ -110,6 +120,12 @@ func (n *Node) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_online", values[i])
 			} else if value.Valid {
 				n.IsOnline = value.Bool
+			}
+		case node.FieldLastOnlineAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_online_at", values[i])
+			} else if value.Valid {
+				n.LastOnlineAt = value.Time
 			}
 		case node.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -170,11 +186,17 @@ func (n *Node) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(n.Description)
 	builder.WriteString(", ")
+	builder.WriteString("identifier=")
+	builder.WriteString(n.Identifier)
+	builder.WriteString(", ")
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", n.IsActive))
 	builder.WriteString(", ")
 	builder.WriteString("is_online=")
 	builder.WriteString(fmt.Sprintf("%v", n.IsOnline))
+	builder.WriteString(", ")
+	builder.WriteString("last_online_at=")
+	builder.WriteString(n.LastOnlineAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(n.CreatedAt.Format(time.ANSIC))

@@ -85,6 +85,26 @@ func (nu *NodeUpdate) SetNillableIsOnline(b *bool) *NodeUpdate {
 	return nu
 }
 
+// SetLastOnlineAt sets the "last_online_at" field.
+func (nu *NodeUpdate) SetLastOnlineAt(t time.Time) *NodeUpdate {
+	nu.mutation.SetLastOnlineAt(t)
+	return nu
+}
+
+// SetNillableLastOnlineAt sets the "last_online_at" field if the given value is not nil.
+func (nu *NodeUpdate) SetNillableLastOnlineAt(t *time.Time) *NodeUpdate {
+	if t != nil {
+		nu.SetLastOnlineAt(*t)
+	}
+	return nu
+}
+
+// ClearLastOnlineAt clears the value of the "last_online_at" field.
+func (nu *NodeUpdate) ClearLastOnlineAt() *NodeUpdate {
+	nu.mutation.ClearLastOnlineAt()
+	return nu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (nu *NodeUpdate) SetUpdatedAt(t time.Time) *NodeUpdate {
 	nu.mutation.SetUpdatedAt(t)
@@ -188,6 +208,12 @@ func (nu *NodeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := nu.mutation.IsOnline(); ok {
 		_spec.SetField(node.FieldIsOnline, field.TypeBool, value)
+	}
+	if value, ok := nu.mutation.LastOnlineAt(); ok {
+		_spec.SetField(node.FieldLastOnlineAt, field.TypeTime, value)
+	}
+	if nu.mutation.LastOnlineAtCleared() {
+		_spec.ClearField(node.FieldLastOnlineAt, field.TypeTime)
 	}
 	if value, ok := nu.mutation.UpdatedAt(); ok {
 		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)
@@ -310,6 +336,26 @@ func (nuo *NodeUpdateOne) SetNillableIsOnline(b *bool) *NodeUpdateOne {
 	if b != nil {
 		nuo.SetIsOnline(*b)
 	}
+	return nuo
+}
+
+// SetLastOnlineAt sets the "last_online_at" field.
+func (nuo *NodeUpdateOne) SetLastOnlineAt(t time.Time) *NodeUpdateOne {
+	nuo.mutation.SetLastOnlineAt(t)
+	return nuo
+}
+
+// SetNillableLastOnlineAt sets the "last_online_at" field if the given value is not nil.
+func (nuo *NodeUpdateOne) SetNillableLastOnlineAt(t *time.Time) *NodeUpdateOne {
+	if t != nil {
+		nuo.SetLastOnlineAt(*t)
+	}
+	return nuo
+}
+
+// ClearLastOnlineAt clears the value of the "last_online_at" field.
+func (nuo *NodeUpdateOne) ClearLastOnlineAt() *NodeUpdateOne {
+	nuo.mutation.ClearLastOnlineAt()
 	return nuo
 }
 
@@ -446,6 +492,12 @@ func (nuo *NodeUpdateOne) sqlSave(ctx context.Context) (_node *Node, err error) 
 	}
 	if value, ok := nuo.mutation.IsOnline(); ok {
 		_spec.SetField(node.FieldIsOnline, field.TypeBool, value)
+	}
+	if value, ok := nuo.mutation.LastOnlineAt(); ok {
+		_spec.SetField(node.FieldLastOnlineAt, field.TypeTime, value)
+	}
+	if nuo.mutation.LastOnlineAtCleared() {
+		_spec.ClearField(node.FieldLastOnlineAt, field.TypeTime)
 	}
 	if value, ok := nuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(node.FieldUpdatedAt, field.TypeTime, value)
