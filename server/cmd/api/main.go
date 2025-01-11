@@ -57,7 +57,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	defer mqttBroker.Disconnect(250)
+	defer mqttBroker.Disconnect()
 
 	showVersion := flag.Bool("version", false, "display version and exit")
 
