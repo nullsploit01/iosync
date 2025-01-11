@@ -12,6 +12,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lmittmann/tint"
 	"github.com/nullsploit01/iosync/internal/database"
+	"github.com/nullsploit01/iosync/internal/mqtt_broker"
 	"github.com/nullsploit01/iosync/internal/service"
 	"github.com/nullsploit01/iosync/internal/version"
 )
@@ -50,6 +51,13 @@ func run(logger *slog.Logger) error {
 	}
 
 	defer dbClient.Close()
+
+	mqttBroker, err := mqtt_broker.NewMqttBroker(config.mqttBrokerHost, config.mqttBrokerPort, config.mqttBrokerClientID, config.mqttBrokerUser, config.mqttBrokerPassword)
+	if err != nil {
+		return err
+	}
+
+	defer mqttBroker.Disconnect(250)
 
 	showVersion := flag.Bool("version", false, "display version and exit")
 
