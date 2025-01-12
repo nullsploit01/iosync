@@ -52,7 +52,7 @@ func run(logger *slog.Logger) error {
 
 	defer dbClient.Close()
 
-	mqttBroker, err := mqtt_broker.NewMqttBroker(config.mqttBrokerHost, config.mqttBrokerPort, config.mqttBrokerClientID, config.mqttBrokerUser, config.mqttBrokerPassword)
+	mqttBroker, err := mqtt_broker.NewMqttBroker(config.mqttBrokerHost, config.mqttBrokerPort, config.mqttBrokerClientID, config.mqttBrokerUser, config.mqttBrokerPassword, logger)
 	if err != nil {
 		return err
 	}

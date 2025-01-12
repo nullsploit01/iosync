@@ -2,6 +2,8 @@ package mqtt_broker
 
 import (
 	"fmt"
+	"log/slog"
+	"strings"
 	"sync"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -11,6 +13,7 @@ type MqttBroker struct {
 	client       mqtt.Client
 	handlers     map[string]mqtt.MessageHandler
 	handlerMutex sync.RWMutex
+	logger       *slog.Logger
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -21,7 +24,7 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	fmt.Printf("MQTT Broker Connect lost: %v", err)
 }
 
-func NewMqttBroker(host string, port int, clientId, username, password string) (*MqttBroker, error) {
+func NewMqttBroker(host string, port int, clientId, username, password string, logger *slog.Logger) (*MqttBroker, error) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", host, port))
 	opts.SetClientID(clientId)
@@ -39,6 +42,7 @@ func NewMqttBroker(host string, port int, clientId, username, password string) (
 	return &MqttBroker{
 		client:   client,
 		handlers: make(map[string]mqtt.MessageHandler),
+		logger:   logger,
 	}, nil
 }
 
@@ -58,11 +62,14 @@ func (m *MqttBroker) Subscribe(topic string, qos byte, handler mqtt.MessageHandl
 		m.handlerMutex.RLock()
 		defer m.handlerMutex.RUnlock()
 
-		if handler, ok := m.handlers[msg.Topic()]; ok {
-			handler(c, msg)
-		} else {
-			fmt.Println("No handler for topic: ", msg.Topic())
+		for subTopic, handler := range m.handlers {
+			if topicMatches(subTopic, msg.Topic()) {
+				handler(c, msg)
+				return
+			}
 		}
+
+		m.logger.Warn("No handler found for topic", "topic", msg.Topic())
 	})
 	token.Wait()
 	return token.Error()
@@ -81,4 +88,23 @@ func (m *MqttBroker) Unsubscribe(topic string) error {
 
 func (m *MqttBroker) Disconnect() {
 	m.client.Disconnect(250)
+}
+
+func topicMatches(subTopic, msgTopic string) bool {
+	subParts := strings.Split(subTopic, "/")
+	msgParts := strings.Split(msgTopic, "/")
+
+	if len(subParts) != len(msgParts) {
+		return false
+	}
+
+	for i := range subParts {
+		if subParts[i] == "+" {
+			continue
+		}
+		if subParts[i] != msgParts[i] {
+			return false
+		}
+	}
+	return true
 }
