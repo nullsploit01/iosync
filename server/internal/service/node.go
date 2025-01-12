@@ -41,8 +41,8 @@ func NewNodeService(db *ent.Client, mqttBroker *mqtt_broker.MqttBroker, logger *
 	}
 }
 
-func (n NodeService) InitNodeService() error {
-	err := n.MonitorNodeOnlineStatus()
+func (n NodeService) InitNodeService(ctx context.Context) error {
+	err := n.MonitorNodeOnlineStatus(ctx)
 	if err != nil {
 		slog.Error(fmt.Sprintf("failed to monitor node online status: %v", err))
 		return err
@@ -85,8 +85,7 @@ func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueReque
 	return n.repo.AddNodeValue(ctx, node, request.Value)
 }
 
-func (n NodeService) MonitorNodeOnlineStatus() error {
-	slog.Info("monitoring node online status")
+func (n NodeService) MonitorNodeOnlineStatus(ctx context.Context) error {
 	err := n.mqttBroker.Subscribe("nodes/+/status", 1, func(client mqtt.Client, msg mqtt.Message) {
 		go func() {
 			nodeIdentifier := parseDeviceIdentifier(msg.Topic())
@@ -110,19 +109,19 @@ func (n NodeService) MonitorNodeOnlineStatus() error {
 		return fmt.Errorf("failed to subscribe to nodes/+/lwt: %w", err)
 	}
 
-	go n.CheckNodeTimeouts()
+	go n.CheckNodeTimeouts(ctx)
 
 	return nil
 }
 
-func (n NodeService) CheckNodeTimeouts() {
+func (n NodeService) CheckNodeTimeouts(ctx context.Context) {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	timeout := 60 * time.Second // 1 minute
 
 	for range ticker.C {
-		nodes, err := n.repo.GetNodes(context.Background())
+		nodes, err := n.repo.GetNodes(ctx)
 		if err != nil {
 			slog.Error(fmt.Sprintf("failed to get nodes: %v", err))
 			continue
