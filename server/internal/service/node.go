@@ -133,6 +133,7 @@ func (n NodeService) CheckNodeTimeouts(ctx context.Context) {
 		for _, node := range nodes {
 			lastSeen := node.LastOnlineAt
 			if now.Sub(lastSeen) > timeout && node.IsOnline {
+				n.logger.Warn("marking node as offline", slog.Group("node", "id", node.ID, "identifier", node.Identifier, "name", node.Name))
 				n.UpdateNodeOnlineStatus(context.Background(), node.Identifier, false)
 			}
 		}
