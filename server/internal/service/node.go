@@ -88,6 +88,7 @@ func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueReque
 func (n NodeService) MonitorNodeOnlineStatus(ctx context.Context) error {
 	err := n.mqttBroker.Subscribe("nodes/+/status", 1, func(client mqtt.Client, msg mqtt.Message) {
 		go func() {
+			n.logger.Debug("Received message", "topic", msg.Topic(), "payload", string(msg.Payload()))
 			nodeIdentifier := parseDeviceIdentifier(msg.Topic())
 			payload := string(msg.Payload())
 			n.UpdateNodeOnlineStatus(context.Background(), nodeIdentifier, payload == "online")
@@ -118,7 +119,7 @@ func (n NodeService) CheckNodeTimeouts(ctx context.Context) {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
-	timeout := 60 * time.Second // 1 minute
+	timeout := 60 * 5 * time.Second // 5 minutes
 
 	for range ticker.C {
 		nodes, err := n.repo.GetNodes(ctx)
