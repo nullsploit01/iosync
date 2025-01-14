@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -85,13 +86,55 @@ func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueReque
 	return n.repo.AddNodeValue(ctx, node, request.Value)
 }
 
+func (n NodeService) ListenForNodeValueUpdates(ctx context.Context) error {
+	err := n.mqttBroker.Subscribe("nodes/+/value", 1, func(client mqtt.Client, msg mqtt.Message) {
+		go func() {
+			n.logger.Debug("Received node value update", "topic", msg.Topic(), "payload", string(msg.Payload()))
+			nodeValue := string(msg.Payload())
+			apiKey := parseTopicWildcard(msg.Topic())
+			_, err := n.AddNodeValueToApiKey(ctx, apiKey, nodeValue)
+			if err != nil {
+				var notFound *ent.NotFoundError
+				if errors.As(err, &notFound) {
+					n.logger.Error("node not found for value update")
+				} else {
+					n.logger.Error("failed to add node value", "error", err)
+				}
+			}
+		}()
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to nodes/+/value: %w", err)
+	}
+
+	return nil
+}
+
+func (n NodeService) AddNodeValueToApiKey(ctx context.Context, apiKey string, value string) (*ent.NodeValues, error) {
+	node, err := n.repo.GetNodeAPIByAPIKey(ctx, apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return n.repo.AddNodeValue(ctx, node, value)
+}
+
 func (n NodeService) MonitorNodeOnlineStatus(ctx context.Context) error {
 	err := n.mqttBroker.Subscribe("nodes/+/status", 1, func(client mqtt.Client, msg mqtt.Message) {
 		go func() {
-			n.logger.Debug("Received message", "topic", msg.Topic(), "payload", string(msg.Payload()))
-			nodeIdentifier := parseDeviceIdentifier(msg.Topic())
+			n.logger.Debug("Received node status update", "topic", msg.Topic(), "payload", string(msg.Payload()))
+			nodeIdentifier := parseTopicWildcard(msg.Topic())
 			payload := string(msg.Payload())
-			n.UpdateNodeOnlineStatus(context.Background(), nodeIdentifier, payload == "online")
+			err := n.UpdateNodeOnlineStatus(context.Background(), nodeIdentifier, payload == "online")
+			if err != nil {
+				var notFound *ent.NotFoundError
+				if errors.As(err, &notFound) {
+					n.logger.Error("node not found for status update")
+				} else {
+					n.logger.Error("failed to update node status", "error", err)
+				}
+			}
 		}()
 	})
 
@@ -101,7 +144,7 @@ func (n NodeService) MonitorNodeOnlineStatus(ctx context.Context) error {
 
 	err = n.mqttBroker.Subscribe("nodes/+/lwt", 1, func(client mqtt.Client, msg mqtt.Message) {
 		go func() {
-			nodeIdentifier := parseDeviceIdentifier(msg.Topic())
+			nodeIdentifier := parseTopicWildcard(msg.Topic())
 			n.UpdateNodeOnlineStatus(context.Background(), nodeIdentifier, false)
 		}()
 	})
@@ -145,7 +188,7 @@ func (n NodeService) UpdateNodeOnlineStatus(ctx context.Context, nodeIdentifier 
 	return n.repo.UpdateNodeOnlineStatus(ctx, nodeIdentifier, isOnline)
 }
 
-func parseDeviceIdentifier(topic string) string {
+func parseTopicWildcard(topic string) string {
 	parts := strings.Split(topic, "/")
 	return parts[1]
 }

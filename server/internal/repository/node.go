@@ -79,3 +79,7 @@ func (n NodeRepository) UpdateNodeOnlineStatus(ctx context.Context, nodeIdentifi
 	_, err := query.Save(ctx)
 	return err
 }
+
+func (n NodeRepository) GetNodeByIdentifier(ctx context.Context, identifier string) (*ent.Node, error) {
+	return n.db.Node.Query().Where(node.IdentifierEQ(identifier)).Only(ctx)
+}
