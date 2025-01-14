@@ -49,6 +49,12 @@ func (n NodeService) InitNodeService(ctx context.Context) error {
 		return err
 	}
 
+	err = n.ListenForNodeValueUpdates(ctx)
+	if err != nil {
+		slog.Error(fmt.Sprintf("failed to listen for node value updates: %v", err))
+		return err
+	}
+
 	return nil
 }
 
