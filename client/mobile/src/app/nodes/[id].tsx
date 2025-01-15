@@ -3,12 +3,12 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { Card, Text, View, XStack } from 'tamagui'
 
 import { nodeAPIService } from '@/src/service/api/node'
-import { INode } from '@/src/types/models/node'
+import { INodeWithAPIKeys } from '@/src/types/models/node'
 import { parseSearchParamToNumber } from '@/src/utils'
 
 const NodeScreen = () => {
   const { id } = useLocalSearchParams()
-  const [_node, setNode] = useState<INode | null>(null)
+  const [_node, setNode] = useState<INodeWithAPIKeys | null>(null)
 
   useEffect(() => {
     fetchNodeDetails()

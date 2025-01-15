@@ -9,3 +9,22 @@ export interface INode {
   created_at: Date
   updated_at: Date
 }
+
+export interface INodeAPIKey {
+  id: number
+  api_key: string
+  description: string
+  created_at: Date
+  updated_at: Date
+}
+
+export interface INodeAPIValue {
+  id: number
+  value: string
+  created_at: Date
+  updated_at: Date
+}
+
+export interface INodeWithAPIKeys extends INode {
+  api_keys: INodeAPIKey[]
+}

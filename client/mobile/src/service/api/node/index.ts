@@ -1,7 +1,7 @@
 import { httpClient } from '..'
 
 import { IAPIResponse } from '@/src/types/api'
-import { INode } from '@/src/types/models/node'
+import { INode, INodeWithAPIKeys } from '@/src/types/models/node'
 
 export const nodeAPIService = {
   getNodes: async () => {
@@ -9,6 +9,6 @@ export const nodeAPIService = {
   },
 
   getNode: async (id: number) => {
-    return await httpClient.get<IAPIResponse<INode>>(`/nodes/${id}`)
+    return await httpClient.get<IAPIResponse<INodeWithAPIKeys>>(`/nodes/${id}`)
   }
 }
