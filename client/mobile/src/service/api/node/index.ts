@@ -6,5 +6,9 @@ import { INode } from '@/src/types/models/node'
 export const nodeAPIService = {
   getNodes: async () => {
     return await httpClient.get<IAPIResponse<INode[]>>('/nodes')
+  },
+
+  getNode: async (id: number) => {
+    return await httpClient.get<IAPIResponse<INode>>(`/nodes/${id}`)
   }
 }
