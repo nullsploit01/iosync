@@ -30,11 +30,12 @@ const NodeScreen = () => {
       <View>
         <Card elevate size="$4" margin={16} padding={16}>
           <Card.Header>
+            <Text>#{_node?.id}</Text>
             <Text>{_node?.name}</Text>
             <Text>{_node?.description}</Text>
           </Card.Header>
-          <XStack>
-            <Text color={_node?.is_online ? 'green' : 'red'}>
+          <XStack justifyContent="flex-end">
+            <Text fontSize="$6" color={_node?.is_online ? 'green' : 'red'}>
               {_node?.is_online ? 'Online' : 'Offline'}
             </Text>
           </XStack>

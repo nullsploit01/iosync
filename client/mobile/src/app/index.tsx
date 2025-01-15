@@ -1,7 +1,7 @@
-import { router, useRouter } from 'expo-router'
+import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { TouchableOpacity } from 'react-native'
-import { Button, Card, H2, Paragraph, Text, View, XStack } from 'tamagui'
+import { Button, Card, H2, H4, Paragraph, View, XStack } from 'tamagui'
 
 import { nodeAPIService } from '@/src/service/api/node'
 import { INode } from '@/src/types/models/node'
@@ -36,6 +36,7 @@ const NodeCard = ({ node }: { node: INode }) => {
     <TouchableOpacity onPress={() => router.push(`/nodes/${node.id}`)}>
       <Card elevate size="$4" bordered>
         <Card.Header padded>
+          <H4>#{node?.id}</H4>
           <H2>{node.name}</H2>
           <Paragraph theme="alt2">{node.description}</Paragraph>
         </Card.Header>
