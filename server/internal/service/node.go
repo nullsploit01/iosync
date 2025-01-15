@@ -10,6 +10,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/nullsploit01/iosync/ent"
+	"github.com/nullsploit01/iosync/internal/models"
 	"github.com/nullsploit01/iosync/internal/mqtt_broker"
 	"github.com/nullsploit01/iosync/internal/repository"
 )
@@ -58,38 +59,137 @@ func (n NodeService) InitNodeService(ctx context.Context) error {
 	return nil
 }
 
-func (n NodeService) GetNodes(ctx context.Context) ([]*ent.Node, error) {
-	return n.repo.GetNodes(ctx)
+func (n NodeService) GetNodes(ctx context.Context) ([]models.Node, error) {
+	nodes, err := n.repo.GetNodes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeModels []models.Node
+	for _, node := range nodes {
+		nodeModels = append(nodeModels, models.Node{
+			ID:           node.ID,
+			Name:         node.Name,
+			Description:  node.Description,
+			Identifier:   node.Identifier,
+			IsActive:     node.IsActive,
+			IsOnline:     node.IsOnline,
+			LastOnlineAt: node.LastOnlineAt,
+			CreatedAt:    node.CreatedAt,
+			UpdatedAt:    node.UpdatedAt,
+		})
+	}
+
+	return nodeModels, nil
 }
 
-func (n NodeService) GetNode(ctx context.Context, id int) (*ent.Node, error) {
-	return n.repo.GetNode(ctx, id)
+func (n NodeService) GetNode(ctx context.Context, id int) (models.NodeWithAPIKeys, error) {
+	node, err := n.repo.GetNode(ctx, id)
+	if err != nil {
+		return models.NodeWithAPIKeys{}, err
+	}
+
+	nodeModel := models.NodeWithAPIKeys{
+		ID:           node.ID,
+		Name:         node.Name,
+		Description:  node.Description,
+		Identifier:   node.Identifier,
+		IsActive:     node.IsActive,
+		IsOnline:     node.IsOnline,
+		LastOnlineAt: node.LastOnlineAt,
+		CreatedAt:    node.CreatedAt,
+		UpdatedAt:    node.UpdatedAt,
+	}
+
+	for _, apiKey := range node.Edges.APIKeys {
+		nodeModel.APIKeys = append(nodeModel.APIKeys, models.NodeAPIKey{
+			ID:          apiKey.ID,
+			ApiKey:      apiKey.APIKey,
+			Description: apiKey.Description,
+			CreatedAt:   apiKey.CreatedAt,
+			UpdatedAt:   apiKey.UpdatedAt,
+		})
+	}
+
+	return nodeModel, nil
+
 }
 
-func (n NodeService) GetNodeValuesByAPIKey(ctx context.Context, apiKey string) ([]*ent.NodeValues, error) {
+func (n NodeService) GetNodeValuesByAPIKey(ctx context.Context, apiKey string) ([]models.NodeApiKeyValue, error) {
 	nodeApiKey, err := n.repo.GetNodeAPIByAPIKey(ctx, apiKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return n.repo.GetNodeValuesByAPIKey(ctx, nodeApiKey)
-}
-
-func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (*ent.Node, error) {
-	return n.repo.CreateNode(ctx, request.Name, request.Description)
-}
-
-func (n NodeService) GenerateNodeAPIKey(ctx context.Context, nodeId int, request GenerateNodeAPIKeyRequest) (*ent.NodeApiKey, error) {
-	return n.repo.GenerateNodeAPIKey(ctx, nodeId, request.Description)
-}
-
-func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueRequest) (*ent.NodeValues, error) {
-	node, err := n.repo.GetNodeAPIByAPIKey(ctx, request.ApiKey)
+	nodeApiKeyValues, err := n.repo.GetNodeValuesByAPIKey(ctx, nodeApiKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return n.repo.AddNodeValue(ctx, node, request.Value)
+	var nodeValues []models.NodeApiKeyValue
+	for _, nodeValue := range nodeApiKeyValues {
+		nodeValues = append(nodeValues, models.NodeApiKeyValue{
+			ID:        nodeValue.ID,
+			Value:     nodeValue.Value,
+			CreatedAt: nodeValue.CreatedAt,
+			UpdateAt:  nodeValue.UpdatedAt,
+		})
+	}
+
+	return nodeValues, nil
+}
+
+func (n NodeService) CreateNode(ctx context.Context, request CreateNodeRequest) (models.Node, error) {
+	node, err := n.repo.CreateNode(ctx, request.Name, request.Description)
+	if err != nil {
+		return models.Node{}, err
+	}
+
+	return models.Node{
+		ID:           node.ID,
+		Name:         node.Name,
+		Description:  node.Description,
+		Identifier:   node.Identifier,
+		IsActive:     node.IsActive,
+		LastOnlineAt: node.LastOnlineAt,
+		CreatedAt:    node.CreatedAt,
+		UpdatedAt:    node.UpdatedAt,
+	}, nil
+
+}
+
+func (n NodeService) GenerateNodeAPIKey(ctx context.Context, nodeId int, request GenerateNodeAPIKeyRequest) (models.NodeAPIKey, error) {
+	nodeApiKey, err := n.repo.GenerateNodeAPIKey(ctx, nodeId, request.Description)
+	if err != nil {
+		return models.NodeAPIKey{}, err
+	}
+
+	return models.NodeAPIKey{
+		ID:          nodeApiKey.ID,
+		ApiKey:      nodeApiKey.APIKey,
+		Description: nodeApiKey.Description,
+		CreatedAt:   nodeApiKey.CreatedAt,
+		UpdatedAt:   nodeApiKey.UpdatedAt,
+	}, nil
+}
+
+func (n NodeService) AddNodeValue(ctx context.Context, request AddNodeValueRequest) (models.NodeApiKeyValue, error) {
+	node, err := n.repo.GetNodeAPIByAPIKey(ctx, request.ApiKey)
+	if err != nil {
+		return models.NodeApiKeyValue{}, err
+	}
+
+	apiKeyValue, err := n.repo.AddNodeValue(ctx, node, request.Value)
+	if err != nil {
+		return models.NodeApiKeyValue{}, err
+	}
+
+	return models.NodeApiKeyValue{
+		ID:        apiKeyValue.ID,
+		Value:     apiKeyValue.Value,
+		CreatedAt: apiKeyValue.CreatedAt,
+		UpdateAt:  apiKeyValue.UpdatedAt,
+	}, nil
 }
 
 func (n NodeService) ListenForNodeValueUpdates(ctx context.Context) error {
@@ -117,13 +217,23 @@ func (n NodeService) ListenForNodeValueUpdates(ctx context.Context) error {
 	return nil
 }
 
-func (n NodeService) AddNodeValueToApiKey(ctx context.Context, apiKey string, value string) (*ent.NodeValues, error) {
+func (n NodeService) AddNodeValueToApiKey(ctx context.Context, apiKey string, value string) (models.NodeApiKeyValue, error) {
 	node, err := n.repo.GetNodeAPIByAPIKey(ctx, apiKey)
 	if err != nil {
-		return nil, err
+		return models.NodeApiKeyValue{}, err
 	}
 
-	return n.repo.AddNodeValue(ctx, node, value)
+	apiKeyValue, err := n.repo.AddNodeValue(ctx, node, value)
+	if err != nil {
+		return models.NodeApiKeyValue{}, err
+	}
+
+	return models.NodeApiKeyValue{
+		ID:        apiKeyValue.ID,
+		Value:     apiKeyValue.Value,
+		CreatedAt: apiKeyValue.CreatedAt,
+		UpdateAt:  apiKeyValue.UpdatedAt,
+	}, nil
 }
 
 func (n NodeService) MonitorNodeOnlineStatus(ctx context.Context) error {
