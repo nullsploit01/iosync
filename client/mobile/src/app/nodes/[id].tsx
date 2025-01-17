@@ -47,12 +47,12 @@ const NodeScreen = () => {
           _node.api_keys &&
           _node.api_keys.map((x) => {
             return (
-              <YGroup.Item>
+              <YGroup.Item key={x.id}>
                 <ListItem
                   hoverTheme
                   pressTheme
-                  title="Star"
-                  subTitle="Subtitle"
+                  title={x.description}
+                  subTitle={x.api_key}
                   iconAfter={ChevronRight}
                 />
               </YGroup.Item>
