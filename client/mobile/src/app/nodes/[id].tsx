@@ -1,6 +1,7 @@
+import { ChevronRight } from '@tamagui/lucide-icons'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import React, { Fragment, useEffect, useState } from 'react'
-import { Card, Text, View, XStack } from 'tamagui'
+import { Card, ListItem, Text, XStack, YGroup, YStack } from 'tamagui'
 
 import { nodeAPIService } from '@/src/service/api/node'
 import { INodeWithAPIKeys } from '@/src/types/models/node'
@@ -27,7 +28,7 @@ const NodeScreen = () => {
   return (
     <Fragment>
       <Stack.Screen options={{ headerTitle: 'Node' }} />
-      <View>
+      <YStack>
         <Card elevate size="$4" margin={16} padding={16}>
           <Card.Header>
             <Text>#{_node?.id}</Text>
@@ -40,7 +41,24 @@ const NodeScreen = () => {
             </Text>
           </XStack>
         </Card>
-      </View>
+      </YStack>
+      <YGroup alignSelf="center" bordered width={240} size="$5">
+        {_node &&
+          _node.api_keys &&
+          _node.api_keys.map((x) => {
+            return (
+              <YGroup.Item>
+                <ListItem
+                  hoverTheme
+                  pressTheme
+                  title="Star"
+                  subTitle="Subtitle"
+                  iconAfter={ChevronRight}
+                />
+              </YGroup.Item>
+            )
+          })}
+      </YGroup>
     </Fragment>
   )
 }
