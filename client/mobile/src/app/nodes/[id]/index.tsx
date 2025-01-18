@@ -1,5 +1,5 @@
 import { ChevronRight } from '@tamagui/lucide-icons'
-import { Stack, useLocalSearchParams } from 'expo-router'
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import React, { Fragment, useEffect, useState } from 'react'
 import { Card, ListItem, Text, XStack, YGroup, YStack } from 'tamagui'
 
@@ -8,6 +8,7 @@ import { INodeWithAPIKeys } from '@/src/types/models/node'
 import { parseSearchParamToNumber } from '@/src/utils'
 
 const NodeScreen = () => {
+  const router = useRouter()
   const { id } = useLocalSearchParams()
   const [_node, setNode] = useState<INodeWithAPIKeys | null>(null)
 
@@ -51,6 +52,7 @@ const NodeScreen = () => {
                 <ListItem
                   hoverTheme
                   pressTheme
+                  onPress={() => router.navigate(`/nodes/${id}/values/1`)}
                   title={x.description}
                   subTitle={x.api_key}
                   iconAfter={ChevronRight}
