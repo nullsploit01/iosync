@@ -52,7 +52,7 @@ const NodeScreen = () => {
                 <ListItem
                   hoverTheme
                   pressTheme
-                  onPress={() => router.navigate(`/nodes/${id}/values/1`)}
+                  onPress={() => router.navigate(`/nodes/${x.id}/values/${x.api_key}`)}
                   title={x.description}
                   subTitle={x.api_key}
                   iconAfter={ChevronRight}
